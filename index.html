@@ -87,7 +87,7 @@
 <body class="bg-[#0A0A0C] text-white font-sans antialiased min-h-screen flex flex-col select-none overflow-hidden">
 
   <!-- ========================================== -->
-  <!-- MAPA PRINCIPAL (SIEMPRE ACTIVO Y MONTADO) -->
+  <!-- MAPA PRINCIPAL (SIEMPRE ACTIVO Y VISIBLE) -->
   <!-- ========================================== -->
   <div id="map"></div>
 
@@ -95,7 +95,7 @@
   <!-- ========================================== -->
   <!-- VISTA 1: PORTAL DE BIENVENIDA ESTUDIANTE  -->
   <!-- ========================================== -->
-  <div id="vista-inicio" class="fixed inset-0 z-30 flex flex-col justify-between px-6 py-8 bg-[#0A0A0C] transition-all duration-300">
+  <div id="vista-inicio" style="display: flex;" class="fixed inset-0 z-30 flex-col justify-between px-6 py-8 bg-[#0A0A0C]">
     <div class="w-full max-w-md mx-auto flex flex-col justify-between h-full">
       <header class="pt-4 pb-6 flex flex-col items-center justify-center border-b border-[#1E2026]">
         <div class="flex items-center gap-3">
@@ -128,8 +128,8 @@
             <span>Red satelital conectada con Supabase</span>
           </div>
 
-          <!-- Botón para ver el mapa -->
-          <button onclick="mostrarMapa()" class="w-full h-14 rounded-2xl bg-white hover:bg-neutral-200 active:scale-[0.98] text-black font-extrabold text-base flex items-center justify-center gap-2.5 transition-all shadow-xl mt-2 cursor-pointer" type="button">
+          <!-- Botón de Entrada Inmediata al Mapa -->
+          <button id="btn-ingresar" onclick="mostrarMapa()" class="w-full h-14 rounded-2xl bg-white hover:bg-neutral-200 active:scale-[0.98] text-black font-extrabold text-base flex items-center justify-center gap-2.5 transition-all shadow-xl mt-2 cursor-pointer" type="button">
             <span>Ingresar al Mapa en Vivo</span>
             <span class="material-symbols-outlined text-xl">arrow_forward</span>
           </button>
@@ -150,7 +150,7 @@
   <!-- ========================================== -->
   <!-- VISTA 2: CONTROLES FLOTANTES DEL MAPA     -->
   <!-- ========================================== -->
-  <div id="vista-mapa" class="hidden fixed inset-0 z-20 pointer-events-none flex flex-col justify-between p-4 pb-safe pt-safe">
+  <div id="vista-mapa" style="display: none;" class="fixed inset-0 z-20 pointer-events-none flex-col justify-between p-4 pb-safe pt-safe">
     
     <!-- Barra Superior Flotante -->
     <header class="w-full max-w-md mx-auto pointer-events-auto">
@@ -176,10 +176,10 @@
           </button>
           
           <div class="rounded-2xl bg-[#141416]/95 backdrop-blur-md border border-[#26262B] flex flex-col items-center overflow-hidden shadow-2xl">
-            <button aria-label="Acercar" class="w-11 h-10 text-white flex items-center justify-center hover:bg-[#202024] active:scale-95 transition-all border-b border-[#242429] cursor-pointer" onclick="map.zoomIn()" type="button">
+            <button aria-label="Acercar" class="w-11 h-10 text-white flex items-center justify-center hover:bg-[#202024] active:scale-95 transition-all border-b border-[#242429] cursor-pointer" onclick="if(map) map.zoomIn()" type="button">
               <span class="material-symbols-outlined text-base">add</span>
             </button>
-            <button aria-label="Alejar" class="w-11 h-10 text-white flex items-center justify-center hover:bg-[#202024] active:scale-95 transition-all cursor-pointer" onclick="map.zoomOut()" type="button">
+            <button aria-label="Alejar" class="w-11 h-10 text-white flex items-center justify-center hover:bg-[#202024] active:scale-95 transition-all cursor-pointer" onclick="if(map) map.zoomOut()" type="button">
               <span class="material-symbols-outlined text-base">remove</span>
             </button>
           </div>
@@ -219,22 +219,60 @@
 
   <script>
     // --- SUPABASE CONFIG ---
-    const SUPABASE_URL = "https://mcqcfdivpikmrkkfbhsm.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jcWNmZGl2cGlrbXJra2ZiaHNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyNzg5NDIsImV4cCI6MjEwODg1NDk0Mn0.F6Yz31dJI4wQiINS1NwK-cNunO0V_3UEvD3IHgTJSC0";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    var SUPABASE_URL = "https://mcqcfdivpikmrkkfbhsm.supabase.co";
+    var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jcWNmZGl2cGlrbXJra2ZiaHNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyNzg5NDIsImV4cCI6MjEwODg1NDk0Mn0.F6Yz31dJI4wQiINS1NwK-cNunO0V_3UEvD3IHgTJSC0";
+    
+    var supabaseClient = null;
+    function getSupabase() {
+      if (!supabaseClient && window.supabase && typeof window.supabase.createClient === 'function') {
+        try {
+          supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } catch (e) {
+          console.warn("Supabase init:", e);
+        }
+      }
+      return supabaseClient;
+    }
 
-    const UNI_LAT = -10.72635;
-    const UNI_LNG = -77.77373;
-    const centroInicial = [UNI_LAT, UNI_LNG];
+    var UNI_LAT = -10.72635;
+    var UNI_LNG = -77.77373;
+    var centroInicial = [UNI_LAT, UNI_LNG];
 
-    let map = null;
-    let busMarker = null;
-    let busPosActual = centroInicial;
-    const historialRuta = [];
-    let polyline = null;
+    var map = null;
+    var busMarker = null;
+    var busPosActual = centroInicial;
+    var historialRuta = [];
+    var polyline = null;
+
+    // --- CAMBIO DE VISTAS (100% GARANTIZADO CON ESTILOS INLINE) ---
+    function mostrarMapa() {
+      var vistaInicio = document.getElementById('vista-inicio');
+      var vistaMapa = document.getElementById('vista-mapa');
+      
+      if (vistaInicio) vistaInicio.style.display = 'none';
+      if (vistaMapa) vistaMapa.style.display = 'flex';
+
+      if (!map) {
+        initLeafletMap();
+      }
+      setTimeout(function() { if (map) map.invalidateSize(); }, 60);
+      setTimeout(function() { if (map) map.invalidateSize(); }, 250);
+    }
+
+    function regresarAInicio() {
+      var vistaInicio = document.getElementById('vista-inicio');
+      var vistaMapa = document.getElementById('vista-mapa');
+      
+      if (vistaMapa) vistaMapa.style.display = 'none';
+      if (vistaInicio) vistaInicio.style.display = 'flex';
+    }
 
     function initLeafletMap() {
       if (map) return;
+      if (typeof L === 'undefined') {
+        console.warn("Leaflet aún no está disponible.");
+        return;
+      }
 
       // Inicializar mapa sobre el elemento #map (a pantalla completa)
       map = L.map('map', {
@@ -248,9 +286,9 @@
       }).addTo(map);
 
       // Paradero Principal de salida
-      const stopIcon = L.divIcon({
+      var stopIcon = L.divIcon({
         className: 'paradero-icon',
-        html: `<div style="width:16px; height:16px; border-radius:50%; background:#00E676; border:3px solid #FFFFFF; box-shadow:0 0 14px rgba(0,230,118,1);"></div>`,
+        html: '<div style="width:16px; height:16px; border-radius:50%; background:#00E676; border:3px solid #FFFFFF; box-shadow:0 0 14px rgba(0,230,118,1);"></div>',
         iconSize: [16, 16],
         iconAnchor: [8, 8]
       });
@@ -260,16 +298,9 @@
         .openPopup();
 
       // Marcador de Bus Neón
-      const busIcon = L.divIcon({
+      var busIcon = L.divIcon({
         className: 'bus-marker-container',
-        html: `
-          <div style="position:relative;">
-            <div class="bus-pulse-ring"></div>
-            <div class="bus-pin-core">
-              <span class="material-symbols-outlined" style="font-size:18px; font-weight:bold;">directions_bus</span>
-            </div>
-          </div>
-        `,
+        html: '<div style="position:relative;"><div class="bus-pulse-ring"></div><div class="bus-pin-core"><span class="material-symbols-outlined" style="font-size:18px; font-weight:bold;">directions_bus</span></div></div>',
         iconSize: [32, 32],
         iconAnchor: [16, 16]
       });
@@ -286,26 +317,10 @@
         lineJoin: 'round'
       }).addTo(map);
 
-      window.addEventListener('resize', () => { if (map) map.invalidateSize(); });
+      window.addEventListener('resize', function() { if (map) map.invalidateSize(); });
 
       cargarUltimaPosicion();
       conectarRealtime();
-    }
-
-    function mostrarMapa() {
-      document.getElementById('vista-inicio').classList.add('hidden');
-      document.getElementById('vista-mapa').classList.remove('hidden');
-
-      if (!map) {
-        initLeafletMap();
-      }
-      setTimeout(() => { if (map) map.invalidateSize(); }, 50);
-      setTimeout(() => { if (map) map.invalidateSize(); }, 250);
-    }
-
-    function regresarAInicio() {
-      document.getElementById('vista-mapa').classList.add('hidden');
-      document.getElementById('vista-inicio').classList.remove('hidden');
     }
 
     function actualizarPosicionBus(lat, lng) {
@@ -314,16 +329,16 @@
       if (polyline) polyline.setLatLngs(historialRuta);
       if (busMarker) busMarker.setLatLng(busPosActual);
 
-      const headerEl = document.getElementById('header-status');
+      var headerEl = document.getElementById('header-status');
       if (headerEl) headerEl.innerText = "Bus en Ruta";
       
-      const coordsEl = document.getElementById('coords-display');
-      if (coordsEl) coordsEl.innerText = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+      var coordsEl = document.getElementById('coords-display');
+      if (coordsEl) coordsEl.innerText = lat.toFixed(5) + ", " + lng.toFixed(5);
       
-      const updateEl = document.getElementById('last-update');
+      var updateEl = document.getElementById('last-update');
       if (updateEl) updateEl.innerText = new Date().toLocaleTimeString();
       
-      const badgeEl = document.getElementById('time-badge');
+      var badgeEl = document.getElementById('time-badge');
       if (badgeEl) badgeEl.innerText = "En vivo";
     }
 
@@ -333,30 +348,36 @@
       }
     }
 
-    async function cargarUltimaPosicion() {
-      try {
-        const { data } = await supabase
-          .from('rastreo')
-          .select('*')
-          .eq('id', 'bus_keisel_1')
-          .single();
+    function cargarUltimaPosicion() {
+      var client = getSupabase();
+      if (!client) return;
 
-        if (data && data.latitud && data.longitud) {
-          actualizarPosicionBus(data.latitud, data.longitud);
-        }
-      } catch (e) {
-        console.warn("Error cargando posicion:", e);
-      }
+      client
+        .from('rastreo')
+        .select('*')
+        .eq('id', 'bus_keisel_1')
+        .single()
+        .then(function(res) {
+          if (res.data && res.data.latitud && res.data.longitud) {
+            actualizarPosicionBus(res.data.latitud, res.data.longitud);
+          }
+        })
+        .catch(function(err) {
+          console.warn("Error cargando posicion:", err);
+        });
     }
 
     function conectarRealtime() {
+      var client = getSupabase();
+      if (!client) return;
+
       try {
-        supabase
+        client
           .channel('keisel-realtime')
           .on(
             'postgres_changes',
             { event: '*', schema: 'public', table: 'rastreo' },
-            (payload) => {
+            function(payload) {
               if (payload.new && payload.new.latitud && payload.new.longitud) {
                 actualizarPosicionBus(payload.new.latitud, payload.new.longitud);
               }
@@ -368,8 +389,8 @@
       }
     }
 
-    // Inicializar mapa inmediatamente en segundo plano
-    document.addEventListener('DOMContentLoaded', () => {
+    // Inicializar mapa inmediatamente al cargar la ventana
+    window.addEventListener('load', function() {
       initLeafletMap();
     });
   </script>
