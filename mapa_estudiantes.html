@@ -32,8 +32,9 @@
     }
     ::-webkit-scrollbar { display: none; }
     
+    /* El mapa ocupa el 100% de la ventana en PC y Celular */
     #map {
-      position: absolute;
+      position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
@@ -43,11 +44,6 @@
     }
     .leaflet-control-attribution { display: none !important; }
 
-    /* Filtro oscuro elegante para OpenStreetMap (100% visible, sin apagones) */
-    .leaflet-tile-pane {
-      filter: brightness(0.65) invert(1) contrast(1.3) hue-rotate(200deg) saturate(0.3);
-    }
-
     /* Anillo de pulso verde neón para el bus */
     .bus-pulse-ring {
       position: absolute;
@@ -56,13 +52,13 @@
       width: 56px;
       height: 56px;
       border-radius: 50%;
-      background: rgba(0, 230, 118, 0.4);
+      background: rgba(0, 230, 118, 0.45);
       animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
     }
     @keyframes pulse-ring {
-      0% { transform: scale(0.75); opacity: 0.9; }
-      50% { transform: scale(1.35); opacity: 0.15; }
-      100% { transform: scale(0.75); opacity: 0.9; }
+      0% { transform: scale(0.7); opacity: 0.95; }
+      50% { transform: scale(1.4); opacity: 0.15; }
+      100% { transform: scale(0.7); opacity: 0.95; }
     }
 
     .bus-pin-core {
@@ -71,7 +67,7 @@
       border-radius: 50%;
       background: #000000;
       border: 2.5px solid #00E676;
-      box-shadow: 0 0 18px rgba(0, 230, 118, 0.95);
+      box-shadow: 0 0 18px rgba(0, 230, 118, 1);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -93,7 +89,7 @@
 </head>
 <body class="bg-black text-white font-sans antialiased min-h-screen flex flex-col select-none overflow-hidden">
   
-  <!-- MAPA LEAFLET 100% PANTALLA COMPLETA (Responsivo para PC y Celular) -->
+  <!-- MAPA LEAFLET A PANTALLA COMPLETA -->
   <div id="map"></div>
 
   <!-- INTERFAZ FLOTANTE SUPERPUESTA -->
@@ -110,7 +106,7 @@
         <!-- Indicador de Estado del Bus -->
         <div class="flex items-center gap-2 bg-[#0E1B14] px-3.5 py-1.5 rounded-full border border-[#163B25]" id="pill-container">
           <span class="w-2.5 h-2.5 rounded-full bg-[#00E676] animate-pulse" id="live-dot"></span>
-          <span class="text-xs font-bold text-[#00E676] uppercase tracking-wider" id="header-status">Conectando...</span>
+          <span class="text-xs font-bold text-[#00E676] uppercase tracking-wider" id="header-status">Conectado a Red</span>
         </div>
       </div>
     </header>
@@ -174,35 +170,38 @@
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jcWNmZGl2cGlrbXJra2ZiaHNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyNzg5NDIsImV4cCI6MjEwODg1NDk0Mn0.F6Yz31dJI4wQiINS1NwK-cNunO0V_3UEvD3IHgTJSC0";
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // --- COORDENADAS OFICIALES DE TU UNIVERSIDAD ---
+    // Coordenadas oficiales de tu universidad
     const UNI_LAT = -10.72635;
     const UNI_LNG = -77.77373;
     const centroInicial = [UNI_LAT, UNI_LNG];
 
-    // --- INICIALIZAR MAPA LEAFLET ---
+    // INICIALIZAR MAPA LEAFLET
     const map = L.map('map', {
-      zoomControl: false
+      zoomControl: false,
+      attributionControl: false
     }).setView(centroInicial, 16);
 
-    // Cargar mapa
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19
+    // Mosaicos oscuros nativos de CartoDB (sin filtros CSS rotos, se ven las calles, avenidas y nombres nítidos)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19,
+      subdomains: 'abcd'
     }).addTo(map);
 
-    // Forzar renderizado de Leaflet tras cargar el DOM
-    setTimeout(() => { map.invalidateSize(); }, 200);
+    // Asegurar que Leaflet calcule el tamaño completo de la pantalla
+    setTimeout(() => { map.invalidateSize(); }, 150);
+    setTimeout(() => { map.invalidateSize(); }, 500);
     window.addEventListener('resize', () => { map.invalidateSize(); });
 
     // Paradero Principal de salida de la universidad
     const stopIcon = L.divIcon({
       className: 'paradero-icon',
-      html: `<div style="width:14px; height:14px; border-radius:50%; background:#0D0E12; border:3px solid #00E676; box-shadow:0 0 12px rgba(0,230,118,0.8);"></div>`,
-      iconSize: [14, 14],
-      iconAnchor: [7, 7]
+      html: `<div style="width:16px; height:16px; border-radius:50%; background:#00E676; border:3px solid #FFFFFF; box-shadow:0 0 14px rgba(0,230,118,1);"></div>`,
+      iconSize: [16, 16],
+      iconAnchor: [8, 8]
     });
     L.marker(centroInicial, { icon: stopIcon })
       .addTo(map)
-      .bindPopup("<b>Paradero Principal de Buses</b><br>Salida del campus")
+      .bindPopup("<b>Paradero Principal de Buses</b><br>Salida del campus universitario")
       .openPopup();
 
     // Marcador de Bus Neón
@@ -260,7 +259,7 @@
       }
     }
 
-    // --- CARGAR ÚLTIMA POSICIÓN DESDE SUPABASE ---
+    // --- CARGAR ÚLTIMA POSICIÓN REGISTRADA EN SUPABASE ---
     async function cargarUltimaPosicion() {
       const { data } = await supabase
         .from('rastreo')
@@ -270,8 +269,6 @@
 
       if (data && data.latitud && data.longitud) {
         actualizarPosicionBus(data.latitud, data.longitud);
-      } else {
-        document.getElementById('header-status').innerText = "Esperando Conductor";
       }
     }
     cargarUltimaPosicion();
@@ -291,7 +288,7 @@
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
           if (!busMarker) {
-            document.getElementById('header-status').innerText = "En Espera";
+            document.getElementById('header-status').innerText = "Conectado a Red";
           }
         }
       });
