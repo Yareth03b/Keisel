@@ -241,8 +241,6 @@
     var map = null;
     var busMarker = null;
     var busPosActual = centroInicial;
-    var historialRuta = [];
-    var polyline = null;
 
     // --- CAMBIO DE VISTAS (100% GARANTIZADO CON ESTILOS INLINE) ---
     function mostrarMapa() {
@@ -285,7 +283,7 @@
         maxZoom: 19
       }).addTo(map);
 
-      // Marcador de Bus Neón
+      // Marcador de Bus Neón (Limpio y fluido)
       var busIcon = L.divIcon({
         className: 'bus-marker-container',
         html: '<div style="position:relative;"><div class="bus-pulse-ring"></div><div class="bus-pin-core"><span class="material-symbols-outlined" style="font-size:18px; font-weight:bold;">directions_bus</span></div></div>',
@@ -297,59 +295,18 @@
         .addTo(map)
         .bindPopup("<b>Bus Keisel #1</b><br>Carlos Mendoza en ruta");
 
-      // Línea de recorrido fina y punteada (elegante y sin sobrecargas)
-      polyline = L.polyline([], {
-        color: '#00E676',
-        weight: 2.5,
-        opacity: 0.85,
-        dashArray: '5, 8',
-        lineCap: 'round',
-        lineJoin: 'round'
-      }).addTo(map);
-
       window.addEventListener('resize', function() { if (map) map.invalidateSize(); });
 
       cargarUltimaPosicion();
       conectarRealtime();
     }
 
-    // Filtro de distancia en metros para evitar zig-zags por fluctuación GPS cuando se está quieto
-    function calcularDistanciaMetros(lat1, lon1, lat2, lon2) {
-      var R = 6371000;
-      var dLat = (lat2 - lat1) * Math.PI / 180;
-      var dLon = (lon2 - lon1) * Math.PI / 180;
-      var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLon / 2) * Math.sin(dLon / 2);
-      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      return R * c;
-    }
-
     function actualizarPosicionBus(lat, lng) {
       busPosActual = [lat, lng];
 
-      // Actualizar marcador del bus
-      if (busMarker) busMarker.setLatLng(busPosActual);
-
-      // Solo agregar un nuevo punto al trazo si se movió al menos 6 metros (evita marañas al estar quieto)
-      var debeAgregar = false;
-      if (historialRuta.length === 0) {
-        debeAgregar = true;
-      } else {
-        var ult = historialRuta[historialRuta.length - 1];
-        var d = calcularDistanciaMetros(ult[0], ult[1], lat, lng);
-        if (d >= 6) {
-          debeAgregar = true;
-        }
-      }
-
-      if (debeAgregar) {
-        historialRuta.push(busPosActual);
-        // Mantener una estela limpia de los últimos 25 puntos
-        if (historialRuta.length > 25) {
-          historialRuta.shift();
-        }
-        if (polyline) polyline.setLatLngs(historialRuta);
+      // Mover el bus suavemente a su posición exacta en tiempo real
+      if (busMarker) {
+        busMarker.setLatLng(busPosActual);
       }
 
       var headerEl = document.getElementById('header-status');
