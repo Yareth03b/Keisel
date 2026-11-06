@@ -378,6 +378,8 @@
     var busMarker = null;
     var busPosActual = null;
     var ultimaRecepcionBus = 0;
+    var ultimoTimestampVisto = null;
+    var primeraConsultaTabla = true;
     var userMarker = null;
     var userPosActual = centroInicial;
     var userPosFijada = null;
@@ -452,12 +454,17 @@
       conectarRealtime();
       iniciarUbicacionUsuario();
 
-      // Verificar cada 10s si el conductor dejó de transmitir (más de 35s sin señal)
+      // Consultar cada 1.5 segundos para garantizar actualización inmediata (incluso en segundo plano)
       setInterval(function() {
-        if (busMarker && (Date.now() - ultimaRecepcionBus > 35000)) {
+        cargarUltimaPosicion();
+      }, 1500);
+
+      // Verificar cada 3s si el conductor dejó de transmitir (más de 15s sin nuevos paquetes)
+      setInterval(function() {
+        if (busMarker && (Date.now() - ultimaRecepcionBus > 15000)) {
           ocultarBus();
         }
-      }, 10000);
+      }, 3000);
     }
 
     // --- UBICACIÓN EN TIEMPO REAL DEL ESTUDIANTE (PUNTO BLANCO ESTABILIZADO) ---
@@ -722,32 +729,49 @@
     }
 
     function cargarUltimaPosicion() {
-      var client = getSupabase();
-      if (!client) return;
-
-      client
-        .from('rastreo')
-        .select('*')
-        .eq('id', 'bus_keisel_1')
-        .single()
-        .then(function(res) {
-          if (res.data && res.data.latitud !== null && res.data.longitud !== null && res.data.actualizado_en) {
-            var tiempoGuardado = new Date(res.data.actualizado_en).getTime();
-            var diferenciaSegundos = (Date.now() - tiempoGuardado) / 1000;
-            // Solo mostrar el bus si transmitio hace menos de 30 segundos
-            if (diferenciaSegundos >= 0 && diferenciaSegundos <= 30) {
-              actualizarPosicionBus(res.data.latitud, res.data.longitud);
-            } else {
-              ocultarBus();
-            }
-          } else {
-            ocultarBus();
-          }
-        })
-        .catch(function(err) {
-          console.warn("Error cargando posicion:", err);
+      fetch(SUPABASE_URL + "/rest/v1/rastreo?id=eq.bus_keisel_1&select=*", {
+        method: 'GET',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+          'Cache-Control': 'no-cache'
+        },
+        cache: 'no-store'
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(rows) {
+        if (!rows || !rows.length) {
           ocultarBus();
-        });
+          return;
+        }
+        var data = rows[0];
+        if (data.latitud === null || data.longitud === null) {
+          ultimoTimestampVisto = data.actualizado_en;
+          primeraConsultaTabla = false;
+          ocultarBus();
+          return;
+        }
+
+        // En la primera lectura al abrir la web, si ya se actualizo en los ultimos 25 segundos, mostrar de inmediato
+        if (primeraConsultaTabla) {
+          primeraConsultaTabla = false;
+          ultimoTimestampVisto = data.actualizado_en;
+          var diffInicial = Math.abs(Date.now() - new Date(data.actualizado_en).getTime()) / 1000;
+          if (diffInicial <= 25) {
+            actualizarPosicionBus(Number(data.latitud), Number(data.longitud));
+          }
+          return;
+        }
+
+        // En cada consulta cada 1.5s: si el timestamp cambió respecto a la lectura anterior, está transmitiendo EN VIVO
+        if (data.actualizado_en && data.actualizado_en !== ultimoTimestampVisto) {
+          ultimoTimestampVisto = data.actualizado_en;
+          actualizarPosicionBus(Number(data.latitud), Number(data.longitud));
+        }
+      })
+      .catch(function(err) {
+        console.warn("Error consultando posicion:", err);
+      });
     }
 
     function conectarRealtime() {
@@ -762,7 +786,9 @@
             { event: '*', schema: 'public', table: 'rastreo' },
             function(payload) {
               if (payload.new && payload.new.latitud !== null && payload.new.longitud !== null) {
-                actualizarPosicionBus(payload.new.latitud, payload.new.longitud);
+                ultimoTimestampVisto = payload.new.actualizado_en;
+                primeraConsultaTabla = false;
+                actualizarPosicionBus(Number(payload.new.latitud), Number(payload.new.longitud));
               } else {
                 ocultarBus();
               }
