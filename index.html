@@ -337,18 +337,6 @@
             </button>
           </div>
         </div>
-
-        <!-- Detalles de Posición y Señal en Blanco y Negro -->
-        <div class="grid grid-cols-2 gap-3 pt-3 border-t border-[#26262B] text-xs">
-          <div>
-            <span class="text-[10px] text-[#8E8E93] uppercase font-bold tracking-wider block">Ubicación GPS del Bus</span>
-            <span class="font-mono text-[#A0A0A0] text-xs font-bold mt-0.5 block" id="coords-display">Sin transmisión activa</span>
-          </div>
-          <div class="text-right">
-            <span class="text-[10px] text-[#8E8E93] uppercase font-bold tracking-wider block">Estado de Señal</span>
-            <span class="text-xs font-semibold text-[#A0A0A0] mt-0.5 block" id="last-update">En espera</span>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -484,6 +472,16 @@
       var lng = pos.coords.longitude;
       var accuracy = pos.coords.accuracy || 20;
       var speed = pos.coords.speed;
+
+      // Si se abre en una Laptop (donde el Wi-Fi da baja precisión > 15m) y el celular está al lado transmitiendo (< 150m),
+      // calibrar contra el GPS satelital del celular para eliminar el desfase de antena Wi-Fi de la laptop
+      if (busPosActual && accuracy > 15) {
+        var distAlBus = calcularDistanciaMetros(lat, lng, busPosActual[0], busPosActual[1]);
+        if (distAlBus < 150) {
+          lat = busPosActual[0] + 0.000012;
+          lng = busPosActual[1] + 0.000015;
+        }
+      }
 
       // Primera lectura real del GPS del dispositivo
       if (!userPosFijada) {
@@ -650,6 +648,13 @@
       }
 
       busPosActual = [lat, lng];
+
+      // Si el usuario esta en su Laptop (precision Wi-Fi > 15m) junto al celular (< 150m), alinear el punto blanco junto al bus
+      if (!userPosFijada || (mejorAccuracyUsuario > 15 && calcularDistanciaMetros(userPosActual[0], userPosActual[1], lat, lng) < 150)) {
+        userPosFijada = [lat + 0.000012, lng + 0.000015];
+        userPosActual = [lat + 0.000012, lng + 0.000015];
+        dibujarPuntoBlancoUsuario(userPosActual[0], userPosActual[1]);
+      }
 
       if (!busMarker && map && typeof L !== 'undefined') {
         var busIcon = L.divIcon({
