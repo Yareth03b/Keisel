@@ -67,18 +67,20 @@
       color: #FFFFFF;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
-      padding: 12px 24px 32px 24px;
+      justify-content: center;
+      padding: 20px 24px;
       box-sizing: border-box;
+      overflow-y: auto;
     }
     #vista-inicio > div {
       width: 100%;
-      max-width: 400px;
+      max-width: 390px;
       margin: auto;
       display: flex;
       flex-direction: column;
+      align-items: center;
       justify-content: center;
-      gap: 20px;
+      gap: 16px;
     }
     #vista-inicio [data-purpose="student-selector-card"] {
       background-color: #161616 !important;
@@ -86,11 +88,11 @@
       border: 2px solid #FFFFFF !important;
       box-shadow: inset 0 0 0 1px #FFFFFF, 0 0 0 1px #FFFFFF !important;
       border-radius: 24px;
-      padding: 24px;
+      padding: 22px 24px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 210px;
+      min-height: 195px;
       cursor: default;
       margin: 0;
     }
@@ -227,16 +229,16 @@
   <!-- VISTA 1: PORTAL DE BIENVENIDA ESTUDIANTE  -->
   <!-- ========================================== -->
   <div id="vista-inicio" style="display: flex;" class="fixed inset-0 z-30 flex-col items-center justify-center bg-black overflow-y-auto">
-    <div class="w-full max-w-md mx-auto flex flex-col justify-center gap-5 px-6 pt-3 pb-10">
+    <div class="w-full max-w-sm mx-auto flex flex-col justify-center items-center gap-4 px-4 py-4">
       
       <!-- Top: Logo Original Keisel SVG sin fondo y con letras blancas -->
-      <header class="flex items-center justify-center" data-purpose="brand-header">
-        <img src="logo_keisel_dark.svg?v=2" alt="Keisel Logo" class="h-32 sm:h-36 w-auto max-w-[320px] object-contain" />
+      <header class="flex items-center justify-center w-full pt-1" data-purpose="brand-header">
+        <img src="logo_keisel_dark.svg?v=3" alt="Keisel Logo" class="h-28 sm:h-32 w-auto max-w-[290px] object-contain" />
       </header>
 
       <!-- Center: Minimalist Uber Card / Active Selector -->
       <main class="w-full" data-purpose="selector-section">
-        <div class="w-full bg-[#161616] border-2 border-white rounded-3xl p-6 flex flex-col justify-between min-h-[210px] sm:min-h-[225px] shadow-2xl relative" data-purpose="student-selector-card">
+        <div class="w-full bg-[#161616] border-2 border-white rounded-3xl p-5 flex flex-col justify-between min-h-[190px] sm:min-h-[200px] shadow-2xl relative" data-purpose="student-selector-card">
           <!-- Top bar of the card with Minimalist Monochromatic Bus/Transport Icon -->
           <div class="flex items-center justify-between">
             <div class="w-14 h-14 bg-[#222222] rounded-2xl flex items-center justify-center text-white" style="color: #FFFFFF !important;">
