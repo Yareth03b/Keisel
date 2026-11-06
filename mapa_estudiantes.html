@@ -62,30 +62,30 @@
       color: #FFFFFF;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 24px;
+      justify-content: flex-start;
+      padding: 12px 24px 32px 24px;
       box-sizing: border-box;
     }
     #vista-inicio > div {
       width: 100%;
-      max-width: 420px;
-      margin: 0 auto;
+      max-width: 400px;
+      margin: auto;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      min-height: 540px;
+      justify-content: center;
+      gap: 20px;
     }
     #vista-inicio [data-purpose="student-selector-card"] {
       background-color: #161616;
       border: 2px solid #FFFFFF;
       border-radius: 24px;
-      padding: 28px;
+      padding: 24px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 240px;
+      min-height: 210px;
       cursor: default;
-      margin: 24px 0;
+      margin: 0;
     }
     #vista-inicio svg {
       width: 32px;
@@ -212,16 +212,16 @@
   <!-- VISTA 1: PORTAL DE BIENVENIDA ESTUDIANTE  -->
   <!-- ========================================== -->
   <div id="vista-inicio" style="display: flex;" class="fixed inset-0 z-30 flex-col items-center justify-center bg-black overflow-y-auto">
-    <div class="w-full max-w-md mx-auto min-h-screen sm:min-h-[640px] flex flex-col justify-between px-6 py-10">
+    <div class="w-full max-w-md mx-auto flex flex-col justify-center gap-5 px-6 pt-3 pb-10">
       
       <!-- Top: Logo Original Keisel SVG sin fondo y con letras blancas -->
-      <header class="pt-1 flex items-center justify-center" data-purpose="brand-header">
-        <img src="logo_keisel_dark.svg?v=2" alt="Keisel Logo" class="h-36 sm:h-44 w-auto max-w-[340px] object-contain" />
+      <header class="flex items-center justify-center" data-purpose="brand-header">
+        <img src="logo_keisel_dark.svg?v=2" alt="Keisel Logo" class="h-32 sm:h-36 w-auto max-w-[320px] object-contain" />
       </header>
 
       <!-- Center: Minimalist Uber Card / Active Selector -->
-      <main class="my-auto py-8 w-full" data-purpose="selector-section">
-        <div class="w-full bg-[#161616] border-2 border-white rounded-3xl p-6 sm:p-7 flex flex-col justify-between aspect-[4/3] shadow-2xl relative" data-purpose="student-selector-card">
+      <main class="w-full" data-purpose="selector-section">
+        <div class="w-full bg-[#161616] border-2 border-white rounded-3xl p-6 flex flex-col justify-between min-h-[210px] sm:min-h-[225px] shadow-2xl relative" data-purpose="student-selector-card">
           <!-- Top bar of the card with Minimalist Monochromatic Bus/Transport Icon -->
           <div class="flex items-center justify-between">
             <div class="w-14 h-14 bg-[#222222] rounded-2xl flex items-center justify-center text-white">
