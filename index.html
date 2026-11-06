@@ -163,6 +163,29 @@
       color: #FFFFFF;
     }
 
+    /* Punto blanco de la ubicacion del estudiante / usuario */
+    .user-pulse-halo {
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.45);
+      border: 1.5px solid rgba(0, 0, 0, 0.35);
+      animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    .user-white-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #FFFFFF;
+      border: 3.5px solid #000000;
+      box-shadow: 0 0 0 2px #FFFFFF, 0 4px 12px rgba(0, 0, 0, 0.8);
+      position: relative;
+      z-index: 2;
+    }
+
     .leaflet-popup-content-wrapper {
       background: #141416 !important;
       color: #FFFFFF !important;
@@ -262,8 +285,12 @@
     <div class="w-full max-w-md mx-auto flex flex-col gap-3 pointer-events-none">
       <div class="flex justify-end pointer-events-none">
         <div class="flex flex-col gap-2 pointer-events-auto">
-          <button aria-label="Centrar en el Bus" class="w-11 h-11 rounded-full bg-[#141416]/95 backdrop-blur-md border border-[#26262B] text-white flex items-center justify-center shadow-2xl hover:bg-[#202024] active:scale-95 transition-all cursor-pointer" onclick="centrarEnBus()" type="button" title="Centrar mapa en el bus">
+          <button aria-label="Centrar en mi ubicación" class="w-11 h-11 rounded-full bg-[#141416]/95 backdrop-blur-md border border-[#26262B] text-white flex items-center justify-center shadow-2xl hover:bg-[#202024] active:scale-95 transition-all cursor-pointer" onclick="centrarEnUsuario()" type="button" title="Ir a mi ubicación (Punto Blanco)">
             <span class="material-symbols-outlined text-xl text-white">my_location</span>
+          </button>
+
+          <button aria-label="Centrar en el Bus" class="w-11 h-11 rounded-full bg-[#141416]/95 backdrop-blur-md border border-[#26262B] text-white flex items-center justify-center shadow-2xl hover:bg-[#202024] active:scale-95 transition-all cursor-pointer" onclick="centrarEnBus()" type="button" title="Centrar mapa en el bus">
+            <span class="material-symbols-outlined text-xl text-white">directions_bus</span>
           </button>
           
           <div class="rounded-2xl bg-[#141416]/95 backdrop-blur-md border border-[#26262B] flex flex-col items-center overflow-hidden shadow-2xl">
@@ -350,6 +377,9 @@
     var map = null;
     var busMarker = null;
     var busPosActual = centroInicial;
+    var userMarker = null;
+    var userPosActual = null;
+    var userWatchId = null;
 
     // --- CAMBIO DE VISTAS (100% GARANTIZADO CON ESTILOS INLINE) ---
     function mostrarMapa() {
@@ -362,6 +392,7 @@
       if (!map) {
         initLeafletMap();
       }
+      iniciarUbicacionUsuario();
       setTimeout(function() { if (map) map.invalidateSize(); }, 60);
       setTimeout(function() { if (map) map.invalidateSize(); }, 250);
     }
@@ -408,6 +439,62 @@
 
       cargarUltimaPosicion();
       conectarRealtime();
+      iniciarUbicacionUsuario();
+    }
+
+    // --- UBICACIÓN EN TIEMPO REAL DEL ESTUDIANTE (PUNTO BLANCO) ---
+    function actualizarPosicionUsuario(lat, lng) {
+      userPosActual = [lat, lng];
+      if (!map || typeof L === 'undefined') return;
+
+      if (!userMarker) {
+        var userIcon = L.divIcon({
+          className: 'user-marker-container',
+          html: '<div style="position:relative;"><div class="user-pulse-halo"></div><div class="user-white-dot"></div></div>',
+          iconSize: [18, 18],
+          iconAnchor: [9, 9]
+        });
+        userMarker = L.marker(userPosActual, { icon: userIcon, zIndexOffset: 900 })
+          .addTo(map)
+          .bindPopup("<b>Tu ubicación actual</b>");
+      } else {
+        userMarker.setLatLng(userPosActual);
+      }
+    }
+
+    function iniciarUbicacionUsuario() {
+      if (!navigator.geolocation) return;
+
+      navigator.geolocation.getCurrentPosition(
+        function(pos) {
+          actualizarPosicionUsuario(pos.coords.latitude, pos.coords.longitude);
+        },
+        function(err) {
+          console.warn("Geolocalizacion inicial:", err.message);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+
+      if (userWatchId === null) {
+        userWatchId = navigator.geolocation.watchPosition(
+          function(pos) {
+            actualizarPosicionUsuario(pos.coords.latitude, pos.coords.longitude);
+          },
+          function(err) {
+            console.warn("Watch geolocalizacion:", err.message);
+          },
+          { enableHighAccuracy: true, maximumAge: 3000, timeout: 10000 }
+        );
+      }
+    }
+
+    function centrarEnUsuario() {
+      if (userPosActual && map) {
+        map.flyTo(userPosActual, 17, { animate: true, duration: 1 });
+        if (userMarker) userMarker.openPopup();
+      } else {
+        iniciarUbicacionUsuario();
+      }
     }
 
     function achicarPanelBuses() {
