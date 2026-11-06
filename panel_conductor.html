@@ -334,6 +334,25 @@
         watchId = null;
       }
 
+      // Notificar a Supabase que el bus ya no está transmitiendo (oculta el icono en el mapa de estudiantes)
+      fetch(SUPABASE_REST_URL, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates'
+        },
+        body: JSON.stringify({
+          id: 'bus_keisel_1',
+          latitud: null,
+          longitud: null,
+          actualizado_en: new Date(0).toISOString()
+        })
+      }).catch(function(err) {
+        console.warn("Error al limpiar señal:", err);
+      });
+
       document.getElementById('status-dot').className = "w-2.5 h-2.5 rounded-full bg-[#8E8E93]";
       document.getElementById('status-label').innerText = "En Espera";
 
