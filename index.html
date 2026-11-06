@@ -304,8 +304,8 @@
         </div>
       </div>
 
-      <!-- BOTÓN FLOTANTE TIPO CIRCULITO (CUANDO EL MENÚ ESTÁ ACHICADO) -->
-      <div id="btn-desplegar-buses" style="display: none;" class="pointer-events-auto flex justify-end">
+      <!-- BOTÓN FLOTANTE TIPO CIRCULITO (VISIBLE POR DEFECTO AL INICIAR) -->
+      <div id="btn-desplegar-buses" style="display: flex;" class="pointer-events-auto flex justify-end">
         <button onclick="expandirPanelBuses()" class="w-13 h-13 rounded-full bg-white text-black flex items-center justify-center shadow-2xl border-2 border-black hover:bg-neutral-200 active:scale-90 transition-all cursor-pointer relative group" title="Ver información del bus">
           <span class="material-symbols-outlined text-2xl font-bold">directions_bus</span>
           <span class="absolute -top-0.5 -right-0.5 w-3 h-3 bg-white border-2 border-black rounded-full animate-ping"></span>
@@ -313,8 +313,8 @@
         </button>
       </div>
 
-      <!-- Tarjeta Flotante del Bus Activo (Panel Desplegable / Achicable) -->
-      <div id="panel-tarjeta-bus" class="w-full bg-[#141416]/95 backdrop-blur-xl border border-white/20 rounded-3xl p-5 shadow-2xl flex flex-col gap-3 pointer-events-auto transition-all duration-300">
+      <!-- Tarjeta Flotante del Bus Activo (Oculta al iniciar, se abre al tocar la bolita) -->
+      <div id="panel-tarjeta-bus" style="display: none;" class="w-full bg-[#141416]/95 backdrop-blur-xl border border-white/20 rounded-3xl p-5 shadow-2xl flex flex-col gap-3 pointer-events-auto transition-all duration-300">
         <!-- Encabezado con Nombre del Bus, Badge En Vivo y Botón para Achicar -->
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
@@ -335,18 +335,6 @@
             <button onclick="achicarPanelBuses()" class="w-8 h-8 rounded-full bg-[#222222] hover:bg-white hover:text-black text-white border border-white/20 flex items-center justify-center transition-all cursor-pointer active:scale-95" title="Achicar menú">
               <span class="material-symbols-outlined text-xl">keyboard_arrow_down</span>
             </button>
-          </div>
-        </div>
-
-        <!-- Latitud y Longitud de Alta Precisión (7 Decimales) -->
-        <div class="grid grid-cols-2 gap-3 pt-3 border-t border-[#26262B] text-xs">
-          <div>
-            <span class="text-[10px] text-[#8E8E93] uppercase font-bold tracking-wider block">Latitud</span>
-            <span class="font-mono text-[#A0A0A0] text-xs font-bold mt-0.5 block" id="lat-display">--</span>
-          </div>
-          <div class="text-right">
-            <span class="text-[10px] text-[#8E8E93] uppercase font-bold tracking-wider block">Longitud</span>
-            <span class="font-mono text-[#A0A0A0] text-xs font-bold mt-0.5 block" id="lng-display">--</span>
           </div>
         </div>
       </div>
@@ -380,15 +368,19 @@
     var ultimaRecepcionBus = 0;
     var ultimoTimestampVisto = null;
     var primeraConsultaTabla = true;
+    var yaEnfocoBusCercano = false;
+    var confirmacionesMovBus = 0;
+
     var userMarker = null;
     var userPosActual = centroInicial;
     var userPosFijada = null;
     var mejorAccuracyUsuario = 9999;
     var userWatchId = null;
     var yaCentroUsuario = false;
+    var confirmacionesMovUser = 0;
 
-    // Umbral anti-temblor GPS (en metros): ignora fluctuaciones menores a 5 metros cuando estas quieta
-    var UMBRAL_MOVIMIENTO_METROS = 5.0;
+    // Umbral anti-rebote GPS bajo techo (15 metros + confirmacion de 3 lecturas consecutivas)
+    var UMBRAL_MOVIMIENTO_METROS = 15.0;
 
     function calcularDistanciaMetros(lat1, lon1, lat2, lon2) {
       var R = 6371000;
@@ -409,12 +401,26 @@
       if (vistaInicio) vistaInicio.style.display = 'none';
       if (vistaMapa) vistaMapa.style.display = 'flex';
 
+      // Al iniciar el mapa, mostrar SOLO la bolita del menu de buses (panel achicado)
+      achicarPanelBuses();
+
       if (!map) {
         initLeafletMap();
       }
       iniciarUbicacionUsuario();
-      setTimeout(function() { if (map) map.invalidateSize(); }, 60);
-      setTimeout(function() { if (map) map.invalidateSize(); }, 250);
+      cargarUltimaPosicion();
+
+      setTimeout(function() {
+        if (map) {
+          map.invalidateSize();
+          // Enfocar automaticamente el bus mas cercano si esta activo
+          if (busPosActual) {
+            map.flyTo(busPosActual, 17, { animate: true, duration: 1 });
+          } else if (userPosActual) {
+            map.flyTo(userPosActual, 17, { animate: true, duration: 1 });
+          }
+        }
+      }, 200);
     }
 
     function regresarAInicio() {
@@ -502,50 +508,45 @@
         }
       }
 
-      // Primera lectura real del GPS del dispositivo
+      // Primera lectura real del GPS del dispositivo: se clava en ese punto
       if (!userPosFijada) {
         userPosFijada = [lat, lng];
         userPosActual = [lat, lng];
         mejorAccuracyUsuario = accuracy;
         dibujarPuntoBlancoUsuario(lat, lng);
 
-        if (!yaCentroUsuario && map && !busMarker) {
+        if (!yaCentroUsuario && map && !busPosActual) {
           yaCentroUsuario = true;
           map.flyTo(userPosActual, 17, { animate: true, duration: 1 });
         }
         return;
       }
 
-      // Descartar rebotes de antena/Wi-Fi de baja precisión (> 45m) si ya tenemos mejor señal
-      if (accuracy > 45 && accuracy > mejorAccuracyUsuario * 1.5) {
+      // Descartar lecturas con mala precisión (> 40m)
+      if (accuracy > 40) {
         return;
       }
 
       var distancia = calcularDistanciaMetros(userPosFijada[0], userPosFijada[1], lat, lng);
 
-      // Si mejora mucho la precisión estando en el mismo lugar al calibrar los primeros segundos, ajustar suavemente
-      if (accuracy < mejorAccuracyUsuario * 0.65 && distancia < 15) {
-        mejorAccuracyUsuario = accuracy;
-        userPosFijada = [lat, lng];
-        userPosActual = [lat, lng];
-        dibujarPuntoBlancoUsuario(lat, lng);
+      // FILTRO ESTRICTO ANTI-SALTOS: Si la variacion es menor a 15 metros o velocidad ~0, se resetea el contador y NO se mueve nada
+      if ((speed !== null && speed !== undefined && speed < 0.5 && distancia < 20.0) || distancia < UMBRAL_MOVIMIENTO_METROS) {
+        confirmacionesMovUser = 0;
         return;
       }
 
-      // FILTRO ANTI-TEMBLOR: Si estás quieta (velocidad ~0 o movimiento menor a 5 metros), NO mover el punto
-      if ((speed !== null && speed !== undefined && speed < 0.35 && distancia < 8.0) || distancia < UMBRAL_MOVIMIENTO_METROS) {
+      // Exigir 3 lecturas consecutivas fuera de los 15 metros para descartar rebotes falsos de GPS
+      confirmacionesMovUser++;
+      if (confirmacionesMovUser < 3) {
         return;
       }
 
-      // Si realmente caminaste/te moviste (>= 5 metros), aplicar suavizado y mover el punto blanco
-      var latSuavizada = (userPosFijada[0] * 0.25) + (lat * 0.75);
-      var lngSuavizada = (userPosFijada[1] * 0.25) + (lng * 0.75);
+      confirmacionesMovUser = 0;
+      var latSuavizada = (userPosFijada[0] * 0.3) + (lat * 0.7);
+      var lngSuavizada = (userPosFijada[1] * 0.3) + (lng * 0.7);
 
       userPosFijada = [latSuavizada, lngSuavizada];
       userPosActual = [latSuavizada, lngSuavizada];
-      if (accuracy < mejorAccuracyUsuario) {
-        mejorAccuracyUsuario = accuracy;
-      }
       dibujarPuntoBlancoUsuario(latSuavizada, lngSuavizada);
     }
 
@@ -604,6 +605,8 @@
         busMarker = null;
       }
       busPosActual = null;
+      yaEnfocoBusCercano = false;
+      confirmacionesMovBus = 0;
 
       var dotEl = document.getElementById('live-dot');
       if (dotEl) dotEl.className = "w-2 h-2 rounded-full bg-[#8E8E93]";
@@ -626,18 +629,6 @@
       var subEl = document.getElementById('bus-subtext');
       if (subEl) subEl.innerText = "Esperando transmisión del conductor";
 
-      var latEl = document.getElementById('lat-display');
-      if (latEl) {
-        latEl.innerText = "--";
-        latEl.className = "font-mono text-[#A0A0A0] text-xs font-bold mt-0.5 block";
-      }
-
-      var lngEl = document.getElementById('lng-display');
-      if (lngEl) {
-        lngEl.innerText = "--";
-        lngEl.className = "font-mono text-[#A0A0A0] text-xs font-bold mt-0.5 block";
-      }
-
       var btnCentrarBus = document.getElementById('btn-centrar-bus');
       if (btnCentrarBus) btnCentrarBus.style.display = 'none';
     }
@@ -650,20 +641,25 @@
 
       ultimaRecepcionBus = Date.now();
 
-      // Si el bus ya está en pantalla y la variación es menor a 5 metros (ruido GPS estático), mantenerlo quieto en su sitio
+      // Si el bus ya está en pantalla, exigir 3 lecturas consecutivas >= 15 metros antes de moverlo (cero saltos falsos)
       if (busPosActual && busMarker) {
         var distBus = calcularDistanciaMetros(busPosActual[0], busPosActual[1], lat, lng);
         if (distBus < UMBRAL_MOVIMIENTO_METROS) {
+          confirmacionesMovBus = 0;
           return;
         }
-        // Suavizar movimiento cuando el bus sí avanza (>= 5 metros)
-        lat = (busPosActual[0] * 0.25) + (lat * 0.75);
-        lng = (busPosActual[1] * 0.25) + (lng * 0.75);
+        confirmacionesMovBus++;
+        if (confirmacionesMovBus < 3) {
+          return;
+        }
+        confirmacionesMovBus = 0;
+        lat = (busPosActual[0] * 0.3) + (lat * 0.7);
+        lng = (busPosActual[1] * 0.3) + (lng * 0.7);
       }
 
       busPosActual = [lat, lng];
 
-      // Si el usuario esta en su Laptop (precision Wi-Fi > 15m) junto al celular (< 150m), alinear el punto blanco junto al bus
+      // Si el usuario esta en su Laptop (precision Wi-Fi > 15m) junto al celular (< 150m), fijar el punto blanco una sola vez junto al bus
       if (!userPosFijada || (mejorAccuracyUsuario > 15 && calcularDistanciaMetros(userPosActual[0], userPosActual[1], lat, lng) < 150)) {
         userPosFijada = [lat + 0.000012, lng + 0.000015];
         userPosActual = [lat + 0.000012, lng + 0.000015];
@@ -682,6 +678,12 @@
           .bindPopup("<b>Bus Barranca</b><br>Circuito Universitario");
       } else if (busMarker) {
         busMarker.setLatLng(busPosActual);
+      }
+
+      // Enfocar automaticamente el bus mas cercano al detectarlo por primera vez
+      if (!yaEnfocoBusCercano && map) {
+        yaEnfocoBusCercano = true;
+        map.flyTo(busPosActual, 17, { animate: true, duration: 1 });
       }
 
       var dotEl = document.getElementById('live-dot');
@@ -704,18 +706,6 @@
 
       var subEl = document.getElementById('bus-subtext');
       if (subEl) subEl.innerText = "Circuito Universitario";
-
-      var latEl = document.getElementById('lat-display');
-      if (latEl) {
-        latEl.innerText = Number(lat).toFixed(7);
-        latEl.className = "font-mono text-white text-xs font-bold mt-0.5 block";
-      }
-
-      var lngEl = document.getElementById('lng-display');
-      if (lngEl) {
-        lngEl.innerText = Number(lng).toFixed(7);
-        lngEl.className = "font-mono text-white text-xs font-bold mt-0.5 block";
-      }
 
       var btnCentrarBus = document.getElementById('btn-centrar-bus');
       if (btnCentrarBus) btnCentrarBus.style.display = 'flex';
