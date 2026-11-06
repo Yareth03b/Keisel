@@ -52,6 +52,88 @@
       z-index: 1;
     }
 
+    /* Respaldo CSS nativo cuando la máquina no tiene Internet (Offline LAN) */
+    #vista-inicio {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 30;
+      background-color: #000000;
+      color: #FFFFFF;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+    #vista-inicio > div {
+      width: 100%;
+      max-width: 420px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 540px;
+    }
+    #vista-inicio [data-purpose="student-selector-card"] {
+      background-color: #161616;
+      border: 2px solid #FFFFFF;
+      border-radius: 24px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 240px;
+      cursor: pointer;
+      margin: 24px 0;
+    }
+    #vista-inicio svg {
+      width: 32px;
+      height: 32px;
+    }
+    #vista-inicio footer button {
+      width: 100%;
+      background-color: #FFFFFF;
+      color: #000000;
+      font-weight: 700;
+      font-size: 16px;
+      padding: 16px 24px;
+      border-radius: 16px;
+      border: none;
+      cursor: pointer;
+    }
+    #vista-mapa {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 20;
+      pointer-events: none;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+    #vista-mapa header, #panel-tarjeta-bus, #btn-desplegar-buses {
+      pointer-events: auto;
+      max-width: 440px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    #vista-mapa header > div {
+      background: rgba(20, 20, 22, 0.95);
+      border: 1px solid #26262B;
+      border-radius: 9999px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    #panel-tarjeta-bus {
+      background: rgba(20, 20, 22, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 24px;
+      padding: 20px;
+      color: #FFFFFF;
+    }
+
     .bus-pulse-ring {
       position: absolute;
       top: -14px;
