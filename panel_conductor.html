@@ -135,12 +135,12 @@
             Carlos Mendoza Vargas
           </h1>
           <p class="text-xs text-[#8E8E93] mt-0.5">
-            Bus Keisel #1 • Mercedes-Benz Sprinter • ABC-123
+            Bus Barranca • Mercedes-Benz Sprinter • EUA-482
           </p>
         </div>
 
-        <!-- TARJETA PRINCIPAL DEL ESTADO DEL GPS -->
-        <div class="w-full bg-[#141416] border border-white/20 rounded-3xl p-6 shadow-2xl flex flex-col items-center text-center my-3 transition-all">
+        <!-- TARJETA PRINCIPAL DEL ESTADO DEL GPS (Sin Coordenadas ni Paquetes) -->
+        <div class="w-full bg-[#141416] border border-white/20 rounded-3xl p-8 shadow-2xl flex flex-col items-center text-center my-3 transition-all">
           <div class="relative w-24 h-24 flex items-center justify-center my-2">
             <div class="absolute inset-0 rounded-full bg-[#8E8E93]/10" id="radar-ring"></div>
             <div class="w-16 h-16 rounded-full bg-[#181A22] border border-[#262833] flex items-center justify-center shadow-xl" id="gps-icon-bg">
@@ -148,23 +148,12 @@
             </div>
           </div>
 
-          <h2 class="text-xl font-extrabold tracking-tight text-white mt-2" id="gps-title">
+          <h2 class="text-xl font-extrabold tracking-tight text-white mt-3" id="gps-title">
             GPS en Pausa
           </h2>
-          <p class="text-xs text-[#8E8E93] max-w-xs mt-1" id="gps-subtitle">
+          <p class="text-xs text-[#8E8E93] max-w-xs mt-1.5" id="gps-subtitle">
             Presiona el botón de abajo para comenzar a transmitir tu ubicación satelital.
           </p>
-
-          <div class="w-full grid grid-cols-2 gap-3 pt-5 mt-5 border-t border-[#20222B] text-left">
-            <div>
-              <span class="text-[10px] text-[#8E8E93] uppercase font-bold tracking-wider block">Coordenadas</span>
-              <span class="text-xs font-mono font-bold text-white block mt-0.5" id="coords-text">-- , --</span>
-            </div>
-            <div class="text-right">
-              <span class="text-[10px] text-[#8E8E93] uppercase font-bold tracking-wider block">Paquetes Enviados</span>
-              <span class="text-xs font-mono font-bold text-white block mt-0.5" id="packets-text">0 envíos</span>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -175,8 +164,8 @@
           <span id="btn-start-label">Iniciar Transmisión GPS</span>
         </button>
 
-        <button class="w-full h-12 bg-[#1C1517] border border-[#401C20] text-[#FF453A] hover:bg-[#29171A] rounded-xl text-sm font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-all cursor-pointer" id="btn-end" onclick="terminarViaje()" type="button">
-          <span class="material-symbols-outlined text-[20px]">stop</span>
+        <button class="w-full h-14 py-3.5 bg-black border-2 border-white text-white hover:bg-neutral-900 rounded-2xl text-sm font-extrabold flex items-center justify-center gap-2 active:scale-[0.98] transition-all cursor-pointer" id="btn-end" onclick="terminarViaje()" type="button">
+          <span class="material-symbols-outlined text-[20px] text-white">stop</span>
           <span>Detener Transmisión</span>
         </button>
       </div>
@@ -223,26 +212,21 @@
 
     // --- PUENTE DIRECTO DESDE ANDROID C# ---
     window.actualizarGpsDesdeAndroid = function(lat, lng, envios) {
-      var coordsEl = document.getElementById('coords-text');
-      var packetsEl = document.getElementById('packets-text');
-      if (coordsEl) coordsEl.innerText = Number(lat).toFixed(7) + ", " + Number(lng).toFixed(7);
-      if (packetsEl) packetsEl.innerText = envios + " enviados ✓";
+      // Silencioso en UI (coordenadas y paquetes ocultos por diseno)
     };
 
     window.actualizarEstadoGps = function(msg) {
-      var coordsEl = document.getElementById('coords-text');
-      if (coordsEl && coordsEl.innerText.indexOf(',') === -1) {
-        coordsEl.innerText = msg;
-      }
+      // Silencioso en UI
     };
 
     // --- TRANSMISIÓN GPS EN TIEMPO REAL ESTABILIZADA ---
     var watchId = null;
     var heartbeatInterval = null;
-    var contadorEnvios = 0;
+    var transmisionActiva = false;
     var posChoferFijada = null;
     var mejorAccuracyChofer = 9999;
-    var UMBRAL_MOVIMIENTO_METROS = 5.0;
+    var confirmacionesMov = 0;
+    var UMBRAL_MOVIMIENTO_METROS = 15.0;
 
     function calcularDistanciaMetros(lat1, lon1, lat2, lon2) {
       var R = 6371000;
@@ -256,7 +240,7 @@
     }
 
     function procesarGpsConductor(pos) {
-      if (!pos || !pos.coords) return;
+      if (!transmisionActiva || !pos || !pos.coords) return;
       var lat = pos.coords.latitude;
       var lng = pos.coords.longitude;
       var accuracy = pos.coords.accuracy || 20;
@@ -269,46 +253,38 @@
         return;
       }
 
-      if (accuracy > 45 && accuracy > mejorAccuracyChofer * 1.5) {
+      if (accuracy > 40) {
         return;
       }
 
       var distancia = calcularDistanciaMetros(posChoferFijada[0], posChoferFijada[1], lat, lng);
 
-      // Si mejora significativamente la precisión estando en el mismo sitio, calibrar una sola vez
-      if (accuracy < mejorAccuracyChofer * 0.65 && distancia < 15) {
-        mejorAccuracyChofer = accuracy;
-        posChoferFijada = [lat, lng];
-        transmitirCoordenadas(lat, lng);
-        return;
-      }
-
-      // Si el conductor está quieto (variación menor a 5 metros o velocidad ~0), enviar su coordenada fija sin que salte
-      if ((speed !== null && speed !== undefined && speed < 0.35 && distancia < 8.0) || distancia < UMBRAL_MOVIMIENTO_METROS) {
+      // Si el conductor está quieto (variación menor a 15 metros o velocidad ~0), mantener su coordenada fija sin saltos
+      if ((speed !== null && speed !== undefined && speed < 0.5 && distancia < 20.0) || distancia < UMBRAL_MOVIMIENTO_METROS) {
+        confirmacionesMov = 0;
         transmitirCoordenadas(posChoferFijada[0], posChoferFijada[1]);
         return;
       }
 
-      // Si el conductor realmente se movió (>= 5 metros), suavizar y actualizar posición
-      var latSuave = (posChoferFijada[0] * 0.25) + (lat * 0.75);
-      var lngSuave = (posChoferFijada[1] * 0.25) + (lng * 0.75);
-      posChoferFijada = [latSuave, lngSuave];
-      if (accuracy < mejorAccuracyChofer) {
-        mejorAccuracyChofer = accuracy;
+      // Exigir 3 lecturas consecutivas fuera de los 15m para descartar rebotes falsos de GPS
+      confirmacionesMov++;
+      if (confirmacionesMov < 3) {
+        transmitirCoordenadas(posChoferFijada[0], posChoferFijada[1]);
+        return;
       }
+
+      confirmacionesMov = 0;
+      var latSuave = (posChoferFijada[0] * 0.3) + (lat * 0.7);
+      var lngSuave = (posChoferFijada[1] * 0.3) + (lng * 0.7);
+      posChoferFijada = [latSuave, lngSuave];
       transmitirCoordenadas(latSuave, lngSuave);
     }
 
     function transmitirCoordenadas(lat, lng) {
-      contadorEnvios++;
+      if (!transmisionActiva) return;
 
       var latExacta = Number(Number(lat).toFixed(7));
       var lngExacta = Number(Number(lng).toFixed(7));
-
-      var coordsEl = document.getElementById('coords-text');
-      var packetsEl = document.getElementById('packets-text');
-      if (coordsEl) coordsEl.innerText = latExacta.toFixed(7) + ", " + lngExacta.toFixed(7);
-      if (packetsEl) packetsEl.innerText = contadorEnvios + " enviados ✓";
 
       var payload = JSON.stringify({
         id: 'bus_keisel_1',
@@ -331,88 +307,8 @@
       });
     }
 
-    function iniciarViajeReal() {
-      posChoferFijada = null;
-      mejorAccuracyChofer = 9999;
-
-      // 1. Notificar a Android Nativo en C#
-      try {
-        window.location.href = "keisel://iniciar-gps";
-      } catch (e) {
-        console.warn("Bridge:", e);
-      }
-
-      document.getElementById('status-dot').className = "w-2.5 h-2.5 rounded-full bg-white animate-pulse";
-      document.getElementById('status-label').innerText = "TRANSMITIENDO EN VIVO";
-      
-      var radar = document.getElementById('radar-ring');
-      radar.className = "absolute inset-0 rounded-full bg-white/20 radar-active";
-      
-      var iconBg = document.getElementById('gps-icon-bg');
-      iconBg.className = "w-16 h-16 rounded-full bg-[#161616] border-2 border-white flex items-center justify-center shadow-2xl";
-      
-      var icon = document.getElementById('gps-main-icon');
-      icon.className = "material-symbols-outlined text-3xl text-white";
-      icon.innerText = "sensors";
-
-      document.getElementById('gps-title').innerText = "GPS Activo y Transmitiendo";
-      document.getElementById('gps-title').className = "text-xl font-extrabold tracking-tight text-white mt-2";
-
-      document.getElementById('gps-subtitle').innerText = "Tu ubicación se está enviando en tiempo real al mapa de los estudiantes.";
-
-      document.getElementById('coords-text').innerText = "Conectando al GPS...";
-
-      // 2. Ejecutar GPS con filtro estabilizador anti-temblor
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          function(pos) {
-            procesarGpsConductor(pos);
-          },
-          function(err) {
-            console.warn("Fast GPS:", err);
-          },
-          { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
-        );
-
-        watchId = navigator.geolocation.watchPosition(
-          function(pos) {
-            procesarGpsConductor(pos);
-          },
-          function(err) {
-            console.warn("GPS error:", err.message);
-          },
-          { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
-        );
-      }
-
-      // Mantener señal activa en Supabase cada 2 segundos en tiempo real
-      if (heartbeatInterval) clearInterval(heartbeatInterval);
-      heartbeatInterval = setInterval(function() {
-        if (posChoferFijada) {
-          transmitirCoordenadas(posChoferFijada[0], posChoferFijada[1]);
-        }
-      }, 2000);
-    }
-
-    function terminarViaje() {
-      // 1. Notificar a Android Nativo en C#
-      try {
-        window.location.href = "keisel://detener-gps";
-      } catch (e) {
-        console.warn("Bridge:", e);
-      }
-
-      if (watchId) {
-        navigator.geolocation.clearWatch(watchId);
-        watchId = null;
-      }
-      if (heartbeatInterval) {
-        clearInterval(heartbeatInterval);
-        heartbeatInterval = null;
-      }
-      posChoferFijada = null;
-
-      // Notificar a Supabase que el bus ya no está transmitiendo (oculta el icono en el mapa de estudiantes)
+    function limpiarSenalSupabase() {
+      if (transmisionActiva) return;
       fetch(SUPABASE_REST_URL, {
         method: 'POST',
         headers: {
@@ -430,6 +326,97 @@
       }).catch(function(err) {
         console.warn("Error al limpiar señal:", err);
       });
+    }
+
+    function iniciarViajeReal() {
+      transmisionActiva = true;
+      posChoferFijada = null;
+      mejorAccuracyChofer = 9999;
+      confirmacionesMov = 0;
+
+      // 1. Notificar a Android Nativo en C#
+      try {
+        window.location.href = "keisel://iniciar-gps";
+      } catch (e) {
+        console.warn("Bridge:", e);
+      }
+
+      document.getElementById('status-dot').className = "w-2.5 h-2.5 rounded-full bg-white animate-pulse";
+      document.getElementById('status-label').innerText = "En Transmisión";
+      
+      var radar = document.getElementById('radar-ring');
+      radar.className = "absolute inset-0 rounded-full bg-white/20 radar-active";
+      
+      var iconBg = document.getElementById('gps-icon-bg');
+      iconBg.className = "w-16 h-16 rounded-full bg-[#161616] border-2 border-white flex items-center justify-center shadow-2xl";
+      
+      var icon = document.getElementById('gps-main-icon');
+      icon.className = "material-symbols-outlined text-3xl text-white";
+      icon.innerText = "sensors";
+
+      document.getElementById('gps-title').innerText = "GPS Activo y Transmitiendo";
+      document.getElementById('gps-title').className = "text-xl font-extrabold tracking-tight text-white mt-3";
+
+      document.getElementById('gps-subtitle').innerText = "Tu ubicación se está enviando en tiempo real al mapa de los estudiantes.";
+
+      // 2. Ejecutar GPS con filtro estabilizador anti-temblor
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function(pos) {
+            procesarGpsConductor(pos);
+          },
+          function(err) {
+            console.warn("Fast GPS:", err);
+          },
+          { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+        );
+
+        if (watchId) navigator.geolocation.clearWatch(watchId);
+        watchId = navigator.geolocation.watchPosition(
+          function(pos) {
+            procesarGpsConductor(pos);
+          },
+          function(err) {
+            console.warn("GPS error:", err.message);
+          },
+          { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+        );
+      }
+
+      // Mantener señal activa en Supabase cada 2 segundos en tiempo real
+      if (heartbeatInterval) clearInterval(heartbeatInterval);
+      heartbeatInterval = setInterval(function() {
+        if (transmisionActiva && posChoferFijada) {
+          transmitirCoordenadas(posChoferFijada[0], posChoferFijada[1]);
+        }
+      }, 2000);
+    }
+
+    function terminarViaje() {
+      transmisionActiva = false;
+      posChoferFijada = null;
+      confirmacionesMov = 0;
+
+      if (watchId) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+      }
+      if (heartbeatInterval) {
+        clearInterval(heartbeatInterval);
+        heartbeatInterval = null;
+      }
+
+      // 1. Notificar a Android Nativo en C#
+      try {
+        window.location.href = "keisel://detener-gps";
+      } catch (e) {
+        console.warn("Bridge:", e);
+      }
+
+      // 2. Limpiar en Supabase de inmediato y con refuerzo a los 500ms y 1200ms para evitar que un paquete en vuelo lo pise
+      limpiarSenalSupabase();
+      setTimeout(limpiarSenalSupabase, 500);
+      setTimeout(limpiarSenalSupabase, 1200);
 
       document.getElementById('status-dot').className = "w-2.5 h-2.5 rounded-full bg-[#8E8E93]";
       document.getElementById('status-label').innerText = "En Espera";
@@ -445,11 +432,9 @@
       icon.innerText = "location_disabled";
 
       document.getElementById('gps-title').innerText = "GPS en Pausa";
-      document.getElementById('gps-title').className = "text-xl font-extrabold tracking-tight text-white mt-2";
+      document.getElementById('gps-title').className = "text-xl font-extrabold tracking-tight text-white mt-3";
 
-      document.getElementById('gps-subtitle').innerText = "Presiona el botón de abajo para comenzar a transmitir tu ubicación.";
-
-      document.getElementById('coords-text').innerText = "-- , --";
+      document.getElementById('gps-subtitle').innerText = "Presiona el botón de abajo para comenzar a transmitir tu ubicación satelital.";
     }
   </script>
 </body>
