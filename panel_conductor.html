@@ -225,7 +225,7 @@
     window.actualizarGpsDesdeAndroid = function(lat, lng, envios) {
       var coordsEl = document.getElementById('coords-text');
       var packetsEl = document.getElementById('packets-text');
-      if (coordsEl) coordsEl.innerText = lat.toFixed(5) + ", " + lng.toFixed(5);
+      if (coordsEl) coordsEl.innerText = Number(lat).toFixed(7) + ", " + Number(lng).toFixed(7);
       if (packetsEl) packetsEl.innerText = envios + " enviados ✓";
     };
 
@@ -302,15 +302,18 @@
     function transmitirCoordenadas(lat, lng) {
       contadorEnvios++;
 
+      var latExacta = Number(Number(lat).toFixed(7));
+      var lngExacta = Number(Number(lng).toFixed(7));
+
       var coordsEl = document.getElementById('coords-text');
       var packetsEl = document.getElementById('packets-text');
-      if (coordsEl) coordsEl.innerText = lat.toFixed(5) + ", " + lng.toFixed(5);
+      if (coordsEl) coordsEl.innerText = latExacta.toFixed(7) + ", " + lngExacta.toFixed(7);
       if (packetsEl) packetsEl.innerText = contadorEnvios + " enviados ✓";
 
       var payload = JSON.stringify({
         id: 'bus_keisel_1',
-        latitud: lat,
-        longitud: lng,
+        latitud: latExacta,
+        longitud: lngExacta,
         actualizado_en: new Date().toISOString()
       });
 

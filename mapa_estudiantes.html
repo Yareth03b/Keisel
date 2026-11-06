@@ -337,6 +337,18 @@
             </button>
           </div>
         </div>
+
+        <!-- Latitud y Longitud de Alta Precisión (7 Decimales) -->
+        <div class="grid grid-cols-2 gap-3 pt-3 border-t border-[#26262B] text-xs">
+          <div>
+            <span class="text-[10px] text-[#8E8E93] uppercase font-bold tracking-wider block">Latitud</span>
+            <span class="font-mono text-[#A0A0A0] text-xs font-bold mt-0.5 block" id="lat-display">--</span>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] text-[#8E8E93] uppercase font-bold tracking-wider block">Longitud</span>
+            <span class="font-mono text-[#A0A0A0] text-xs font-bold mt-0.5 block" id="lng-display">--</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -607,16 +619,16 @@
       var subEl = document.getElementById('bus-subtext');
       if (subEl) subEl.innerText = "Esperando transmisión del conductor";
 
-      var coordsEl = document.getElementById('coords-display');
-      if (coordsEl) {
-        coordsEl.innerText = "Sin transmisión activa";
-        coordsEl.className = "font-mono text-[#A0A0A0] text-xs font-bold mt-0.5 block";
+      var latEl = document.getElementById('lat-display');
+      if (latEl) {
+        latEl.innerText = "--";
+        latEl.className = "font-mono text-[#A0A0A0] text-xs font-bold mt-0.5 block";
       }
 
-      var updateEl = document.getElementById('last-update');
-      if (updateEl) {
-        updateEl.innerText = "En espera";
-        updateEl.className = "text-xs font-semibold text-[#A0A0A0] mt-0.5 block";
+      var lngEl = document.getElementById('lng-display');
+      if (lngEl) {
+        lngEl.innerText = "--";
+        lngEl.className = "font-mono text-[#A0A0A0] text-xs font-bold mt-0.5 block";
       }
 
       var btnCentrarBus = document.getElementById('btn-centrar-bus');
@@ -635,11 +647,6 @@
       if (busPosActual && busMarker) {
         var distBus = calcularDistanciaMetros(busPosActual[0], busPosActual[1], lat, lng);
         if (distBus < UMBRAL_MOVIMIENTO_METROS) {
-          var updateQuietEl = document.getElementById('last-update');
-          if (updateQuietEl) {
-            updateQuietEl.innerText = new Date().toLocaleTimeString();
-            updateQuietEl.className = "text-xs font-semibold text-white mt-0.5 block";
-          }
           return;
         }
         // Suavizar movimiento cuando el bus sí avanza (>= 5 metros)
@@ -691,16 +698,16 @@
       var subEl = document.getElementById('bus-subtext');
       if (subEl) subEl.innerText = "Circuito Universitario";
 
-      var coordsEl = document.getElementById('coords-display');
-      if (coordsEl) {
-        coordsEl.innerText = lat.toFixed(5) + ", " + lng.toFixed(5);
-        coordsEl.className = "font-mono text-white text-xs font-bold mt-0.5 block";
+      var latEl = document.getElementById('lat-display');
+      if (latEl) {
+        latEl.innerText = Number(lat).toFixed(7);
+        latEl.className = "font-mono text-white text-xs font-bold mt-0.5 block";
       }
 
-      var updateEl = document.getElementById('last-update');
-      if (updateEl) {
-        updateEl.innerText = new Date().toLocaleTimeString();
-        updateEl.className = "text-xs font-semibold text-white mt-0.5 block";
+      var lngEl = document.getElementById('lng-display');
+      if (lngEl) {
+        lngEl.innerText = Number(lng).toFixed(7);
+        lngEl.className = "font-mono text-white text-xs font-bold mt-0.5 block";
       }
 
       var btnCentrarBus = document.getElementById('btn-centrar-bus');
