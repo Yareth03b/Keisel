@@ -236,9 +236,68 @@
       }
     };
 
-    // --- TRANSMISIÓN GPS EN TIEMPO REAL ---
+    // --- TRANSMISIÓN GPS EN TIEMPO REAL ESTABILIZADA ---
     var watchId = null;
+    var heartbeatInterval = null;
     var contadorEnvios = 0;
+    var posChoferFijada = null;
+    var mejorAccuracyChofer = 9999;
+    var UMBRAL_MOVIMIENTO_METROS = 5.0;
+
+    function calcularDistanciaMetros(lat1, lon1, lat2, lon2) {
+      var R = 6371000;
+      var dLat = (lat2 - lat1) * Math.PI / 180;
+      var dLon = (lon2 - lon1) * Math.PI / 180;
+      var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+
+    function procesarGpsConductor(pos) {
+      if (!pos || !pos.coords) return;
+      var lat = pos.coords.latitude;
+      var lng = pos.coords.longitude;
+      var accuracy = pos.coords.accuracy || 20;
+      var speed = pos.coords.speed;
+
+      if (!posChoferFijada) {
+        posChoferFijada = [lat, lng];
+        mejorAccuracyChofer = accuracy;
+        transmitirCoordenadas(lat, lng);
+        return;
+      }
+
+      if (accuracy > 45 && accuracy > mejorAccuracyChofer * 1.5) {
+        return;
+      }
+
+      var distancia = calcularDistanciaMetros(posChoferFijada[0], posChoferFijada[1], lat, lng);
+
+      // Si mejora significativamente la precisión estando en el mismo sitio, calibrar una sola vez
+      if (accuracy < mejorAccuracyChofer * 0.65 && distancia < 15) {
+        mejorAccuracyChofer = accuracy;
+        posChoferFijada = [lat, lng];
+        transmitirCoordenadas(lat, lng);
+        return;
+      }
+
+      // Si el conductor está quieto (variación menor a 5 metros o velocidad ~0), enviar su coordenada fija sin que salte
+      if ((speed !== null && speed !== undefined && speed < 0.35 && distancia < 8.0) || distancia < UMBRAL_MOVIMIENTO_METROS) {
+        transmitirCoordenadas(posChoferFijada[0], posChoferFijada[1]);
+        return;
+      }
+
+      // Si el conductor realmente se movió (>= 5 metros), suavizar y actualizar posición
+      var latSuave = (posChoferFijada[0] * 0.25) + (lat * 0.75);
+      var lngSuave = (posChoferFijada[1] * 0.25) + (lng * 0.75);
+      posChoferFijada = [latSuave, lngSuave];
+      if (accuracy < mejorAccuracyChofer) {
+        mejorAccuracyChofer = accuracy;
+      }
+      transmitirCoordenadas(latSuave, lngSuave);
+    }
 
     function transmitirCoordenadas(lat, lng) {
       contadorEnvios++;
@@ -270,6 +329,9 @@
     }
 
     function iniciarViajeReal() {
+      posChoferFijada = null;
+      mejorAccuracyChofer = 9999;
+
       // 1. Notificar a Android Nativo en C#
       try {
         window.location.href = "keisel://iniciar-gps";
@@ -297,28 +359,36 @@
 
       document.getElementById('coords-text').innerText = "Conectando al GPS...";
 
-      // 2. Ejecutar también GPS del navegador como doble respaldo
+      // 2. Ejecutar GPS con filtro estabilizador anti-temblor
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           function(pos) {
-            transmitirCoordenadas(pos.coords.latitude, pos.coords.longitude);
+            procesarGpsConductor(pos);
           },
           function(err) {
             console.warn("Fast GPS:", err);
           },
-          { enableHighAccuracy: true, timeout: 8000 }
+          { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
         );
 
         watchId = navigator.geolocation.watchPosition(
           function(pos) {
-            transmitirCoordenadas(pos.coords.latitude, pos.coords.longitude);
+            procesarGpsConductor(pos);
           },
           function(err) {
             console.warn("GPS error:", err.message);
           },
-          { enableHighAccuracy: true, maximumAge: 1500, timeout: 10000 }
+          { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
         );
       }
+
+      // Mantener señal activa en Supabase cada 8 segundos aunque el chofer esté detenido en un paradero
+      if (heartbeatInterval) clearInterval(heartbeatInterval);
+      heartbeatInterval = setInterval(function() {
+        if (posChoferFijada) {
+          transmitirCoordenadas(posChoferFijada[0], posChoferFijada[1]);
+        }
+      }, 8000);
     }
 
     function terminarViaje() {
@@ -333,6 +403,11 @@
         navigator.geolocation.clearWatch(watchId);
         watchId = null;
       }
+      if (heartbeatInterval) {
+        clearInterval(heartbeatInterval);
+        heartbeatInterval = null;
+      }
+      posChoferFijada = null;
 
       // Notificar a Supabase que el bus ya no está transmitiendo (oculta el icono en el mapa de estudiantes)
       fetch(SUPABASE_REST_URL, {
