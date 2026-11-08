@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html class="h-full bg-black dark" lang="es">
 <head>
   <meta charset="utf-8">
@@ -16,19 +16,11 @@
   <link rel="shortcut icon" href="favicon.ico?v=4">
   <link rel="manifest" href="site.webmanifest?v=4">
   
-  <!-- Google Fonts: Inter & Montserrat -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@800;900&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
-  
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <!-- Leaflet CSS & JS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <!-- Supabase JS Client -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Librerías servidas 100% desde el propio Servidor Web (Cero dependencia de Internet en el cliente LAN) -->
+  <script src="assets/tailwind.js"></script>
+  <link rel="stylesheet" href="assets/leaflet.css"/>
+  <script src="assets/leaflet.js"></script>
+  <script src="assets/supabase.js"></script>
 
   <style>
     @layer base {
@@ -240,7 +232,6 @@
       <header class="flex items-center justify-center w-full pt-1" data-purpose="brand-header">
         <img src="logo_keisel_dark.svg?v=4" alt="Keisel Logo" class="h-28 sm:h-32 w-auto max-w-[290px] object-contain" />
       </header>
-      <!-- Sync Test Check: Auto-Deploy RHEL & Cloudflare Active -->
 
       <!-- Center: Minimalist Uber Card / Active Selector -->
       <main class="w-full" data-purpose="selector-section">
@@ -292,7 +283,10 @@
     <header class="w-full max-w-md mx-auto pointer-events-auto">
       <div class="h-14 w-full px-4 rounded-full bg-[#141416]/95 backdrop-blur-md border border-[#26262B] flex items-center justify-between shadow-2xl">
         <button class="flex items-center gap-2 text-white hover:text-neutral-300 transition-colors py-1 pl-0.5 cursor-pointer" onclick="regresarAInicio()" type="button">
-          <span class="material-symbols-outlined text-xl text-[#A0A0A0]">arrow_back</span>
+          <svg class="w-5 h-5 text-[#A0A0A0]" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <path d="M19 12H5"></path>
+            <path d="M12 19l-7-7 7-7"></path>
+          </svg>
           <span class="text-sm font-bold tracking-tight text-white">Estudiantes</span>
         </button>
         
@@ -308,19 +302,38 @@
       <div class="flex justify-end pointer-events-none">
         <div class="flex flex-col gap-2 pointer-events-auto">
           <button aria-label="Centrar en mi ubicación" class="w-11 h-11 rounded-full bg-[#141416]/95 backdrop-blur-md border border-[#26262B] text-white flex items-center justify-center shadow-2xl hover:bg-[#202024] active:scale-95 transition-all cursor-pointer" onclick="centrarEnUsuario()" type="button" title="Ir a mi ubicación (Punto Blanco)">
-            <span class="material-symbols-outlined text-xl text-white">my_location</span>
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="7"></circle>
+              <circle cx="12" cy="12" r="2.5" fill="currentColor"></circle>
+              <line x1="12" y1="2" x2="12" y2="5"></line>
+              <line x1="12" y1="19" x2="12" y2="22"></line>
+              <line x1="2" y1="12" x2="5" y2="12"></line>
+              <line x1="19" y1="12" x2="22" y2="12"></line>
+            </svg>
           </button>
 
           <button id="btn-centrar-bus" style="display: none;" aria-label="Centrar en el Bus" class="w-11 h-11 rounded-full bg-[#141416]/95 backdrop-blur-md border border-[#26262B] text-white flex items-center justify-center shadow-2xl hover:bg-[#202024] active:scale-95 transition-all cursor-pointer" onclick="centrarEnBus()" type="button" title="Centrar mapa en el bus">
-            <span class="material-symbols-outlined text-xl text-white">directions_bus</span>
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <path d="M4 6c0-1.657 1.343-3 3-3h10c1.657 0 3 1.343 3 3v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6z"></path>
+              <path d="M4 11h16"></path>
+              <circle cx="8" cy="15" fill="currentColor" r="1.2" stroke="none"></circle>
+              <circle cx="16" cy="15" fill="currentColor" r="1.2" stroke="none"></circle>
+              <path d="M6 19v2"></path>
+              <path d="M18 19v2"></path>
+            </svg>
           </button>
           
           <div class="rounded-2xl bg-[#141416]/95 backdrop-blur-md border border-[#26262B] flex flex-col items-center overflow-hidden shadow-2xl">
             <button aria-label="Acercar" class="w-11 h-10 text-white flex items-center justify-center hover:bg-[#202024] active:scale-95 transition-all border-b border-[#242429] cursor-pointer" onclick="if(map) map.zoomIn()" type="button">
-              <span class="material-symbols-outlined text-base">add</span>
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
             </button>
             <button aria-label="Alejar" class="w-11 h-10 text-white flex items-center justify-center hover:bg-[#202024] active:scale-95 transition-all cursor-pointer" onclick="if(map) map.zoomOut()" type="button">
-              <span class="material-symbols-outlined text-base">remove</span>
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
             </button>
           </div>
         </div>
@@ -329,7 +342,14 @@
       <!-- BOTÓN FLOTANTE TIPO CIRCULITO (VISIBLE POR DEFECTO AL INICIAR) -->
       <div id="btn-desplegar-buses" style="display: flex;" class="pointer-events-auto flex justify-end">
         <button onclick="expandirPanelBuses()" class="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center shadow-2xl border-2 border-black hover:bg-neutral-200 active:scale-95 transition-all cursor-pointer relative group anti-invert-white" style="width: 44px; height: 44px; border-radius: 9999px; aspect-ratio: 1 / 1;" title="Ver información del bus">
-          <span class="material-symbols-outlined text-xl font-bold" style="color: #000000 !important;">directions_bus</span>
+          <svg class="w-5 h-5" fill="none" stroke="#000000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <path d="M4 6c0-1.657 1.343-3 3-3h10c1.657 0 3 1.343 3 3v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6z"></path>
+            <path d="M4 11h16"></path>
+            <circle cx="8" cy="15" fill="#000000" r="1.2" stroke="none"></circle>
+            <circle cx="16" cy="15" fill="#000000" r="1.2" stroke="none"></circle>
+            <path d="M6 19v2"></path>
+            <path d="M18 19v2"></path>
+          </svg>
           <span class="absolute -top-0.5 -right-0.5 w-3 h-3 bg-white border-2 border-black rounded-full animate-ping anti-invert-white"></span>
           <span class="absolute -top-0.5 -right-0.5 w-3 h-3 bg-white border-2 border-black rounded-full anti-invert-white"></span>
         </button>
@@ -341,7 +361,14 @@
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div class="w-11 h-11 rounded-2xl bg-[#222222] text-white flex items-center justify-center shadow-md" id="bus-card-icon-bg">
-              <span class="material-symbols-outlined text-white text-2xl" id="bus-card-icon">directions_bus</span>
+              <svg class="w-6 h-6 text-white" id="bus-card-icon" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <path d="M4 6c0-1.657 1.343-3 3-3h10c1.657 0 3 1.343 3 3v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6z"></path>
+                <path d="M4 11h16"></path>
+                <circle cx="8" cy="15" fill="currentColor" r="1.2" stroke="none"></circle>
+                <circle cx="16" cy="15" fill="currentColor" r="1.2" stroke="none"></circle>
+                <path d="M6 19v2"></path>
+                <path d="M18 19v2"></path>
+              </svg>
             </div>
             <div>
               <div class="flex items-center gap-2">
@@ -355,7 +382,9 @@
           <div class="flex items-center gap-2">
             <!-- Botón para achicar a circulito -->
             <button onclick="achicarPanelBuses()" class="w-8 h-8 rounded-full bg-[#222222] hover:bg-white hover:text-black text-white border border-white/20 flex items-center justify-center transition-all cursor-pointer active:scale-95" title="Achicar menú">
-              <span class="material-symbols-outlined text-xl">keyboard_arrow_down</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
             </button>
           </div>
         </div>
@@ -364,15 +393,26 @@
   </div>
 
   <script>
-    // --- SUPABASE CONFIG ---
-    var SUPABASE_URL = "https://mcqcfdivpikmrkkfbhsm.supabase.co";
+    // --- SUPABASE & PROXY CONFIG (SOPORTE HIBRIDO LAN SIN INTERNET + CLOUDFLARE) ---
+    var SUPABASE_DIRECT_URL = "https://mcqcfdivpikmrkkfbhsm.supabase.co";
     var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jcWNmZGl2cGlrbXJra2ZiaHNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyNzg5NDIsImV4cCI6MjEwODg1NDk0Mn0.F6Yz31dJI4wQiINS1NwK-cNunO0V_3UEvD3IHgTJSC0";
-    
+
+    // Detectar si el cliente esta entrando al Servidor Web RHEL local (no Cloudflare Pages)
+    var ES_SERVIDOR_LOCAL_LAN = (
+      window.location.protocol.indexOf('http') === 0 &&
+      window.location.hostname.indexOf('pages.dev') === -1 &&
+      window.location.hostname.indexOf('github.io') === -1
+    );
+
+    // Si entra por el Servidor RHEL y tiene configurado el Proxy Inverso (/supabase-api), el servidor RHEL sale a Internet por el cliente
+    var SUPABASE_PROXY_URL = window.location.origin + "/supabase-api";
+    var usarProxyRhel = ES_SERVIDOR_LOCAL_LAN;
+
     var supabaseClient = null;
     function getSupabase() {
       if (!supabaseClient && window.supabase && typeof window.supabase.createClient === 'function') {
         try {
-          supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+          supabaseClient = window.supabase.createClient(SUPABASE_DIRECT_URL, SUPABASE_ANON_KEY);
         } catch (e) {
           console.warn("Supabase init:", e);
         }
@@ -435,7 +475,6 @@
       setTimeout(function() {
         if (map) {
           map.invalidateSize();
-          // Enfocar automaticamente el bus mas cercano si esta activo
           if (busPosActual) {
             map.flyTo(busPosActual, 17, { animate: true, duration: 1 });
           } else if (userPosActual) {
@@ -460,34 +499,39 @@
         return;
       }
 
-      // Inicializar mapa sobre el elemento #map (a pantalla completa)
       map = L.map('map', {
         zoomControl: false,
         attributionControl: false
       }).setView(centroInicial, 16);
 
-      // Usar OpenStreetMap oficial (100% visible, calles, colores y nombres reales)
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      // Si estamos en el Servidor RHEL Local, pedir los cuadros del mapa al Servidor RHEL (/osm-tiles/{z}/{x}/{y}.png).
+      // Si el proxy aun no esta activado en Apache, cae automaticamente a tile.openstreetmap.org.
+      var urlTiles = ES_SERVIDOR_LOCAL_LAN ? '/osm-tiles/{z}/{x}/{y}.png' : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+      var capaMapa = L.tileLayer(urlTiles, {
         maxZoom: 19
       }).addTo(map);
 
-      // Crear el Punto Blanco del Estudiante de inmediato en el mapa
+      var cambioADirecto = false;
+      capaMapa.on('tileerror', function() {
+        if (ES_SERVIDOR_LOCAL_LAN && !cambioADirecto) {
+          cambioADirecto = true;
+          capaMapa.setUrl('https://tile.openstreetmap.org/{z}/{x}/{y}.png');
+        }
+      });
+
       dibujarPuntoBlancoUsuario(userPosActual[0], userPosActual[1]);
 
       window.addEventListener('resize', function() { if (map) map.invalidateSize(); });
 
-      // IMPORTANTE: No creamos el icono del bus hasta confirmar transmisión activa
       ocultarBus();
       cargarUltimaPosicion();
       conectarRealtime();
       iniciarUbicacionUsuario();
 
-      // Consultar cada 1.5 segundos para garantizar actualización inmediata (incluso en segundo plano)
       setInterval(function() {
         cargarUltimaPosicion();
       }, 1500);
 
-      // Verificar cada 3s si el conductor dejó de transmitir (más de 15s sin nuevos paquetes)
       setInterval(function() {
         if (busMarker && (Date.now() - ultimaRecepcionBus > 15000)) {
           ocultarBus();
@@ -520,8 +564,6 @@
       var accuracy = pos.coords.accuracy || 20;
       var speed = pos.coords.speed;
 
-      // Si se abre en una Laptop (donde el Wi-Fi da baja precisión > 15m) y el celular está al lado transmitiendo (< 150m),
-      // calibrar contra el GPS satelital del celular para eliminar el desfase de antena Wi-Fi de la laptop
       if (busPosActual && accuracy > 15) {
         var distAlBus = calcularDistanciaMetros(lat, lng, busPosActual[0], busPosActual[1]);
         if (distAlBus < 150) {
@@ -530,7 +572,6 @@
         }
       }
 
-      // Primera lectura real del GPS del dispositivo: se clava en ese punto
       if (!userPosFijada) {
         userPosFijada = [lat, lng];
         userPosActual = [lat, lng];
@@ -544,20 +585,17 @@
         return;
       }
 
-      // Descartar lecturas con mala precisión (> 40m)
       if (accuracy > 40) {
         return;
       }
 
       var distancia = calcularDistanciaMetros(userPosFijada[0], userPosFijada[1], lat, lng);
 
-      // FILTRO ESTRICTO ANTI-SALTOS: Si la variacion es menor a 15 metros o velocidad ~0, se resetea el contador y NO se mueve nada
       if ((speed !== null && speed !== undefined && speed < 0.5 && distancia < 20.0) || distancia < UMBRAL_MOVIMIENTO_METROS) {
         confirmacionesMovUser = 0;
         return;
       }
 
-      // Exigir 3 lecturas consecutivas fuera de los 15 metros para descartar rebotes falsos de GPS
       confirmacionesMovUser++;
       if (confirmacionesMovUser < 3) {
         return;
@@ -646,7 +684,7 @@
       if (iconBg) iconBg.className = "w-11 h-11 rounded-2xl bg-[#222222] text-white flex items-center justify-center shadow-md";
 
       var iconEl = document.getElementById('bus-card-icon');
-      if (iconEl) iconEl.className = "material-symbols-outlined text-white text-2xl";
+      if (iconEl) iconEl.setAttribute('class', 'w-6 h-6 text-white');
 
       var subEl = document.getElementById('bus-subtext');
       if (subEl) subEl.innerText = "Esperando transmisión del conductor";
@@ -663,7 +701,6 @@
 
       ultimaRecepcionBus = Date.now();
 
-      // Si el bus ya está en pantalla, exigir 3 lecturas consecutivas >= 15 metros antes de moverlo (cero saltos falsos)
       if (busPosActual && busMarker) {
         var distBus = calcularDistanciaMetros(busPosActual[0], busPosActual[1], lat, lng);
         if (distBus < UMBRAL_MOVIMIENTO_METROS) {
@@ -681,7 +718,6 @@
 
       busPosActual = [lat, lng];
 
-      // Si el usuario esta en su Laptop (precision Wi-Fi > 15m) junto al celular (< 150m), fijar el punto blanco una sola vez junto al bus
       if (!userPosFijada || (mejorAccuracyUsuario > 15 && calcularDistanciaMetros(userPosActual[0], userPosActual[1], lat, lng) < 150)) {
         userPosFijada = [lat + 0.000012, lng + 0.000015];
         userPosActual = [lat + 0.000012, lng + 0.000015];
@@ -689,9 +725,10 @@
       }
 
       if (!busMarker && map && typeof L !== 'undefined') {
+        var busSvgInline = '<svg style="width:18px;height:18px;" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4 6c0-1.657 1.343-3 3-3h10c1.657 0 3 1.343 3 3v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6z"></path><path d="M4 11h16"></path><circle cx="8" cy="15" fill="#FFFFFF" r="1.2" stroke="none"></circle><circle cx="16" cy="15" fill="#FFFFFF" r="1.2" stroke="none"></circle><path d="M6 19v2"></path><path d="M18 19v2"></path></svg>';
         var busIcon = L.divIcon({
           className: 'bus-marker-container',
-          html: '<div style="position:relative;"><div class="bus-pulse-ring"></div><div class="bus-pin-core"><span class="material-symbols-outlined" style="font-size:18px; font-weight:bold;">directions_bus</span></div></div>',
+          html: '<div style="position:relative;"><div class="bus-pulse-ring"></div><div class="bus-pin-core">' + busSvgInline + '</div></div>',
           iconSize: [32, 32],
           iconAnchor: [16, 16]
         });
@@ -702,7 +739,6 @@
         busMarker.setLatLng(busPosActual);
       }
 
-      // Enfocar automaticamente el bus mas cercano al detectarlo por primera vez
       if (!yaEnfocoBusCercano && map) {
         yaEnfocoBusCercano = true;
         map.flyTo(busPosActual, 17, { animate: true, duration: 1 });
@@ -724,7 +760,7 @@
       if (iconBg) iconBg.className = "w-11 h-11 rounded-2xl bg-white text-black flex items-center justify-center shadow-md";
 
       var iconEl = document.getElementById('bus-card-icon');
-      if (iconEl) iconEl.className = "material-symbols-outlined text-black text-2xl";
+      if (iconEl) iconEl.setAttribute('class', 'w-6 h-6 text-black');
 
       var subEl = document.getElementById('bus-subtext');
       if (subEl) subEl.innerText = "Circuito Universitario";
@@ -740,8 +776,38 @@
       }
     }
 
+    function procesarFilasRastreo(rows) {
+      if (!rows || !rows.length) {
+        ocultarBus();
+        return;
+      }
+      var data = rows[0];
+      if (data.latitud === null || data.longitud === null) {
+        ultimoTimestampVisto = data.actualizado_en;
+        primeraConsultaTabla = false;
+        ocultarBus();
+        return;
+      }
+
+      if (primeraConsultaTabla) {
+        primeraConsultaTabla = false;
+        ultimoTimestampVisto = data.actualizado_en;
+        var diffInicial = Math.abs(Date.now() - new Date(data.actualizado_en).getTime()) / 1000;
+        if (diffInicial <= 25) {
+          actualizarPosicionBus(Number(data.latitud), Number(data.longitud));
+        }
+        return;
+      }
+
+      if (data.actualizado_en && data.actualizado_en !== ultimoTimestampVisto) {
+        ultimoTimestampVisto = data.actualizado_en;
+        actualizarPosicionBus(Number(data.latitud), Number(data.longitud));
+      }
+    }
+
     function cargarUltimaPosicion() {
-      fetch(SUPABASE_URL + "/rest/v1/rastreo?id=eq.bus_keisel_1&select=*", {
+      var baseEndpoint = usarProxyRhel ? SUPABASE_PROXY_URL : SUPABASE_DIRECT_URL;
+      fetch(baseEndpoint + "/rest/v1/rastreo?id=eq.bus_keisel_1&select=*", {
         method: 'GET',
         headers: {
           'apikey': SUPABASE_ANON_KEY,
@@ -750,38 +816,27 @@
         },
         cache: 'no-store'
       })
-      .then(function(r) { return r.json(); })
-      .then(function(rows) {
-        if (!rows || !rows.length) {
-          ocultarBus();
-          return;
+      .then(function(r) {
+        if (!r.ok && usarProxyRhel) {
+          usarProxyRhel = false;
+          return fetch(SUPABASE_DIRECT_URL + "/rest/v1/rastreo?id=eq.bus_keisel_1&select=*", {
+            method: 'GET',
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+              'Cache-Control': 'no-cache'
+            },
+            cache: 'no-store'
+          });
         }
-        var data = rows[0];
-        if (data.latitud === null || data.longitud === null) {
-          ultimoTimestampVisto = data.actualizado_en;
-          primeraConsultaTabla = false;
-          ocultarBus();
-          return;
-        }
-
-        // En la primera lectura al abrir la web, si ya se actualizo en los ultimos 25 segundos, mostrar de inmediato
-        if (primeraConsultaTabla) {
-          primeraConsultaTabla = false;
-          ultimoTimestampVisto = data.actualizado_en;
-          var diffInicial = Math.abs(Date.now() - new Date(data.actualizado_en).getTime()) / 1000;
-          if (diffInicial <= 25) {
-            actualizarPosicionBus(Number(data.latitud), Number(data.longitud));
-          }
-          return;
-        }
-
-        // En cada consulta cada 1.5s: si el timestamp cambió respecto a la lectura anterior, está transmitiendo EN VIVO
-        if (data.actualizado_en && data.actualizado_en !== ultimoTimestampVisto) {
-          ultimoTimestampVisto = data.actualizado_en;
-          actualizarPosicionBus(Number(data.latitud), Number(data.longitud));
-        }
+        return r;
       })
+      .then(function(r) { return r.json(); })
+      .then(procesarFilasRastreo)
       .catch(function(err) {
+        if (usarProxyRhel) {
+          usarProxyRhel = false;
+        }
         console.warn("Error consultando posicion:", err);
       });
     }
@@ -812,11 +867,9 @@
       }
     }
 
-    // Inicializar mapa inmediatamente al cargar la ventana
     window.addEventListener('load', function() {
       initLeafletMap();
     });
   </script>
 </body>
 </html>
-
