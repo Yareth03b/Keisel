@@ -1,18 +1,27 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html class="dark" lang="es">
 <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
-  <title>Keisel Conductor</title>
+  <title>Keisel - Portal de Acceso</title>
   <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=4"/>
   <link rel="icon" type="image/png" sizes="192x192" href="android-chrome-192x192.png?v=4"/>
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png?v=4"/>
   <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png?v=4"/>
   <link rel="shortcut icon" href="favicon.ico?v=4"/>
   <link rel="manifest" href="site.webmanifest?v=4"/>
+  
+  <!-- Tipografía e Iconos -->
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
-  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Fallback local o CDN de Tailwind -->
+  <script src="assets/tailwind.js"></script>
+  <script>
+    if (!window.tailwind) {
+      document.write('<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"><\/script>');
+    }
+  </script>
 
   <style>
     @layer base {
@@ -21,8 +30,9 @@
         min-height: 100vh;
         margin: 0;
         padding: 0;
-        background-color: #0A0A0C;
+        background-color: #000000;
         color: #FFFFFF;
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         -webkit-font-smoothing: antialiased;
       }
       body { overscroll-behavior-y: none; }
@@ -41,65 +51,87 @@
     }
   </style>
 </head>
-<body class="bg-[#0A0A0C] text-white flex flex-col min-h-screen">
+<body class="bg-black text-white flex flex-col min-h-screen antialiased selection:bg-neutral-800">
 
-  <!-- ========================================== -->
-  <!-- VISTA 1: LOGIN DE CONDUCTOR                -->
-  <!-- ========================================== -->
+  <!-- ====================================================================== -->
+  <!-- VISTA 1: LOGIN GENERAL DE USUARIO (CONDUCTOR O ADMINISTRADOR)         -->
+  <!-- ====================================================================== -->
   <div id="vista-auth" class="flex flex-col flex-1 w-full max-w-md mx-auto px-6 py-6 justify-between">
-    <div>
+    <div class="flex flex-col w-full">
+      <!-- Minimalist Top Navigation Header -->
       <header class="flex items-center justify-between w-full h-14 border-b border-[#1E2026]">
-        <div class="flex items-center gap-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-white animate-pulse"></span>
-          <span class="text-xs font-bold tracking-wider uppercase text-[#8E8E93]">KEISEL PARTNER</span>
+        <button aria-label="Volver" class="flex items-center justify-center w-10 h-10 -ml-2 rounded-full text-white hover:bg-[#161616] active:scale-95 transition-all" onclick="window.history.back()" type="button">
+          <span class="material-symbols-outlined text-[24px]">arrow_back</span>
+        </button>
+        <div class="flex items-center">
+          <span class="text-xs font-semibold tracking-wider uppercase text-[#8E8E93]">KEISEL USUARIO</span>
         </div>
-        <span class="material-symbols-outlined text-white text-2xl">directions_bus</span>
+        <div class="w-10"></div>
       </header>
 
-      <div class="mt-8">
-        <h1 class="text-3xl font-extrabold tracking-tight text-white">
-          Conductor
-        </h1>
-        <p class="text-sm text-[#8E8E93] mt-1.5">
-          Accede al panel para iniciar la transmisión GPS en vivo.
+      <!-- Main Content Area -->
+      <div class="flex flex-col w-full mt-8">
+        <h1 class="text-3xl font-bold tracking-tight text-white">Usuario</h1>
+        <p class="text-sm text-[#8E8E93] mt-2">
+          Ingresa tus credenciales para acceder a la red.
         </p>
 
-        <div class="flex flex-col mt-8 gap-y-5">
-          <div class="flex flex-col">
-            <label class="text-xs font-semibold uppercase tracking-wider text-[#8E8E93] mb-2">
-              CORREO ELECTRÓNICO
+        <!-- Clean Form -->
+        <form class="flex flex-col w-full mt-8 gap-y-4" id="driverLoginForm" onsubmit="handleFormLogin(event)">
+          <!-- Field 1: Cuenta / Usuario -->
+          <div class="flex flex-col w-full">
+            <label class="text-xs font-medium uppercase tracking-wider text-[#8E8E93] mb-2" for="accountInput">
+              Cuenta o correo electrónico
             </label>
-            <div class="w-full bg-[#16181F] rounded-xl border border-[#262833]">
-              <input class="w-full h-13 bg-transparent px-4 text-sm text-white placeholder:text-[#555A69] focus:outline-none" id="input-email" type="email" value="conductor@keisel.uni"/>
+            <div class="w-full bg-[#161616] rounded-xl border border-[#262833] focus-within:border-white transition-colors">
+              <input autocomplete="username" class="w-full h-14 bg-transparent px-4 text-sm text-white placeholder:text-[#555A69] focus:outline-none" id="accountInput" placeholder="Ej. barranca@keisel.me o admin@keisel.me" required="" type="text" value="barranca@keisel.me">
             </div>
           </div>
 
-          <div class="flex flex-col">
-            <label class="text-xs font-semibold uppercase tracking-wider text-[#8E8E93] mb-2">
-              CONTRASEÑA
+          <!-- Field 2: Contraseña -->
+          <div class="flex flex-col w-full">
+            <label class="text-xs font-medium uppercase tracking-wider text-[#8E8E93] mb-2" for="passwordInput">
+              Contraseña
             </label>
-            <div class="relative flex items-center w-full bg-[#16181F] rounded-xl border border-[#262833]">
-              <input class="w-full h-13 bg-transparent pl-4 pr-11 text-sm text-white placeholder:text-[#555A69] focus:outline-none" id="input-password" type="password" value="keisel123"/>
-              <button aria-label="Ver password" class="absolute right-3 text-[#8E8E93] hover:text-white" onclick="togglePasswordVis()" type="button">
-                <span class="material-symbols-outlined text-[20px]" id="icon-pass">visibility_off</span>
+            <div class="relative flex items-center w-full bg-[#161616] rounded-xl border border-[#262833] focus-within:border-white transition-colors">
+              <input autocomplete="current-password" class="w-full h-14 bg-transparent pl-4 pr-12 text-sm text-white placeholder:text-[#555A69] focus:outline-none" id="passwordInput" placeholder="••••••••" required="" type="password" value="barranca123">
+              <button aria-label="Mostrar u ocultar contraseña" class="absolute right-3 p-1 flex items-center justify-center text-[#8E8E93] hover:text-white transition-colors focus:outline-none cursor-pointer" id="togglePasswordBtn" onclick="togglePasswordVis()" type="button">
+                <span class="material-symbols-outlined text-[20px]" id="passwordIcon">visibility_off</span>
               </button>
             </div>
           </div>
-        </div>
+
+          <!-- Quick Selector Pill Badges (Ayuda rápida de acceso) -->
+          <div class="flex flex-wrap gap-2 pt-1">
+            <button type="button" onclick="cargarCredencialDemo('barranca@keisel.me', 'barranca123')" class="text-[11px] px-2.5 py-1 rounded-full bg-[#181A22] border border-[#262833] text-neutral-300 hover:border-neutral-500 hover:text-white transition-all">
+              Conductor 1 (Barranca)
+            </button>
+            <button type="button" onclick="cargarCredencialDemo('supe@keisel.me', 'supe123')" class="text-[11px] px-2.5 py-1 rounded-full bg-[#181A22] border border-[#262833] text-neutral-300 hover:border-neutral-500 hover:text-white transition-all">
+              Conductor 2 (Supe)
+            </button>
+            <button type="button" onclick="cargarCredencialDemo('paramonga@keisel.me', 'paramonga123')" class="text-[11px] px-2.5 py-1 rounded-full bg-[#181A22] border border-[#262833] text-neutral-300 hover:border-neutral-500 hover:text-white transition-all">
+              Conductor 3 (Paramonga)
+            </button>
+            <button type="button" onclick="cargarCredencialDemo('admin@keisel.me', 'admin123')" class="text-[11px] px-2.5 py-1 rounded-full bg-[#181A22] border border-white/30 text-white font-medium hover:bg-neutral-800 transition-all">
+              Panel Admin
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 
-    <div class="pt-6 pb-2">
-      <button class="flex items-center justify-center w-full h-14 rounded-2xl bg-white hover:bg-neutral-200 text-black text-base font-extrabold tracking-tight active:scale-[0.98] transition-all shadow-xl cursor-pointer" onclick="pasarAlPanel()" type="button">
-        Ingresar al Panel
+    <!-- Bottom Fixed-Feel Uber-style CTA -->
+    <div class="flex flex-col w-full pt-6 pb-2">
+      <button class="flex items-center justify-center w-full h-14 rounded-2xl bg-white hover:bg-neutral-200 text-black font-bold text-base tracking-tight active:scale-[0.98] transition-transform shadow-xl cursor-pointer" form="driverLoginForm" type="submit">
+        Ingresar
       </button>
     </div>
   </div>
 
 
-  <!-- ========================================== -->
-  <!-- VISTA 2: PANEL DE TELEMETRÍA (CONDUCTOR)   -->
-  <!-- ========================================== -->
+  <!-- ====================================================================== -->
+  <!-- VISTA 2: PANEL DE TELEMETRÍA (CONDUCTOR)                               -->
+  <!-- ====================================================================== -->
   <div id="vista-panel" class="hidden flex-col flex-1 w-full max-w-md mx-auto">
     <!-- Header Fijo -->
     <header class="w-full bg-[#0A0A0C]/95 backdrop-blur-xl border-b border-[#1E2026] pt-safe px-4 py-3">
@@ -116,7 +148,7 @@
       </div>
     </header>
 
-    <!-- Contenido Principal -->
+    <!-- Contenido Principal Conductor -->
     <main class="flex flex-col flex-1 px-5 pt-3 pb-safe justify-between">
       <div>
         <!-- Sub-barra de Estado y Salir -->
@@ -131,21 +163,21 @@
           </button>
         </div>
 
-        <!-- Info del Conductor -->
+        <!-- Info Dinámica del Conductor Autenticado -->
         <div class="pt-3 pb-4">
           <div class="flex items-center gap-1.5 mb-1">
             <span class="material-symbols-outlined text-white text-[16px]">verified_user</span>
             <span class="text-[11px] font-bold text-[#8E8E93] tracking-wide uppercase">Conductor Verificado</span>
           </div>
-          <h1 class="text-2xl font-extrabold text-white tracking-tight">
+          <h1 class="text-2xl font-extrabold text-white tracking-tight" id="conductor-nombre">
             Carlos Mendoza Vargas
           </h1>
-          <p class="text-xs text-[#8E8E93] mt-0.5">
+          <p class="text-xs text-[#8E8E93] mt-0.5" id="conductor-detalles">
             Bus Barranca • Mercedes-Benz Sprinter • EUA-482
           </p>
         </div>
 
-        <!-- TARJETA PRINCIPAL DEL ESTADO DEL GPS (Sin Coordenadas ni Paquetes) -->
+        <!-- Tarjeta Principal del Estado del GPS -->
         <div class="w-full bg-[#141416] border border-white/20 rounded-3xl p-8 shadow-2xl flex flex-col items-center text-center my-3 transition-all">
           <div class="relative w-24 h-24 flex items-center justify-center my-2">
             <div class="absolute inset-0 rounded-full bg-[#8E8E93]/10" id="radar-ring"></div>
@@ -163,7 +195,7 @@
         </div>
       </div>
 
-      <!-- Botones de Acción -->
+      <!-- Botones de Acción Conductor -->
       <div class="flex flex-col gap-3 pb-4 pt-2">
         <button class="w-full h-15 py-4 bg-white text-black rounded-2xl text-base font-extrabold flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-xl hover:bg-neutral-200 cursor-pointer" id="btn-start" onclick="iniciarViajeReal()" type="button">
           <span class="material-symbols-outlined text-[24px]">play_arrow</span>
@@ -178,13 +210,545 @@
     </main>
   </div>
 
+
+  <!-- ====================================================================== -->
+  <!-- VISTA 3: PANEL DE ADMINISTRADOR MINIMALISTA (UBER STYLE)               -->
+  <!-- ====================================================================== -->
+  <div id="vista-admin" class="hidden flex-col flex-1 w-full min-h-screen bg-black">
+    <!-- Cabecera Ultra-Simple Admin -->
+    <header class="sticky top-0 w-full z-40 bg-black/95 backdrop-blur-md border-b border-neutral-900 pt-safe">
+      <div class="h-14 px-5 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-[17px] font-semibold tracking-tight text-white whitespace-nowrap">Admin</span>
+          <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white text-black">Master</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <button aria-label="Cerrar sesión" class="text-neutral-400 hover:text-white transition-colors flex items-center justify-center p-1 cursor-pointer" onclick="handleLogoutAdmin()">
+            <span class="material-symbols-outlined text-[20px]">logout</span>
+          </button>
+          <div class="w-7 h-7 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center text-neutral-300">
+            <span class="material-symbols-outlined text-[16px]">person</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Contenido Principal Admin -->
+    <main class="flex-1 w-full max-w-lg mx-auto px-5 py-6 space-y-9">
+      <!-- 1. SECCIÓN CONDUCTORES -->
+      <section class="space-y-3" id="drivers-section">
+        <div class="flex items-center justify-between pb-1">
+          <h2 class="text-[20px] font-semibold tracking-tight text-white whitespace-nowrap">Conductores</h2>
+          <button class="text-xs font-medium text-white bg-neutral-900 hover:bg-neutral-800 px-3 py-1.5 rounded-full border border-neutral-800 transition-colors flex items-center gap-1 cursor-pointer" onclick="toggleDriverModal(true)">
+            <span class="material-symbols-outlined text-[14px]">add</span>
+            <span>Nuevo</span>
+          </button>
+        </div>
+        
+        <div class="divide-y divide-neutral-900 border-y border-neutral-900" id="drivers-list">
+          <!-- CONDUCTOR 1 -->
+          <div class="py-4 space-y-3" id="driver-card-1">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-[15px] font-medium text-white" id="driver-name-1">Carlos Mendoza Vargas</p>
+                <p class="text-xs text-neutral-500 mt-0.5" id="driver-dni-1">DNI 44829103 • barranca@keisel.me</p>
+              </div>
+              <span class="text-[11px] uppercase tracking-wide px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 font-medium" id="driver-status-1">
+                Activo
+              </span>
+            </div>
+            <div class="flex items-center justify-between pt-1">
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-neutral-500">Ruta:</span>
+                <div class="relative">
+                  <select class="bg-neutral-950 border border-neutral-800 text-neutral-200 text-xs rounded px-2 py-1 pr-6 focus:outline-none focus:border-neutral-600 appearance-none cursor-pointer" onchange="updateDriverRoute(1, this.value)">
+                    <option selected="" value="Barranca">Barranca</option>
+                    <option value="Supe">Supe</option>
+                    <option value="Paramonga">Paramonga</option>
+                  </select>
+                  <span class="material-symbols-outlined pointer-events-none absolute right-1 top-1.5 text-[14px] text-neutral-500">expand_more</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <button class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer" onclick="openEditDriverModal('Carlos Mendoza Vargas', '44829103', 'Barranca', 'Bus 01', 'driver-card-1')">Editar</button>
+                <button class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer" id="driver-btn-1" onclick="toggleDriverAccess(1)">Desactivar</button>
+                <button class="text-xs text-neutral-500 hover:text-white transition-colors cursor-pointer" onclick="confirmDeleteDriver('Carlos Mendoza Vargas', 'driver-card-1')">Eliminar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- CONDUCTOR 2 -->
+          <div class="py-4 space-y-3" id="driver-card-2">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-[15px] font-medium text-white" id="driver-name-2">Roberto Silva P.</p>
+                <p class="text-xs text-neutral-500 mt-0.5" id="driver-dni-2">DNI 40918234 • supe@keisel.me</p>
+              </div>
+              <span class="text-[11px] uppercase tracking-wide px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 font-medium" id="driver-status-2">
+                Activo
+              </span>
+            </div>
+            <div class="flex items-center justify-between pt-1">
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-neutral-500">Ruta:</span>
+                <div class="relative">
+                  <select class="bg-neutral-950 border border-neutral-800 text-neutral-200 text-xs rounded px-2 py-1 pr-6 focus:outline-none focus:border-neutral-600 appearance-none cursor-pointer" onchange="updateDriverRoute(2, this.value)">
+                    <option value="Barranca">Barranca</option>
+                    <option selected="" value="Supe">Supe</option>
+                    <option value="Paramonga">Paramonga</option>
+                  </select>
+                  <span class="material-symbols-outlined pointer-events-none absolute right-1 top-1.5 text-[14px] text-neutral-500">expand_more</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <button class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer" onclick="openEditDriverModal('Roberto Silva P.', '40918234', 'Supe', 'Bus 02', 'driver-card-2')">Editar</button>
+                <button class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer" id="driver-btn-2" onclick="toggleDriverAccess(2)">Desactivar</button>
+                <button class="text-xs text-neutral-500 hover:text-white transition-colors cursor-pointer" onclick="confirmDeleteDriver('Roberto Silva P.', 'driver-card-2')">Eliminar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- CONDUCTOR 3 -->
+          <div class="py-4 space-y-3" id="driver-card-3">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="text-[15px] font-medium text-white" id="driver-name-3">Miguel Ramos D.</p>
+                <p class="text-xs text-neutral-500 mt-0.5" id="driver-dni-3">DNI 47102948 • paramonga@keisel.me</p>
+              </div>
+              <span class="text-[11px] uppercase tracking-wide px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 font-medium" id="driver-status-3">
+                Activo
+              </span>
+            </div>
+            <div class="flex items-center justify-between pt-1">
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-neutral-500">Ruta:</span>
+                <div class="relative">
+                  <select class="bg-neutral-950 border border-neutral-800 text-neutral-200 text-xs rounded px-2 py-1 pr-6 focus:outline-none focus:border-neutral-600 appearance-none cursor-pointer" onchange="updateDriverRoute(3, this.value)">
+                    <option value="Barranca">Barranca</option>
+                    <option value="Supe">Supe</option>
+                    <option selected="" value="Paramonga">Paramonga</option>
+                  </select>
+                  <span class="material-symbols-outlined pointer-events-none absolute right-1 top-1.5 text-[14px] text-neutral-500">expand_more</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <button class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer" onclick="openEditDriverModal('Miguel Ramos D.', '47102948', 'Paramonga', 'Bus 03', 'driver-card-3')">Editar</button>
+                <button class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer" id="driver-btn-3" onclick="toggleDriverAccess(3)">Desactivar</button>
+                <button class="text-xs text-neutral-500 hover:text-white transition-colors cursor-pointer" onclick="confirmDeleteDriver('Miguel Ramos D.', 'driver-card-3')">Eliminar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. SECCIÓN BUSES -->
+      <section class="space-y-3 pb-8" id="buses-section">
+        <div class="flex items-center justify-between pb-1">
+          <h2 class="text-[20px] font-semibold tracking-tight text-white whitespace-nowrap">Buses</h2>
+          <button class="text-xs font-medium text-white bg-neutral-900 hover:bg-neutral-800 px-3 py-1.5 rounded-full border border-neutral-800 transition-colors flex items-center gap-1 cursor-pointer" onclick="toggleBusModal(true)">
+            <span class="material-symbols-outlined text-[14px]">add</span>
+            <span>Nuevo</span>
+          </button>
+        </div>
+        
+        <div class="divide-y divide-neutral-900 border-y border-neutral-900" id="buses-list">
+          <!-- BUS 01 -->
+          <div class="py-4 space-y-3" id="bus-card-1">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-[15px] font-medium text-white whitespace-nowrap">Bus 01</span>
+                <span class="text-neutral-600">•</span>
+                <span class="text-[15px] text-neutral-300">Barranca</span>
+              </div>
+              <span class="text-[11px] tracking-wide uppercase px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 font-medium" id="bus-state-1">En ruta</span>
+            </div>
+            <div class="space-y-1.5 pt-0.5">
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-neutral-400"><span class="text-neutral-500">C1:</span> Carlos Mendoza V.</span>
+                <span class="text-[11px] text-neutral-400 font-medium">En turno</span>
+              </div>
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-neutral-500"><span class="text-neutral-600">Placa:</span> EUA-482</span>
+                <span class="text-[11px] text-neutral-500">ID: bus_keisel_1</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between pt-1 border-t border-neutral-900/60">
+              <span class="text-[11px] text-neutral-500">1 conductor asignado</span>
+              <div class="flex items-center gap-2">
+                <button class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="openEditBusModal('Bus 01', 'Barranca', 'Carlos Mendoza V.', '', 'bus-card-1')">Editar</button>
+                <button class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="triggerEmergencyCut('Bus 01', 'bus-card-1', 'bus-state-1', 'bus_keisel_1')">Corte</button>
+                <button class="text-xs text-neutral-500 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="confirmDeleteBus('Bus 01', 'bus-card-1')">Eliminar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- BUS 02 -->
+          <div class="py-4 space-y-3" id="bus-card-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-[15px] font-medium text-white whitespace-nowrap">Bus 02</span>
+                <span class="text-neutral-600">•</span>
+                <span class="text-[15px] text-neutral-300">Supe</span>
+              </div>
+              <span class="text-[11px] tracking-wide uppercase px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 font-medium" id="bus-state-2">En ruta</span>
+            </div>
+            <div class="space-y-1.5 pt-0.5">
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-neutral-400"><span class="text-neutral-500">C1:</span> Roberto Silva P.</span>
+                <span class="text-[11px] text-neutral-400 font-medium">En turno</span>
+              </div>
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-neutral-500"><span class="text-neutral-600">Placa:</span> EUA-519</span>
+                <span class="text-[11px] text-neutral-500">ID: bus_keisel_2</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between pt-1 border-t border-neutral-900/60">
+              <span class="text-[11px] text-neutral-500">1 conductor asignado</span>
+              <div class="flex items-center gap-2">
+                <button class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="openEditBusModal('Bus 02', 'Supe', 'Roberto Silva P.', '', 'bus-card-2')">Editar</button>
+                <button class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="triggerEmergencyCut('Bus 02', 'bus-card-2', 'bus-state-2', 'bus_keisel_2')">Corte</button>
+                <button class="text-xs text-neutral-500 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="confirmDeleteBus('Bus 02', 'bus-card-2')">Eliminar</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- BUS 03 -->
+          <div class="py-4 space-y-3" id="bus-card-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-[15px] font-medium text-white whitespace-nowrap">Bus 03</span>
+                <span class="text-neutral-600">•</span>
+                <span class="text-[15px] text-neutral-300">Paramonga</span>
+              </div>
+              <span class="text-[11px] tracking-wide uppercase px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 font-medium" id="bus-state-3">En ruta</span>
+            </div>
+            <div class="space-y-1.5 pt-0.5">
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-neutral-400"><span class="text-neutral-500">C1:</span> Miguel Ramos D.</span>
+                <span class="text-[11px] text-neutral-400 font-medium">En turno</span>
+              </div>
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-neutral-500"><span class="text-neutral-600">Placa:</span> EUA-604</span>
+                <span class="text-[11px] text-neutral-500">ID: bus_keisel_3</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between pt-1 border-t border-neutral-900/60">
+              <span class="text-[11px] text-neutral-500">1 conductor asignado</span>
+              <div class="flex items-center gap-2">
+                <button class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="openEditBusModal('Bus 03', 'Paramonga', 'Miguel Ramos D.', '', 'bus-card-3')">Editar</button>
+                <button class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="triggerEmergencyCut('Bus 03', 'bus-card-3', 'bus-state-3', 'bus_keisel_3')">Corte</button>
+                <button class="text-xs text-neutral-500 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="confirmDeleteBus('Bus 03', 'bus-card-3')">Eliminar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- MODAL: NUEVO BUS -->
+    <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-5 hidden" id="modal-bus" onclick="handleBackdropClick(event, 'modal-bus')">
+      <div class="w-full max-w-sm bg-neutral-950 border border-neutral-800 rounded-lg p-5 space-y-4 shadow-2xl" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-between pb-1 border-b border-neutral-900">
+          <h3 class="text-base font-semibold text-white">Nuevo Bus</h3>
+          <button class="text-neutral-500 hover:text-white transition-colors cursor-pointer" onclick="toggleBusModal(false)" type="button">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+        <form class="space-y-3.5" id="form-create-bus" onsubmit="handleCreateBus(event)">
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1">Nombre o identificador</label>
+            <input class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500" id="bus-input-name" placeholder="Ej. Bus 04" required="" type="text">
+          </div>
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1">Ruta asignada</label>
+            <select class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500" id="bus-input-route">
+              <option value="Barranca">Barranca</option>
+              <option value="Supe">Supe</option>
+              <option value="Paramonga">Paramonga</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1">Conductor Principal</label>
+            <select class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500" id="bus-input-c1">
+              <option value="">Sin asignar</option>
+              <option value="Carlos Mendoza V.">Carlos Mendoza V.</option>
+              <option value="Roberto Silva P.">Roberto Silva P.</option>
+              <option value="Miguel Ramos D.">Miguel Ramos D.</option>
+            </select>
+          </div>
+          <div class="pt-2 flex gap-2">
+            <button class="flex-1 py-2 text-xs font-medium text-neutral-400 hover:text-white rounded border border-neutral-800 transition-colors cursor-pointer" onclick="toggleBusModal(false)" type="button">Cancelar</button>
+            <button class="flex-1 py-2 text-xs font-medium text-black bg-white hover:bg-neutral-200 rounded transition-colors cursor-pointer" type="submit">Guardar Bus</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL: NUEVO CONDUCTOR -->
+    <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-5 hidden" id="modal-driver" onclick="handleBackdropClick(event, 'modal-driver')">
+      <div class="w-full max-w-sm bg-neutral-950 border border-neutral-800 rounded-lg p-5 space-y-4 shadow-2xl" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-between pb-1 border-b border-neutral-900">
+          <h3 class="text-base font-semibold text-white">Nuevo Conductor</h3>
+          <button class="text-neutral-500 hover:text-white transition-colors cursor-pointer" onclick="toggleDriverModal(false)" type="button">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+        <form class="space-y-3.5" id="form-create-driver" onsubmit="handleCreateDriver(event)">
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1">Nombre completo</label>
+            <input class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500" id="driver-input-name" placeholder="Ej. Juan Pérez R." required="" type="text">
+          </div>
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1">DNI</label>
+            <input class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500" id="driver-input-dni" pattern="[0-9]{8}" placeholder="8 dígitos" required="" type="text">
+          </div>
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1">Ruta</label>
+            <select class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500" id="driver-input-route">
+              <option value="Barranca">Barranca</option>
+              <option value="Supe">Supe</option>
+              <option value="Paramonga">Paramonga</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1">Vincular a Bus</label>
+            <select class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500" id="driver-input-bus">
+              <option value="">Sin asignar</option>
+              <option value="Bus 01">Bus 01 • Barranca</option>
+              <option value="Bus 02">Bus 02 • Supe</option>
+              <option value="Bus 03">Bus 03 • Paramonga</option>
+            </select>
+          </div>
+          <div class="pt-2 flex gap-2">
+            <button class="flex-1 py-2 text-xs font-medium text-neutral-400 hover:text-white rounded border border-neutral-800 transition-colors cursor-pointer" onclick="toggleDriverModal(false)" type="button">Cancelar</button>
+            <button class="flex-1 py-2 text-xs font-medium text-black bg-white hover:bg-neutral-200 rounded transition-colors cursor-pointer" type="submit">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL: EDITAR CONDUCTOR -->
+    <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-5 hidden" id="modal-edit-driver" onclick="handleBackdropClick(event, 'modal-edit-driver')">
+      <div class="w-full max-w-sm bg-neutral-950 border border-neutral-800 rounded-lg p-5 space-y-4 shadow-2xl" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-between pb-1 border-b border-neutral-900">
+          <h3 class="text-base font-semibold text-white">Editar Conductor</h3>
+          <button class="text-neutral-500 hover:text-white transition-colors cursor-pointer" onclick="toggleEditDriverModal(false)" type="button">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+        <form class="space-y-3.5" id="form-edit-driver" onsubmit="handleSaveEditDriver(event)">
+          <input id="edit-driver-target-id" type="hidden">
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1">Nombre completo</label>
+            <input class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500" id="edit-driver-input-name" required="" type="text">
+          </div>
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1">DNI</label>
+            <input class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500" id="edit-driver-input-dni" pattern="[0-9]{8}" required="" type="text">
+          </div>
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1">Ruta</label>
+            <select class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500" id="edit-driver-input-route">
+              <option value="Barranca">Barranca</option>
+              <option value="Supe">Supe</option>
+              <option value="Paramonga">Paramonga</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1">Vincular a Bus</label>
+            <select class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500" id="edit-driver-input-bus">
+              <option value="">Sin asignar</option>
+              <option value="Bus 01">Bus 01 • Barranca</option>
+              <option value="Bus 02">Bus 02 • Supe</option>
+              <option value="Bus 03">Bus 03 • Paramonga</option>
+            </select>
+          </div>
+          <div class="pt-2 flex gap-2">
+            <button class="flex-1 py-2 text-xs font-medium text-neutral-400 hover:text-white rounded border border-neutral-800 transition-colors cursor-pointer" onclick="toggleEditDriverModal(false)" type="button">Cancelar</button>
+            <button class="flex-1 py-2 text-xs font-medium text-black bg-white hover:bg-neutral-200 rounded transition-colors cursor-pointer" type="submit">Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL: EDITAR BUS -->
+    <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-5 hidden" id="modal-edit-bus" onclick="handleBackdropClick(event, 'modal-edit-bus')">
+      <div class="w-full max-w-sm bg-neutral-950 border border-neutral-800 rounded-lg p-5 space-y-4 shadow-2xl" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-between pb-1 border-b border-neutral-900">
+          <h3 class="text-base font-semibold text-white">Editar Bus</h3>
+          <button class="text-neutral-500 hover:text-white transition-colors cursor-pointer" onclick="toggleEditBusModal(false)" type="button">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+        <form class="space-y-3.5" id="form-edit-bus" onsubmit="handleSaveEditBus(event)">
+          <input id="edit-bus-target-id" type="hidden">
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1">Nombre o identificador</label>
+            <input class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500" id="edit-bus-input-name" required="" type="text">
+          </div>
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1">Ruta asignada</label>
+            <select class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500" id="edit-bus-input-route">
+              <option value="Barranca">Barranca</option>
+              <option value="Supe">Supe</option>
+              <option value="Paramonga">Paramonga</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-neutral-400 mb-1">Conductor Principal</label>
+            <select class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500" id="edit-bus-input-c1">
+              <option value="">Sin asignar</option>
+              <option value="Carlos Mendoza V.">Carlos Mendoza V.</option>
+              <option value="Roberto Silva P.">Roberto Silva P.</option>
+              <option value="Miguel Ramos D.">Miguel Ramos D.</option>
+            </select>
+          </div>
+          <div class="pt-2 flex gap-2">
+            <button class="flex-1 py-2 text-xs font-medium text-neutral-400 hover:text-white rounded border border-neutral-800 transition-colors cursor-pointer" onclick="toggleEditBusModal(false)" type="button">Cancelar</button>
+            <button class="flex-1 py-2 text-xs font-medium text-black bg-white hover:bg-neutral-200 rounded transition-colors cursor-pointer" type="submit">Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL: ELIMINACIÓN GENERAL -->
+    <div class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-5" id="modal-confirm-delete" onclick="handleBackdropClick(event, 'modal-confirm-delete')">
+      <div class="w-full max-w-sm bg-neutral-950 border border-neutral-800 rounded-lg p-5 space-y-4" onclick="event.stopPropagation()">
+        <div>
+          <h3 class="text-base font-semibold text-white" id="delete-dialog-title">¿Eliminar registro?</h3>
+          <p class="text-xs text-neutral-400 mt-1" id="delete-dialog-desc">Esta acción no se puede deshacer.</p>
+        </div>
+        <div class="flex gap-2 pt-1">
+          <button class="flex-1 py-2 text-xs font-medium text-neutral-400 hover:text-white rounded border border-neutral-800 transition-colors cursor-pointer" onclick="closeDeleteModal()">Cancelar</button>
+          <button class="flex-1 py-2 text-xs font-medium text-black bg-white hover:bg-neutral-200 rounded transition-colors cursor-pointer" id="delete-confirm-btn">Eliminar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: CORTE DE EMERGENCIA -->
+    <div class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-5" id="modal-emergency" onclick="handleBackdropClick(event, 'modal-emergency')">
+      <div class="w-full max-w-sm bg-neutral-950 border border-neutral-800 rounded-lg p-5 space-y-4" onclick="event.stopPropagation()">
+        <div>
+          <h3 class="text-base font-semibold text-white" id="emergency-title">¿Corte de emergencia?</h3>
+          <p class="text-xs text-neutral-400 mt-1">La señal se desconectará de inmediato para esta unidad en la base de datos.</p>
+        </div>
+        <div class="flex gap-2 pt-1">
+          <button class="flex-1 py-2 text-xs font-medium text-neutral-400 hover:text-white rounded border border-neutral-800 transition-colors cursor-pointer" onclick="closeEmergencyModal()">
+            Cancelar
+          </button>
+          <button class="flex-1 py-2 text-xs font-medium text-black bg-white hover:bg-neutral-200 rounded transition-colors cursor-pointer" id="emergency-confirm-btn">
+            Confirmar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST NOTIFICACIÓN -->
+    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-200 opacity-0 translate-y-2 bg-neutral-900 border border-neutral-800 text-white text-xs px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2" id="toast-notify">
+      <span id="toast-msg">Acción realizada</span>
+    </div>
+  </div>
+
   <script>
+    // --- USUARIOS CONFIGURADOS (ADMINISTRADOR Y 3 CONDUCTORES) ---
+    var USUARIOS_SISTEMA = {
+      // 1. Administrador General
+      "admin@keisel.me": {
+        rol: "ADMIN",
+        pass: "admin123",
+        nombre: "Yareth Belinda Trujillo Sanchez",
+        detalles: "Administrador del Sistema Keisel"
+      },
+      "admin": {
+        rol: "ADMIN",
+        pass: "admin123",
+        nombre: "Yareth Belinda Trujillo Sanchez",
+        detalles: "Administrador del Sistema Keisel"
+      },
+
+      // 2. Conductor 1: Barranca
+      "barranca@keisel.me": {
+        rol: "CONDUCTOR",
+        pass: "barranca123",
+        nombre: "Carlos Mendoza Vargas",
+        dni: "44829103",
+        ruta: "Bus 01 • Barranca -> UNAB",
+        placa: "EUA-482",
+        busId: "bus_keisel_1",
+        detalles: "Bus Barranca • Mercedes-Benz Sprinter • EUA-482"
+      },
+      "barranca": {
+        rol: "CONDUCTOR",
+        pass: "barranca123",
+        nombre: "Carlos Mendoza Vargas",
+        dni: "44829103",
+        ruta: "Bus 01 • Barranca -> UNAB",
+        placa: "EUA-482",
+        busId: "bus_keisel_1",
+        detalles: "Bus Barranca • Mercedes-Benz Sprinter • EUA-482"
+      },
+
+      // 3. Conductor 2: Supe
+      "supe@keisel.me": {
+        rol: "CONDUCTOR",
+        pass: "supe123",
+        nombre: "Roberto Silva P.",
+        dni: "40918234",
+        ruta: "Bus 02 • Supe -> UNAB",
+        placa: "EUA-519",
+        busId: "bus_keisel_2",
+        detalles: "Bus Supe • Mercedes-Benz Sprinter • EUA-519"
+      },
+      "supe": {
+        rol: "CONDUCTOR",
+        pass: "supe123",
+        nombre: "Roberto Silva P.",
+        dni: "40918234",
+        ruta: "Bus 02 • Supe -> UNAB",
+        placa: "EUA-519",
+        busId: "bus_keisel_2",
+        detalles: "Bus Supe • Mercedes-Benz Sprinter • EUA-519"
+      },
+
+      // 4. Conductor 3: Paramonga
+      "paramonga@keisel.me": {
+        rol: "CONDUCTOR",
+        pass: "paramonga123",
+        nombre: "Miguel Ramos D.",
+        dni: "47102948",
+        ruta: "Bus 03 • Paramonga -> UNAB",
+        placa: "EUA-604",
+        busId: "bus_keisel_3",
+        detalles: "Bus Paramonga • Mercedes-Benz Sprinter • EUA-604"
+      },
+      "paramonga": {
+        rol: "CONDUCTOR",
+        pass: "paramonga123",
+        nombre: "Miguel Ramos D.",
+        dni: "47102948",
+        ruta: "Bus 03 • Paramonga -> UNAB",
+        placa: "EUA-604",
+        busId: "bus_keisel_3",
+        detalles: "Bus Paramonga • Mercedes-Benz Sprinter • EUA-604"
+      }
+    };
+
+    var usuarioActivo = null;
+
+    // --- CONFIGURACIÓN DE CONEXIÓN GPS / SUPABASE ---
     var SUPABASE_REST_URL = "https://mcqcfdivpikmrkkfbhsm.supabase.co/rest/v1/rastreo";
     var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jcWNmZGl2cGlrbXJra2ZiaHNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyNzg5NDIsImV4cCI6MjEwODg1NDk0Mn0.F6Yz31dJI4wQiINS1NwK-cNunO0V_3UEvD3IHgTJSC0";
 
+    function cargarCredencialDemo(user, pass) {
+      var acc = document.getElementById('accountInput');
+      var pwd = document.getElementById('passwordInput');
+      if (acc) acc.value = user;
+      if (pwd) pwd.value = pass;
+    }
+
     function togglePasswordVis() {
-      var p = document.getElementById('input-password');
-      var icon = document.getElementById('icon-pass');
+      var p = document.getElementById('passwordInput');
+      var icon = document.getElementById('passwordIcon');
       if (p && icon) {
         var isPass = p.type === 'password';
         p.type = isPass ? 'text' : 'password';
@@ -192,40 +756,97 @@
       }
     }
 
-    function pasarAlPanel() {
+    function handleFormLogin(e) {
+      if (e) e.preventDefault();
+      var acc = document.getElementById('accountInput').value.trim().toLowerCase();
+      var pwd = document.getElementById('passwordInput').value.trim();
+
+      var record = USUARIOS_SISTEMA[acc];
+      if (!record || record.pass !== pwd) {
+        showToast("Credenciales incorrectas. Verifica tu cuenta o contraseña.");
+        return;
+      }
+
+      usuarioActivo = record;
+
+      if (record.rol === 'ADMIN') {
+        abrirPanelAdmin();
+      } else if (record.rol === 'CONDUCTOR') {
+        abrirPanelConductor(record);
+      }
+    }
+
+    function abrirPanelConductor(conductor) {
       var authView = document.getElementById('vista-auth');
       var panelView = document.getElementById('vista-panel');
+      var adminView = document.getElementById('vista-admin');
+
       if (authView) authView.style.display = 'none';
+      if (adminView) {
+        adminView.style.display = 'none';
+        adminView.classList.add('hidden');
+      }
       if (panelView) {
         panelView.style.display = 'flex';
         panelView.classList.remove('hidden');
       }
+
+      // Actualizar información en pantalla según el conductor que inició sesión
+      var nameEl = document.getElementById('conductor-nombre');
+      var descEl = document.getElementById('conductor-detalles');
+      if (nameEl) nameEl.innerText = conductor.nombre;
+      if (descEl) descEl.innerText = conductor.detalles;
+
+      showToast("Bienvenido, " + conductor.nombre);
     }
 
-    function regresarAlLogin() {
-      terminarViaje();
+    function abrirPanelAdmin() {
       var authView = document.getElementById('vista-auth');
       var panelView = document.getElementById('vista-panel');
+      var adminView = document.getElementById('vista-admin');
+
+      if (authView) authView.style.display = 'none';
       if (panelView) {
         panelView.style.display = 'none';
         panelView.classList.add('hidden');
       }
+      if (adminView) {
+        adminView.style.display = 'flex';
+        adminView.classList.remove('hidden');
+      }
+
+      showToast("Modo Administrador activado");
+    }
+
+    function regresarAlLogin() {
+      terminarViaje();
+      usuarioActivo = null;
+
+      var authView = document.getElementById('vista-auth');
+      var panelView = document.getElementById('vista-panel');
+      var adminView = document.getElementById('vista-admin');
+
+      if (panelView) {
+        panelView.style.display = 'none';
+        panelView.classList.add('hidden');
+      }
+      if (adminView) {
+        adminView.style.display = 'none';
+        adminView.classList.add('hidden');
+      }
       if (authView) {
         authView.style.display = 'flex';
-        authView.classList.remove('hidden');
       }
     }
 
-    // --- PUENTE DIRECTO DESDE ANDROID C# ---
-    window.actualizarGpsDesdeAndroid = function(lat, lng, envios) {
-      // Silencioso en UI (coordenadas y paquetes ocultos por diseno)
-    };
+    function handleLogoutAdmin() {
+      showToast('Cerrando sesión de administrador...');
+      setTimeout(function() {
+        regresarAlLogin();
+      }, 400);
+    }
 
-    window.actualizarEstadoGps = function(msg) {
-      // Silencioso en UI
-    };
-
-    // --- TRANSMISIÓN GPS EN TIEMPO REAL ESTABILIZADA ---
+    // --- TRANSMISIÓN GPS EN TIEMPO REAL (CONDUCTOR) ---
     var watchId = null;
     var heartbeatInterval = null;
     var transmisionActiva = false;
@@ -245,6 +866,13 @@
       return R * c;
     }
 
+    function obtenerBusIdActivo() {
+      if (usuarioActivo && usuarioActivo.busId) {
+        return usuarioActivo.busId;
+      }
+      return "bus_keisel_1";
+    }
+
     function procesarGpsConductor(pos) {
       if (!transmisionActiva || !pos || !pos.coords) return;
       var lat = pos.coords.latitude;
@@ -259,20 +887,16 @@
         return;
       }
 
-      if (accuracy > 40) {
-        return;
-      }
+      if (accuracy > 40) return;
 
       var distancia = calcularDistanciaMetros(posChoferFijada[0], posChoferFijada[1], lat, lng);
 
-      // Si el conductor está quieto (variación menor a 15 metros o velocidad ~0), mantener su coordenada fija sin saltos
       if ((speed !== null && speed !== undefined && speed < 0.5 && distancia < 20.0) || distancia < UMBRAL_MOVIMIENTO_METROS) {
         confirmacionesMov = 0;
         transmitirCoordenadas(posChoferFijada[0], posChoferFijada[1]);
         return;
       }
 
-      // Exigir 3 lecturas consecutivas fuera de los 15m para descartar rebotes falsos de GPS
       confirmacionesMov++;
       if (confirmacionesMov < 3) {
         transmitirCoordenadas(posChoferFijada[0], posChoferFijada[1]);
@@ -289,11 +913,12 @@
     function transmitirCoordenadas(lat, lng) {
       if (!transmisionActiva) return;
 
+      var targetBusId = obtenerBusIdActivo();
       var latExacta = Number(Number(lat).toFixed(7));
       var lngExacta = Number(Number(lng).toFixed(7));
 
       var payload = JSON.stringify({
-        id: 'bus_keisel_1',
+        id: targetBusId,
         latitud: latExacta,
         longitud: lngExacta,
         actualizado_en: new Date().toISOString()
@@ -313,8 +938,8 @@
       });
     }
 
-    function limpiarSenalSupabase() {
-      if (transmisionActiva) return;
+    function limpiarSenalSupabase(customBusId) {
+      var targetBusId = customBusId || obtenerBusIdActivo();
       fetch(SUPABASE_REST_URL, {
         method: 'POST',
         headers: {
@@ -324,7 +949,7 @@
           'Prefer': 'resolution=merge-duplicates'
         },
         body: JSON.stringify({
-          id: 'bus_keisel_1',
+          id: targetBusId,
           latitud: null,
           longitud: null,
           actualizado_en: new Date(0).toISOString()
@@ -340,7 +965,7 @@
       mejorAccuracyChofer = 9999;
       confirmacionesMov = 0;
 
-      // 1. Notificar a Android Nativo en C#
+      // 1. Notificar a Android Nativo en C# (.NET MAUI)
       try {
         window.location.href = "keisel://iniciar-gps";
       } catch (e) {
@@ -351,45 +976,36 @@
       document.getElementById('status-label').innerText = "En Transmisión";
       
       var radar = document.getElementById('radar-ring');
-      radar.className = "absolute inset-0 rounded-full bg-white/20 radar-active";
+      if (radar) radar.className = "absolute inset-0 rounded-full bg-white/20 radar-active";
       
       var iconBg = document.getElementById('gps-icon-bg');
-      iconBg.className = "w-16 h-16 rounded-full bg-[#161616] border-2 border-white flex items-center justify-center shadow-2xl";
+      if (iconBg) iconBg.className = "w-16 h-16 rounded-full bg-[#161616] border-2 border-white flex items-center justify-center shadow-2xl";
       
       var icon = document.getElementById('gps-main-icon');
-      icon.className = "material-symbols-outlined text-3xl text-white";
-      icon.innerText = "sensors";
+      if (icon) {
+        icon.className = "material-symbols-outlined text-3xl text-white";
+        icon.innerText = "sensors";
+      }
 
       document.getElementById('gps-title').innerText = "GPS Activo y Transmitiendo";
-      document.getElementById('gps-title').className = "text-xl font-extrabold tracking-tight text-white mt-3";
-
-      document.getElementById('gps-subtitle').innerText = "Tu ubicación se está enviando en tiempo real al mapa de los estudiantes.";
+      document.getElementById('gps-subtitle').innerText = "Tu ubicación se está enviando en tiempo real al mapa de los estudiantes (" + (usuarioActivo ? usuarioActivo.ruta : "En ruta") + ").";
 
       // 2. Ejecutar GPS con filtro estabilizador anti-temblor
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
-          function(pos) {
-            procesarGpsConductor(pos);
-          },
-          function(err) {
-            console.warn("Fast GPS:", err);
-          },
+          function(pos) { procesarGpsConductor(pos); },
+          function(err) { console.warn("GPS inicial:", err); },
           { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
         );
 
         if (watchId) navigator.geolocation.clearWatch(watchId);
         watchId = navigator.geolocation.watchPosition(
-          function(pos) {
-            procesarGpsConductor(pos);
-          },
-          function(err) {
-            console.warn("GPS error:", err.message);
-          },
+          function(pos) { procesarGpsConductor(pos); },
+          function(err) { console.warn("GPS watch:", err.message); },
           { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
         );
       }
 
-      // Mantener señal activa en Supabase cada 2 segundos en tiempo real
       if (heartbeatInterval) clearInterval(heartbeatInterval);
       heartbeatInterval = setInterval(function() {
         if (transmisionActiva && posChoferFijada) {
@@ -412,37 +1028,340 @@
         heartbeatInterval = null;
       }
 
-      // 1. Notificar a Android Nativo en C#
+      // Notificar a Android Nativo en C#
       try {
         window.location.href = "keisel://detener-gps";
       } catch (e) {
         console.warn("Bridge:", e);
       }
 
-      // 2. Limpiar en Supabase de inmediato y con refuerzo a los 500ms y 1200ms para evitar que un paquete en vuelo lo pise
       limpiarSenalSupabase();
-      setTimeout(limpiarSenalSupabase, 500);
-      setTimeout(limpiarSenalSupabase, 1200);
+      setTimeout(function() { limpiarSenalSupabase(); }, 500);
 
-      document.getElementById('status-dot').className = "w-2.5 h-2.5 rounded-full bg-[#8E8E93]";
-      document.getElementById('status-label').innerText = "En Espera";
+      var dot = document.getElementById('status-dot');
+      if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-[#8E8E93]";
+      
+      var lbl = document.getElementById('status-label');
+      if (lbl) lbl.innerText = "En Espera";
 
       var radar = document.getElementById('radar-ring');
-      radar.className = "absolute inset-0 rounded-full bg-[#8E8E93]/10";
+      if (radar) radar.className = "absolute inset-0 rounded-full bg-[#8E8E93]/10";
 
       var iconBg = document.getElementById('gps-icon-bg');
-      iconBg.className = "w-16 h-16 rounded-full bg-[#181A22] border border-[#262833] flex items-center justify-center shadow-xl";
+      if (iconBg) iconBg.className = "w-16 h-16 rounded-full bg-[#181A22] border border-[#262833] flex items-center justify-center shadow-xl";
 
       var icon = document.getElementById('gps-main-icon');
-      icon.className = "material-symbols-outlined text-3xl text-[#8E8E93]";
-      icon.innerText = "location_disabled";
+      if (icon) {
+        icon.className = "material-symbols-outlined text-3xl text-[#8E8E93]";
+        icon.innerText = "location_disabled";
+      }
 
-      document.getElementById('gps-title').innerText = "GPS en Pausa";
-      document.getElementById('gps-title').className = "text-xl font-extrabold tracking-tight text-white mt-3";
+      var title = document.getElementById('gps-title');
+      if (title) title.innerText = "GPS en Pausa";
 
-      document.getElementById('gps-subtitle').innerText = "Presiona el botón de abajo para comenzar a transmitir tu ubicación satelital.";
+      var sub = document.getElementById('gps-subtitle');
+      if (sub) sub.innerText = "Presiona el botón de abajo para comenzar a transmitir tu ubicación satelital.";
     }
+
+    // --- MÉTODOS DEL PANEL ADMINISTRADOR ---
+    let newBusCounter = 4;
+    let newDriverCounter = 4;
+    let targetDeleteCardId = null;
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast-notify');
+      const toastMsg = document.getElementById('toast-msg');
+      if (!toast || !toastMsg) return;
+      toastMsg.textContent = msg;
+      toast.classList.remove('opacity-0', 'translate-y-2');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      if (window.toastTimeout) clearTimeout(window.toastTimeout);
+      window.toastTimeout = setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        toast.classList.remove('opacity-100', 'translate-y-0');
+      }, 2400);
+    }
+
+    function toggleBusModal(show) {
+      const modal = document.getElementById('modal-bus');
+      if (!modal) return;
+      if (show) {
+        modal.classList.remove('hidden');
+        const nameInput = document.getElementById('bus-input-name');
+        if (nameInput) setTimeout(() => nameInput.focus(), 50);
+      } else {
+        modal.classList.add('hidden');
+      }
+    }
+
+    function toggleDriverModal(show) {
+      const modal = document.getElementById('modal-driver');
+      if (!modal) return;
+      if (show) {
+        modal.classList.remove('hidden');
+        const nameInput = document.getElementById('driver-input-name');
+        if (nameInput) setTimeout(() => nameInput.focus(), 50);
+      } else {
+        modal.classList.add('hidden');
+      }
+    }
+
+    function toggleEditDriverModal(show) {
+      const modal = document.getElementById('modal-edit-driver');
+      if (!modal) return;
+      if (show) modal.classList.remove('hidden');
+      else modal.classList.add('hidden');
+    }
+
+    function toggleEditBusModal(show) {
+      const modal = document.getElementById('modal-edit-bus');
+      if (!modal) return;
+      if (show) modal.classList.remove('hidden');
+      else modal.classList.add('hidden');
+    }
+
+    function handleBackdropClick(event, modalId) {
+      if (event.target.id === modalId) {
+        document.getElementById(modalId).classList.add('hidden');
+      }
+    }
+
+    function openEditDriverModal(name, dni, route, bus, cardId) {
+      document.getElementById('edit-driver-target-id').value = cardId;
+      document.getElementById('edit-driver-input-name').value = name;
+      document.getElementById('edit-driver-input-dni').value = dni;
+      document.getElementById('edit-driver-input-route').value = route;
+      document.getElementById('edit-driver-input-bus').value = bus || '';
+      toggleEditDriverModal(true);
+    }
+
+    function handleSaveEditDriver(e) {
+      e.preventDefault();
+      const cardId = document.getElementById('edit-driver-target-id').value;
+      const name = document.getElementById('edit-driver-input-name').value;
+      const dni = document.getElementById('edit-driver-input-dni').value;
+      const route = document.getElementById('edit-driver-input-route').value;
+      
+      const card = document.getElementById(cardId);
+      if (card) {
+        const nameEl = card.querySelector('p.text-\\[15px\\]');
+        const dniEl = card.querySelector('p.text-xs');
+        if (nameEl) nameEl.textContent = name;
+        if (dniEl) dniEl.textContent = 'DNI ' + dni;
+      }
+      toggleEditDriverModal(false);
+      showToast('Conductor actualizado');
+    }
+
+    function openEditBusModal(name, route, c1, c2, cardId) {
+      document.getElementById('edit-bus-target-id').value = cardId;
+      document.getElementById('edit-bus-input-name').value = name;
+      document.getElementById('edit-bus-input-route').value = route;
+      document.getElementById('edit-bus-input-c1').value = c1 || '';
+      toggleEditBusModal(true);
+    }
+
+    function handleSaveEditBus(e) {
+      e.preventDefault();
+      const cardId = document.getElementById('edit-bus-target-id').value;
+      const name = document.getElementById('edit-bus-input-name').value;
+      const route = document.getElementById('edit-bus-input-route').value;
+      
+      const card = document.getElementById(cardId);
+      if (card) {
+        const nameSpan = card.querySelector('span.text-\\[15px\\]');
+        if (nameSpan) nameSpan.textContent = name;
+      }
+      toggleEditBusModal(false);
+      showToast('Bus actualizado');
+    }
+
+    function handleCreateBus(e) {
+      e.preventDefault();
+      const name = document.getElementById('bus-input-name').value.trim() || ('Bus 0' + newBusCounter);
+      const route = document.getElementById('bus-input-route').value;
+      const c1 = document.getElementById('bus-input-c1').value;
+
+      const busId = 'bus-card-' + newBusCounter;
+      const stateId = 'bus-state-' + newBusCounter;
+      const busKey = 'bus_keisel_' + newBusCounter;
+
+      const busHtml = `
+        <div class="py-4 space-y-3" id="${busId}">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-[15px] font-medium text-white whitespace-nowrap">${name}</span>
+              <span class="text-neutral-600">•</span>
+              <span class="text-[15px] text-neutral-300">${route}</span>
+            </div>
+            <span class="text-[11px] tracking-wide uppercase px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 font-medium" id="${stateId}">En ruta</span>
+          </div>
+          <div class="space-y-1.5 pt-0.5">
+            <div class="flex items-center justify-between text-xs">
+              <span class="${c1 ? 'text-neutral-400' : 'text-neutral-500'}">
+                <span class="${c1 ? 'text-neutral-500' : 'text-neutral-600'}">C1:</span> ${c1 || 'Sin asignar'}
+              </span>
+              <span class="text-[11px] text-neutral-400 font-medium">${c1 ? 'En turno' : 'Disponible'}</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between pt-1 border-t border-neutral-900/60">
+            <span class="text-[11px] text-neutral-500">ID: ${busKey}</span>
+            <div class="flex items-center gap-2">
+              <button class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="openEditBusModal('${name}', '${route}', '${c1}', '', '${busId}')">Editar</button>
+              <button class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="triggerEmergencyCut('${name}', '${busId}', '${stateId}', '${busKey}')">Corte</button>
+              <button class="text-xs text-neutral-500 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="confirmDeleteBus('${name}', '${busId}')">Eliminar</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const busesList = document.getElementById('buses-list');
+      if (busesList) busesList.insertAdjacentHTML('beforeend', busHtml);
+
+      newBusCounter++;
+      toggleBusModal(false);
+      e.target.reset();
+      showToast(name + ' registrado con éxito');
+    }
+
+    function handleCreateDriver(e) {
+      e.preventDefault();
+      const name = document.getElementById('driver-input-name').value.trim();
+      const dni = document.getElementById('driver-input-dni').value.trim();
+      const route = document.getElementById('driver-input-route').value;
+
+      const driverId = newDriverCounter;
+      const driverHtml = `
+        <div class="py-4 space-y-3" id="driver-card-${driverId}">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="text-[15px] font-medium text-white">${name}</p>
+              <p class="text-xs text-neutral-500 mt-0.5">DNI ${dni}</p>
+            </div>
+            <span class="text-[11px] uppercase tracking-wide px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 font-medium" id="driver-status-${driverId}">
+              Activo
+            </span>
+          </div>
+          <div class="flex items-center justify-between pt-1">
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-neutral-500">Ruta:</span>
+              <div class="relative">
+                <select class="bg-neutral-950 border border-neutral-800 text-neutral-200 text-xs rounded px-2 py-1 pr-6 focus:outline-none focus:border-neutral-600 appearance-none cursor-pointer" onchange="updateDriverRoute(${driverId}, this.value)">
+                  <option value="Barranca" ${route === 'Barranca' ? 'selected' : ''}>Barranca</option>
+                  <option value="Supe" ${route === 'Supe' ? 'selected' : ''}>Supe</option>
+                  <option value="Paramonga" ${route === 'Paramonga' ? 'selected' : ''}>Paramonga</option>
+                </select>
+                <span class="material-symbols-outlined pointer-events-none absolute right-1 top-1.5 text-[14px] text-neutral-500">expand_more</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2.5">
+              <button class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer" onclick="openEditDriverModal('${name}', '${dni}', '${route}', '', 'driver-card-${driverId}')">Editar</button>
+              <button class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer" id="driver-btn-${driverId}" onclick="toggleDriverAccess(${driverId})">Desactivar</button>
+              <button class="text-xs text-neutral-500 hover:text-white transition-colors cursor-pointer" onclick="confirmDeleteDriver('${name}', 'driver-card-${driverId}')">Eliminar</button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const driversList = document.getElementById('drivers-list');
+      if (driversList) driversList.insertAdjacentHTML('beforeend', driverHtml);
+
+      newDriverCounter++;
+      toggleDriverModal(false);
+      e.target.reset();
+      showToast('Conductor añadido');
+    }
+
+    function triggerEmergencyCut(busName, cardId, stateId, busKey) {
+      const modal = document.getElementById('modal-emergency');
+      const title = document.getElementById('emergency-title');
+      const confirmBtn = document.getElementById('emergency-confirm-btn');
+
+      title.textContent = 'Corte: ' + busName;
+      modal.classList.remove('hidden');
+
+      confirmBtn.onclick = function() {
+        const card = document.getElementById(cardId);
+        const state = document.getElementById(stateId);
+        if (card) card.classList.add('opacity-50');
+        if (state) state.textContent = 'Apagado';
+        
+        // Limpiar la señal real en Supabase para que el bus desaparezca del mapa
+        limpiarSenalSupabase(busKey);
+
+        closeEmergencyModal();
+        showToast('Corte de señal aplicado a ' + busName);
+      };
+    }
+
+    function closeEmergencyModal() {
+      document.getElementById('modal-emergency').classList.add('hidden');
+    }
+
+    function confirmDeleteDriver(name, cardId) {
+      targetDeleteCardId = cardId;
+      document.getElementById('delete-dialog-title').textContent = '¿Eliminar a ' + name + '?';
+      document.getElementById('delete-confirm-btn').onclick = function() {
+        const card = document.getElementById(targetDeleteCardId);
+        if (card) card.remove();
+        closeDeleteModal();
+        showToast(name + ' eliminado');
+      };
+      document.getElementById('modal-confirm-delete').classList.remove('hidden');
+    }
+
+    function confirmDeleteBus(name, cardId) {
+      targetDeleteCardId = cardId;
+      document.getElementById('delete-dialog-title').textContent = '¿Eliminar ' + name + '?';
+      document.getElementById('delete-confirm-btn').onclick = function() {
+        const card = document.getElementById(targetDeleteCardId);
+        if (card) card.remove();
+        closeDeleteModal();
+        showToast(name + ' eliminado');
+      };
+      document.getElementById('modal-confirm-delete').classList.remove('hidden');
+    }
+
+    function closeDeleteModal() {
+      document.getElementById('modal-confirm-delete').classList.add('hidden');
+      targetDeleteCardId = null;
+    }
+
+    function updateDriverRoute(id, route) {
+      showToast('Ruta actualizada a ' + route);
+    }
+
+    function toggleDriverAccess(id) {
+      const statusBadge = document.getElementById('driver-status-' + id);
+      const btn = document.getElementById('driver-btn-' + id);
+      const card = document.getElementById('driver-card-' + id);
+
+      if (!statusBadge || !btn || !card) return;
+
+      if (statusBadge.textContent.trim().toUpperCase() === 'ACTIVO') {
+        statusBadge.textContent = 'Inactivo';
+        btn.textContent = 'Activar';
+        card.classList.add('opacity-60');
+        showToast('Acceso desactivado');
+      } else {
+        statusBadge.textContent = 'Activo';
+        btn.textContent = 'Desactivar';
+        card.classList.remove('opacity-60');
+        showToast('Acceso activado');
+      }
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        toggleBusModal(false);
+        toggleDriverModal(false);
+        toggleEditDriverModal(false);
+        toggleEditBusModal(false);
+        closeEmergencyModal();
+        closeDeleteModal();
+      }
+    });
   </script>
 </body>
 </html>
-
