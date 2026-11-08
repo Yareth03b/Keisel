@@ -84,7 +84,7 @@
               Cuenta o correo electrónico
             </label>
             <div class="w-full bg-[#161616] rounded-xl border border-[#262833] focus-within:border-white transition-colors">
-              <input autocomplete="username" class="w-full h-14 bg-transparent px-4 text-sm text-white placeholder:text-[#555A69] focus:outline-none" id="accountInput" placeholder="Ej. barranca@keisel.me o admin@keisel.me" required="" type="text" value="barranca@keisel.me">
+              <input autocomplete="username" class="w-full h-14 bg-transparent px-4 text-sm text-white placeholder:text-[#555A69] focus:outline-none" id="accountInput" placeholder="Ej. conductor1@keisel.me o adm-teso@keisel.me" required="" type="text" value="conductor1@keisel.me">
             </div>
           </div>
 
@@ -94,7 +94,7 @@
               Contraseña
             </label>
             <div class="relative flex items-center w-full bg-[#161616] rounded-xl border border-[#262833] focus-within:border-white transition-colors">
-              <input autocomplete="current-password" class="w-full h-14 bg-transparent pl-4 pr-12 text-sm text-white placeholder:text-[#555A69] focus:outline-none" id="passwordInput" placeholder="••••••••" required="" type="password" value="barranca123">
+              <input autocomplete="current-password" class="w-full h-14 bg-transparent pl-4 pr-12 text-sm text-white placeholder:text-[#555A69] focus:outline-none" id="passwordInput" placeholder="••••••••" required="" type="password" value="conductor123">
               <button aria-label="Mostrar u ocultar contraseña" class="absolute right-3 p-1 flex items-center justify-center text-[#8E8E93] hover:text-white transition-colors focus:outline-none cursor-pointer" id="togglePasswordBtn" onclick="togglePasswordVis()" type="button">
                 <span class="material-symbols-outlined text-[20px]" id="passwordIcon">visibility_off</span>
               </button>
@@ -103,17 +103,17 @@
 
           <!-- Quick Selector Pill Badges (Ayuda rápida de acceso) -->
           <div class="flex flex-wrap gap-2 pt-1">
-            <button type="button" onclick="cargarCredencialDemo('barranca@keisel.me', 'barranca123')" class="text-[11px] px-2.5 py-1 rounded-full bg-[#181A22] border border-[#262833] text-neutral-300 hover:border-neutral-500 hover:text-white transition-all">
+            <button type="button" onclick="cargarCredencialDemo('conductor1@keisel.me', 'conductor123')" class="text-[11px] px-2.5 py-1 rounded-full bg-[#181A22] border border-[#262833] text-neutral-300 hover:border-neutral-500 hover:text-white transition-all cursor-pointer">
               Conductor 1 (Barranca)
             </button>
-            <button type="button" onclick="cargarCredencialDemo('supe@keisel.me', 'supe123')" class="text-[11px] px-2.5 py-1 rounded-full bg-[#181A22] border border-[#262833] text-neutral-300 hover:border-neutral-500 hover:text-white transition-all">
+            <button type="button" onclick="cargarCredencialDemo('conductor2@keisel.me', 'conductor123')" class="text-[11px] px-2.5 py-1 rounded-full bg-[#181A22] border border-[#262833] text-neutral-300 hover:border-neutral-500 hover:text-white transition-all cursor-pointer">
               Conductor 2 (Supe)
             </button>
-            <button type="button" onclick="cargarCredencialDemo('paramonga@keisel.me', 'paramonga123')" class="text-[11px] px-2.5 py-1 rounded-full bg-[#181A22] border border-[#262833] text-neutral-300 hover:border-neutral-500 hover:text-white transition-all">
+            <button type="button" onclick="cargarCredencialDemo('conductor3@keisel.me', 'conductor123')" class="text-[11px] px-2.5 py-1 rounded-full bg-[#181A22] border border-[#262833] text-neutral-300 hover:border-neutral-500 hover:text-white transition-all cursor-pointer">
               Conductor 3 (Paramonga)
             </button>
-            <button type="button" onclick="cargarCredencialDemo('admin@keisel.me', 'admin123')" class="text-[11px] px-2.5 py-1 rounded-full bg-[#181A22] border border-white/30 text-white font-medium hover:bg-neutral-800 transition-all">
-              Panel Admin
+            <button type="button" onclick="cargarCredencialDemo('adm-teso@keisel.me', 'Th42913416')" class="text-[11px] px-2.5 py-1 rounded-full bg-[#181A22] border border-white/40 text-white font-medium hover:bg-neutral-800 transition-all cursor-pointer">
+              Admin AD (adm-teso)
             </button>
           </div>
         </form>
@@ -170,10 +170,10 @@
             <span class="text-[11px] font-bold text-[#8E8E93] tracking-wide uppercase">Conductor Verificado</span>
           </div>
           <h1 class="text-2xl font-extrabold text-white tracking-tight" id="conductor-nombre">
-            Carlos Mendoza Vargas
+            Conductor 01
           </h1>
           <p class="text-xs text-[#8E8E93] mt-0.5" id="conductor-detalles">
-            Bus Barranca • Mercedes-Benz Sprinter • EUA-482
+            Bus 01 • Barranca -> UNAB • EUA-482
           </p>
         </div>
 
@@ -220,7 +220,7 @@
       <div class="h-14 px-5 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <span class="text-[17px] font-semibold tracking-tight text-white whitespace-nowrap">Admin</span>
-          <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white text-black">Master</span>
+          <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white text-black">Active Directory</span>
         </div>
         <div class="flex items-center gap-4">
           <button aria-label="Cerrar sesión" class="text-neutral-400 hover:text-white transition-colors flex items-center justify-center p-1 cursor-pointer" onclick="handleLogoutAdmin()">
@@ -250,8 +250,8 @@
           <div class="py-4 space-y-3" id="driver-card-1">
             <div class="flex items-start justify-between">
               <div>
-                <p class="text-[15px] font-medium text-white" id="driver-name-1">Carlos Mendoza Vargas</p>
-                <p class="text-xs text-neutral-500 mt-0.5" id="driver-dni-1">DNI 44829103 • barranca@keisel.me</p>
+                <p class="text-[15px] font-medium text-white" id="driver-name-1">Conductor 01</p>
+                <p class="text-xs text-neutral-500 mt-0.5" id="driver-dni-1">conductor1@keisel.me • Ruta Barranca</p>
               </div>
               <span class="text-[11px] uppercase tracking-wide px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 font-medium" id="driver-status-1">
                 Activo
@@ -270,9 +270,9 @@
                 </div>
               </div>
               <div class="flex items-center gap-2.5">
-                <button class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer" onclick="openEditDriverModal('Carlos Mendoza Vargas', '44829103', 'Barranca', 'Bus 01', 'driver-card-1')">Editar</button>
+                <button class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer" onclick="openEditDriverModal('Conductor 01', '00000001', 'Barranca', 'Bus 01', 'driver-card-1')">Editar</button>
                 <button class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer" id="driver-btn-1" onclick="toggleDriverAccess(1)">Desactivar</button>
-                <button class="text-xs text-neutral-500 hover:text-white transition-colors cursor-pointer" onclick="confirmDeleteDriver('Carlos Mendoza Vargas', 'driver-card-1')">Eliminar</button>
+                <button class="text-xs text-neutral-500 hover:text-white transition-colors cursor-pointer" onclick="confirmDeleteDriver('Conductor 01', 'driver-card-1')">Eliminar</button>
               </div>
             </div>
           </div>
@@ -281,8 +281,8 @@
           <div class="py-4 space-y-3" id="driver-card-2">
             <div class="flex items-start justify-between">
               <div>
-                <p class="text-[15px] font-medium text-white" id="driver-name-2">Roberto Silva P.</p>
-                <p class="text-xs text-neutral-500 mt-0.5" id="driver-dni-2">DNI 40918234 • supe@keisel.me</p>
+                <p class="text-[15px] font-medium text-white" id="driver-name-2">Conductor 02</p>
+                <p class="text-xs text-neutral-500 mt-0.5" id="driver-dni-2">conductor2@keisel.me • Ruta Supe</p>
               </div>
               <span class="text-[11px] uppercase tracking-wide px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 font-medium" id="driver-status-2">
                 Activo
@@ -301,9 +301,9 @@
                 </div>
               </div>
               <div class="flex items-center gap-2.5">
-                <button class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer" onclick="openEditDriverModal('Roberto Silva P.', '40918234', 'Supe', 'Bus 02', 'driver-card-2')">Editar</button>
+                <button class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer" onclick="openEditDriverModal('Conductor 02', '00000002', 'Supe', 'Bus 02', 'driver-card-2')">Editar</button>
                 <button class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer" id="driver-btn-2" onclick="toggleDriverAccess(2)">Desactivar</button>
-                <button class="text-xs text-neutral-500 hover:text-white transition-colors cursor-pointer" onclick="confirmDeleteDriver('Roberto Silva P.', 'driver-card-2')">Eliminar</button>
+                <button class="text-xs text-neutral-500 hover:text-white transition-colors cursor-pointer" onclick="confirmDeleteDriver('Conductor 02', 'driver-card-2')">Eliminar</button>
               </div>
             </div>
           </div>
@@ -312,8 +312,8 @@
           <div class="py-4 space-y-3" id="driver-card-3">
             <div class="flex items-start justify-between">
               <div>
-                <p class="text-[15px] font-medium text-white" id="driver-name-3">Miguel Ramos D.</p>
-                <p class="text-xs text-neutral-500 mt-0.5" id="driver-dni-3">DNI 47102948 • paramonga@keisel.me</p>
+                <p class="text-[15px] font-medium text-white" id="driver-name-3">Conductor 03</p>
+                <p class="text-xs text-neutral-500 mt-0.5" id="driver-dni-3">conductor3@keisel.me • Ruta Paramonga</p>
               </div>
               <span class="text-[11px] uppercase tracking-wide px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 font-medium" id="driver-status-3">
                 Activo
@@ -332,9 +332,9 @@
                 </div>
               </div>
               <div class="flex items-center gap-2.5">
-                <button class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer" onclick="openEditDriverModal('Miguel Ramos D.', '47102948', 'Paramonga', 'Bus 03', 'driver-card-3')">Editar</button>
+                <button class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer" onclick="openEditDriverModal('Conductor 03', '00000003', 'Paramonga', 'Bus 03', 'driver-card-3')">Editar</button>
                 <button class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer" id="driver-btn-3" onclick="toggleDriverAccess(3)">Desactivar</button>
-                <button class="text-xs text-neutral-500 hover:text-white transition-colors cursor-pointer" onclick="confirmDeleteDriver('Miguel Ramos D.', 'driver-card-3')">Eliminar</button>
+                <button class="text-xs text-neutral-500 hover:text-white transition-colors cursor-pointer" onclick="confirmDeleteDriver('Conductor 03', 'driver-card-3')">Eliminar</button>
               </div>
             </div>
           </div>
@@ -364,7 +364,7 @@
             </div>
             <div class="space-y-1.5 pt-0.5">
               <div class="flex items-center justify-between text-xs">
-                <span class="text-neutral-400"><span class="text-neutral-500">C1:</span> Carlos Mendoza V.</span>
+                <span class="text-neutral-400"><span class="text-neutral-500">C1:</span> Conductor 01</span>
                 <span class="text-[11px] text-neutral-400 font-medium">En turno</span>
               </div>
               <div class="flex items-center justify-between text-xs">
@@ -375,7 +375,7 @@
             <div class="flex items-center justify-between pt-1 border-t border-neutral-900/60">
               <span class="text-[11px] text-neutral-500">1 conductor asignado</span>
               <div class="flex items-center gap-2">
-                <button class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="openEditBusModal('Bus 01', 'Barranca', 'Carlos Mendoza V.', '', 'bus-card-1')">Editar</button>
+                <button class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="openEditBusModal('Bus 01', 'Barranca', 'Conductor 01', '', 'bus-card-1')">Editar</button>
                 <button class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="triggerEmergencyCut('Bus 01', 'bus-card-1', 'bus-state-1', 'bus_keisel_1')">Corte</button>
                 <button class="text-xs text-neutral-500 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="confirmDeleteBus('Bus 01', 'bus-card-1')">Eliminar</button>
               </div>
@@ -394,7 +394,7 @@
             </div>
             <div class="space-y-1.5 pt-0.5">
               <div class="flex items-center justify-between text-xs">
-                <span class="text-neutral-400"><span class="text-neutral-500">C1:</span> Roberto Silva P.</span>
+                <span class="text-neutral-400"><span class="text-neutral-500">C1:</span> Conductor 02</span>
                 <span class="text-[11px] text-neutral-400 font-medium">En turno</span>
               </div>
               <div class="flex items-center justify-between text-xs">
@@ -405,7 +405,7 @@
             <div class="flex items-center justify-between pt-1 border-t border-neutral-900/60">
               <span class="text-[11px] text-neutral-500">1 conductor asignado</span>
               <div class="flex items-center gap-2">
-                <button class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="openEditBusModal('Bus 02', 'Supe', 'Roberto Silva P.', '', 'bus-card-2')">Editar</button>
+                <button class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="openEditBusModal('Bus 02', 'Supe', 'Conductor 02', '', 'bus-card-2')">Editar</button>
                 <button class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="triggerEmergencyCut('Bus 02', 'bus-card-2', 'bus-state-2', 'bus_keisel_2')">Corte</button>
                 <button class="text-xs text-neutral-500 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="confirmDeleteBus('Bus 02', 'bus-card-2')">Eliminar</button>
               </div>
@@ -424,7 +424,7 @@
             </div>
             <div class="space-y-1.5 pt-0.5">
               <div class="flex items-center justify-between text-xs">
-                <span class="text-neutral-400"><span class="text-neutral-500">C1:</span> Miguel Ramos D.</span>
+                <span class="text-neutral-400"><span class="text-neutral-500">C1:</span> Conductor 03</span>
                 <span class="text-[11px] text-neutral-400 font-medium">En turno</span>
               </div>
               <div class="flex items-center justify-between text-xs">
@@ -435,7 +435,7 @@
             <div class="flex items-center justify-between pt-1 border-t border-neutral-900/60">
               <span class="text-[11px] text-neutral-500">1 conductor asignado</span>
               <div class="flex items-center gap-2">
-                <button class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="openEditBusModal('Bus 03', 'Paramonga', 'Miguel Ramos D.', '', 'bus-card-3')">Editar</button>
+                <button class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="openEditBusModal('Bus 03', 'Paramonga', 'Conductor 03', '', 'bus-card-3')">Editar</button>
                 <button class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="triggerEmergencyCut('Bus 03', 'bus-card-3', 'bus-state-3', 'bus_keisel_3')">Corte</button>
                 <button class="text-xs text-neutral-500 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="confirmDeleteBus('Bus 03', 'bus-card-3')">Eliminar</button>
               </div>
@@ -471,9 +471,9 @@
             <label class="block text-xs text-neutral-400 mb-1">Conductor Principal</label>
             <select class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500" id="bus-input-c1">
               <option value="">Sin asignar</option>
-              <option value="Carlos Mendoza V.">Carlos Mendoza V.</option>
-              <option value="Roberto Silva P.">Roberto Silva P.</option>
-              <option value="Miguel Ramos D.">Miguel Ramos D.</option>
+              <option value="Conductor 01">Conductor 01</option>
+              <option value="Conductor 02">Conductor 02</option>
+              <option value="Conductor 03">Conductor 03</option>
             </select>
           </div>
           <div class="pt-2 flex gap-2">
@@ -495,12 +495,12 @@
         </div>
         <form class="space-y-3.5" id="form-create-driver" onsubmit="handleCreateDriver(event)">
           <div>
-            <label class="block text-xs text-neutral-400 mb-1">Nombre completo</label>
-            <input class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500" id="driver-input-name" placeholder="Ej. Juan Pérez R." required="" type="text">
+            <label class="block text-xs text-neutral-400 mb-1">Identificador Conductor</label>
+            <input class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500" id="driver-input-name" placeholder="Ej. Conductor 04" required="" type="text">
           </div>
           <div>
-            <label class="block text-xs text-neutral-400 mb-1">DNI</label>
-            <input class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500" id="driver-input-dni" pattern="[0-9]{8}" placeholder="8 dígitos" required="" type="text">
+            <label class="block text-xs text-neutral-400 mb-1">Correo (@keisel.me)</label>
+            <input class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500" id="driver-input-dni" placeholder="conductor4@keisel.me" required="" type="text">
           </div>
           <div>
             <label class="block text-xs text-neutral-400 mb-1">Ruta</label>
@@ -539,12 +539,12 @@
         <form class="space-y-3.5" id="form-edit-driver" onsubmit="handleSaveEditDriver(event)">
           <input id="edit-driver-target-id" type="hidden">
           <div>
-            <label class="block text-xs text-neutral-400 mb-1">Nombre completo</label>
+            <label class="block text-xs text-neutral-400 mb-1">Identificador Conductor</label>
             <input class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500" id="edit-driver-input-name" required="" type="text">
           </div>
           <div>
-            <label class="block text-xs text-neutral-400 mb-1">DNI</label>
-            <input class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500" id="edit-driver-input-dni" pattern="[0-9]{8}" required="" type="text">
+            <label class="block text-xs text-neutral-400 mb-1">DNI / Referencia</label>
+            <input class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500" id="edit-driver-input-dni" required="" type="text">
           </div>
           <div>
             <label class="block text-xs text-neutral-400 mb-1">Ruta</label>
@@ -598,9 +598,9 @@
             <label class="block text-xs text-neutral-400 mb-1">Conductor Principal</label>
             <select class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500" id="edit-bus-input-c1">
               <option value="">Sin asignar</option>
-              <option value="Carlos Mendoza V.">Carlos Mendoza V.</option>
-              <option value="Roberto Silva P.">Roberto Silva P.</option>
-              <option value="Miguel Ramos D.">Miguel Ramos D.</option>
+              <option value="Conductor 01">Conductor 01</option>
+              <option value="Conductor 02">Conductor 02</option>
+              <option value="Conductor 03">Conductor 03</option>
             </select>
           </div>
           <div class="pt-2 flex gap-2">
@@ -650,86 +650,88 @@
   </div>
 
   <script>
-    // --- USUARIOS CONFIGURADOS (ADMINISTRADOR Y 3 CONDUCTORES) ---
+    // --- USUARIOS CONFIGURADOS (ACTIVE DIRECTORY + 3 CONDUCTORES) ---
     var USUARIOS_SISTEMA = {
-      // 1. Administrador General
-      "admin@keisel.me": {
+      // 1. Administrador (Cuenta Active Directory institucional)
+      "adm-teso@keisel.me": {
         rol: "ADMIN",
-        pass: "admin123",
-        nombre: "Yareth Belinda Trujillo Sanchez",
-        detalles: "Administrador del Sistema Keisel"
+        pass: "Th42913416",
+        dni: "60610700",
+        nombre: "Yareth Belinda Trujillo Sanchez (adm-teso)",
+        detalles: "Administrador de Dominio Active Directory (keisel.me)"
       },
-      "admin": {
+      "adm-teso": {
         rol: "ADMIN",
-        pass: "admin123",
-        nombre: "Yareth Belinda Trujillo Sanchez",
-        detalles: "Administrador del Sistema Keisel"
+        pass: "Th42913416",
+        dni: "60610700",
+        nombre: "Yareth Belinda Trujillo Sanchez (adm-teso)",
+        detalles: "Administrador de Dominio Active Directory (keisel.me)"
       },
 
-      // 2. Conductor 1: Barranca
-      "barranca@keisel.me": {
+      // 2. Conductor 1: Ruta Barranca
+      "conductor1@keisel.me": {
         rol: "CONDUCTOR",
-        pass: "barranca123",
-        nombre: "Carlos Mendoza Vargas",
-        dni: "44829103",
+        pass: "conductor123",
+        nombre: "Conductor 01",
+        dni: "00000001",
         ruta: "Bus 01 • Barranca -> UNAB",
         placa: "EUA-482",
         busId: "bus_keisel_1",
-        detalles: "Bus Barranca • Mercedes-Benz Sprinter • EUA-482"
+        detalles: "Bus 01 • Barranca -> UNAB • EUA-482"
       },
-      "barranca": {
+      "conductor1": {
         rol: "CONDUCTOR",
-        pass: "barranca123",
-        nombre: "Carlos Mendoza Vargas",
-        dni: "44829103",
+        pass: "conductor123",
+        nombre: "Conductor 01",
+        dni: "00000001",
         ruta: "Bus 01 • Barranca -> UNAB",
         placa: "EUA-482",
         busId: "bus_keisel_1",
-        detalles: "Bus Barranca • Mercedes-Benz Sprinter • EUA-482"
+        detalles: "Bus 01 • Barranca -> UNAB • EUA-482"
       },
 
-      // 3. Conductor 2: Supe
-      "supe@keisel.me": {
+      // 3. Conductor 2: Ruta Supe
+      "conductor2@keisel.me": {
         rol: "CONDUCTOR",
-        pass: "supe123",
-        nombre: "Roberto Silva P.",
-        dni: "40918234",
+        pass: "conductor123",
+        nombre: "Conductor 02",
+        dni: "00000002",
         ruta: "Bus 02 • Supe -> UNAB",
         placa: "EUA-519",
         busId: "bus_keisel_2",
-        detalles: "Bus Supe • Mercedes-Benz Sprinter • EUA-519"
+        detalles: "Bus 02 • Supe -> UNAB • EUA-519"
       },
-      "supe": {
+      "conductor2": {
         rol: "CONDUCTOR",
-        pass: "supe123",
-        nombre: "Roberto Silva P.",
-        dni: "40918234",
+        pass: "conductor123",
+        nombre: "Conductor 02",
+        dni: "00000002",
         ruta: "Bus 02 • Supe -> UNAB",
         placa: "EUA-519",
         busId: "bus_keisel_2",
-        detalles: "Bus Supe • Mercedes-Benz Sprinter • EUA-519"
+        detalles: "Bus 02 • Supe -> UNAB • EUA-519"
       },
 
-      // 4. Conductor 3: Paramonga
-      "paramonga@keisel.me": {
+      // 4. Conductor 3: Ruta Paramonga
+      "conductor3@keisel.me": {
         rol: "CONDUCTOR",
-        pass: "paramonga123",
-        nombre: "Miguel Ramos D.",
-        dni: "47102948",
+        pass: "conductor123",
+        nombre: "Conductor 03",
+        dni: "00000003",
         ruta: "Bus 03 • Paramonga -> UNAB",
         placa: "EUA-604",
         busId: "bus_keisel_3",
-        detalles: "Bus Paramonga • Mercedes-Benz Sprinter • EUA-604"
+        detalles: "Bus 03 • Paramonga -> UNAB • EUA-604"
       },
-      "paramonga": {
+      "conductor3": {
         rol: "CONDUCTOR",
-        pass: "paramonga123",
-        nombre: "Miguel Ramos D.",
-        dni: "47102948",
+        pass: "conductor123",
+        nombre: "Conductor 03",
+        dni: "00000003",
         ruta: "Bus 03 • Paramonga -> UNAB",
         placa: "EUA-604",
         busId: "bus_keisel_3",
-        detalles: "Bus Paramonga • Mercedes-Benz Sprinter • EUA-604"
+        detalles: "Bus 03 • Paramonga -> UNAB • EUA-604"
       }
     };
 
@@ -965,7 +967,7 @@
       mejorAccuracyChofer = 9999;
       confirmacionesMov = 0;
 
-      // 1. Notificar a Android Nativo en C# (.NET MAUI)
+      // Notificar a Android Nativo en C# (.NET MAUI)
       try {
         window.location.href = "keisel://iniciar-gps";
       } catch (e) {
@@ -990,7 +992,7 @@
       document.getElementById('gps-title').innerText = "GPS Activo y Transmitiendo";
       document.getElementById('gps-subtitle').innerText = "Tu ubicación se está enviando en tiempo real al mapa de los estudiantes (" + (usuarioActivo ? usuarioActivo.ruta : "En ruta") + ").";
 
-      // 2. Ejecutar GPS con filtro estabilizador anti-temblor
+      // Ejecutar GPS con filtro estabilizador anti-temblor
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           function(pos) { procesarGpsConductor(pos); },
