@@ -381,6 +381,9 @@ button, [role="button"] { cursor: pointer; background: transparent; -webkit-tap-
 
     // Respaldo secundario si la app móvil sale por Tailscale
     var API_TAILSCALE_URL = 'http://100.67.14.105:3000/api';
+    var SUPABASE_REST_URL = "https://mcqcfdivpikmrkkfbhsm.supabase.co/rest/v1/rastreo";
+    var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jcWNmZGl2cGlrbXJra2ZiaHNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyNzg5NDIsImV4cCI6MjEwODg1NDk0Mn0.F6Yz31dJI4wQiINS1NwK-cNunO0V_3UEvD3IHgTJSC0";
+
 
 
 
@@ -682,46 +685,79 @@ button, [role="button"] { cursor: pointer; background: transparent; -webkit-tap-
       var latExacta = Number(Number(lat).toFixed(7));
       var lngExacta = Number(Number(lng).toFixed(7));
 
-      var payload = JSON.stringify({
+      var payloadLocal = JSON.stringify({
         id: targetBusId,
         latitud: latExacta,
         longitud: lngExacta
       });
 
-      // Envío directo a la API local de SQL Server en RHEL
+      var payloadSupabase = JSON.stringify({
+        id: targetBusId,
+        latitud: latExacta,
+        longitud: lngExacta,
+        actualizado_en: new Date().toISOString()
+      });
+
+      // 1. Envío a API local / Tailscale
       fetch(API_BASE_URL + '/actualizar-gps', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: payload
+        body: payloadLocal
       }).catch(function(err) {
-        // Reintento con la IP de Tailscale si está en datos móviles
         fetch(API_TAILSCALE_URL + '/actualizar-gps', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: payload
-        }).catch(function(e) {
-          console.warn("Fallo envio GPS local:", e);
-        });
+          body: payloadLocal
+        }).catch(function() {});
+      });
+
+      // 2. Envío a Supabase Cloud (garantiza recepción inmediata en la Web estudiantil)
+      fetch(SUPABASE_REST_URL, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates'
+        },
+        body: payloadSupabase
+      }).catch(function(e) {
+        console.warn("Fallo Supabase:", e);
       });
     }
 
     function limpiarSenalSupabase(customBusId) {
       var targetBusId = customBusId || obtenerBusIdActivo();
-      var payload = JSON.stringify({ id: targetBusId });
+      var payloadLocal = JSON.stringify({ id: targetBusId });
+      var payloadSupabase = JSON.stringify({
+        id: targetBusId,
+        latitud: null,
+        longitud: null,
+        actualizado_en: new Date(0).toISOString()
+      });
 
       fetch(API_BASE_URL + '/corte-emergencia', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: payload
+        body: payloadLocal
       }).catch(function() {
         fetch(API_TAILSCALE_URL + '/corte-emergencia', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: payload
-        }).catch(function(e) {
-          console.warn("Error en corte de señal:", e);
-        });
+          body: payloadLocal
+        }).catch(function() {});
       });
+
+      fetch(SUPABASE_REST_URL, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates'
+        },
+        body: payloadSupabase
+      }).catch(function() {});
     }
 
     function iniciarViajeReal() {
@@ -748,8 +784,8 @@ button, [role="button"] { cursor: pointer; background: transparent; -webkit-tap-
       
       var icon = document.getElementById('gps-main-icon');
       if (icon) {
-        icon.className = "material-symbols-outlined text-3xl text-white";
-        icon.innerText = "sensors";
+        icon.className = "w-8 h-8 text-white flex items-center justify-center";
+        icon.innerHTML = '<svg class="w-8 h-8 text-white animate-pulse" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"></path><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"></path><circle cx="12" cy="12" r="2.5" fill="white"></circle><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"></path><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"></path></svg>';
       }
 
       document.getElementById('gps-title').innerText = "GPS Activo y Transmitiendo";

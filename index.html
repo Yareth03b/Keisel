@@ -1382,19 +1382,66 @@
       if (sub) sub.innerText = "Esperando señal GPS activa...";
     }
 
+        var SUPABASE_REST_URL = "https://mcqcfdivpikmrkkfbhsm.supabase.co/rest/v1/rastreo";
+    var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jcWNmZGl2cGlrbXJra2ZiaHNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyNzg5NDIsImV4cCI6MjEwODg1NDk0Mn0.F6Yz31dJI4wQiINS1NwK-cNunO0V_3UEvD3IHgTJSC0";
+
+    function consultarSupabaseFallback() {
+      fetch(SUPABASE_REST_URL + '?select=*&order=actualizado_en.desc&limit=5', {
+        method: 'GET',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Accept': 'application/json'
+        },
+        cache: 'no-store'
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(buses) {
+        if (!Array.isArray(buses) || !buses.length) {
+          ocultarBus();
+          return;
+        }
+        var busActivo = buses.find(function(b) {
+          if (b.latitud === null || b.longitud === null) return false;
+          // Validar que la posición no sea más antigua de 6 minutos
+          if (b.actualizado_en) {
+            var diffMs = Date.now() - new Date(b.actualizado_en).getTime();
+            if (diffMs > 360000) return false;
+          }
+          return true;
+        });
+
+        if (busActivo && busActivo.latitud !== null && busActivo.longitud !== null) {
+          actualizarPosicionBus(Number(busActivo.latitud), Number(busActivo.longitud));
+        } else {
+          ocultarBus();
+        }
+      })
+      .catch(function() {
+        ocultarBus();
+      });
+    }
+
     function cargarPosicionApi() {
+      // Si estamos en HTTPS (como Cloudflare Pages o GitHub Pages), consultar Supabase directamente
+      // para evitar el bloqueo del navegador por contenido mixto (Mixed Content HTTP -> HTTPS)
+      if (window.location.protocol === 'https:') {
+        consultarSupabaseFallback();
+        return;
+      }
+
       fetch(API_BASE_URL + '/obtener-gps', { method: 'GET', cache: 'no-store' })
         .then(function(r) { return r.json(); })
         .then(function(buses) {
           if (!Array.isArray(buses) || !buses.length) {
-            ocultarBus();
+            consultarSupabaseFallback();
             return;
           }
           var busActivo = buses.find(function(b) { return b.latitud !== null && b.longitud !== null; });
           if (busActivo && busActivo.latitud !== null && busActivo.longitud !== null) {
             actualizarPosicionBus(Number(busActivo.latitud), Number(busActivo.longitud));
           } else {
-            ocultarBus();
+            consultarSupabaseFallback();
           }
         })
         .catch(function() {
@@ -1405,10 +1452,10 @@
               if (busActivo && busActivo.latitud !== null && busActivo.longitud !== null) {
                 actualizarPosicionBus(Number(busActivo.latitud), Number(busActivo.longitud));
               } else {
-                ocultarBus();
+                consultarSupabaseFallback();
               }
             }).catch(function() {
-              ocultarBus();
+              consultarSupabaseFallback();
             });
         });
     }
