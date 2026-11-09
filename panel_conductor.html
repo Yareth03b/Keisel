@@ -768,7 +768,10 @@ button, [role="button"] { cursor: pointer; background: transparent; -webkit-tap-
 
       // Notificar a Android Nativo en C# (.NET MAUI)
       try {
-        window.location.href = "keisel://iniciar-gps";
+        var targetBusId = obtenerBusIdActivo();
+      try {
+        window.location.href = "keisel://iniciar-gps?busId=" + encodeURIComponent(targetBusId);
+      } catch(e) {}
       } catch (e) {
         console.warn("Bridge:", e);
       }
@@ -831,7 +834,10 @@ button, [role="button"] { cursor: pointer; background: transparent; -webkit-tap-
 
       // Notificar a Android Nativo en C#
       try {
-        window.location.href = "keisel://detener-gps";
+        var targetBusId = obtenerBusIdActivo();
+      try {
+        window.location.href = "keisel://detener-gps?busId=" + encodeURIComponent(targetBusId);
+      } catch(e) {}
       } catch (e) {
         console.warn("Bridge:", e);
       }
