@@ -487,19 +487,18 @@
         attributionControl: false
       }).setView(centroInicial, 16);
 
-      // Si estamos en el Servidor RHEL Local, pedir los cuadros del mapa al Servidor RHEL (/osm-tiles/{z}/{x}/{y}.png).
-      // Si el proxy aun no esta activado en Apache, cae automaticamente a tile.openstreetmap.org.
-      var urlTiles = ES_SERVIDOR_LOCAL_LAN ? '/osm-tiles/{z}/{x}/{y}.png' : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+      // Capa de mosaicos de mapa (OpenStreetMap) con soporte para red local y Cloudflare
+      var urlTiles = (window.location.protocol.startsWith('http') && window.location.hostname.indexOf('pages.dev') === -1 && window.location.hostname.indexOf('github.io') === -1)
+        ? '/osm-tiles/{z}/{x}/{y}.png'
+        : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+
       var capaMapa = L.tileLayer(urlTiles, {
         maxZoom: 19
       }).addTo(map);
 
-      var cambioADirecto = false;
+      // Si falla la ruta local de RHEL, cambiar automáticamente a OpenStreetMap global
       capaMapa.on('tileerror', function() {
-        if (ES_SERVIDOR_LOCAL_LAN && !cambioADirecto) {
-          cambioADirecto = true;
-          capaMapa.setUrl('https://tile.openstreetmap.org/{z}/{x}/{y}.png');
-        }
+        capaMapa.setUrl('https://tile.openstreetmap.org/{z}/{x}/{y}.png');
       });
 
       dibujarPuntoBlancoUsuario(userPosActual[0], userPosActual[1]);
@@ -508,7 +507,6 @@
 
       ocultarBus();
       cargarUltimaPosicion();
-      conectarRealtime();
       iniciarUbicacionUsuario();
 
       setInterval(function() {
@@ -821,14 +819,8 @@
         });
     }
 
-    function iniciarRastreoEnVivo() {
-      cargarUltimaPosicion();
-      setInterval(cargarUltimaPosicion, 1500);
-    }
-
     window.addEventListener('load', function() {
       initLeafletMap();
-      iniciarRastreoEnVivo();
     });
   </script>
 </body>
