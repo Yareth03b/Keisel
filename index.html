@@ -63,13 +63,8 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: #0d0f14;
+      background: #e5e3df;
       z-index: 1;
-    }
-
-    /* Filtro Oscuro Nativo para OpenStreetMap (Cero Dependencia de API Keys / Sin marcas de agua) */
-    #map .leaflet-tile {
-      filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
     }
 
     /* Tarjetas de Selección de Rol */
@@ -1028,12 +1023,13 @@
         center: barrancaCentro,
         zoom: 15,
         zoomControl: false,
-        attributionControl: false
+        attributionControl: true
       });
 
-      // Capa de Mapa Gratuita sin API Key (OpenStreetMap con filtro CSS Dark)
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19
+      // Capa oficial de OpenStreetMap
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       }).addTo(map);
 
       iniciarGeolocalizacionUsuario();
