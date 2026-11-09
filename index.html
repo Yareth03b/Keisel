@@ -313,7 +313,6 @@
         </button>
       </div>
 
-      <!-- Tarjeta Flotante del Bus Activo (Oculta al iniciar, se abre al tocar la bolita) -->
       <!-- Tarjeta Flotante Inferior de Información del Bus (Compacta, Fila Única) -->
       <div id="panel-tarjeta-bus" style="display: none;" class="w-full bg-[#141416]/95 backdrop-blur-xl border border-white/20 rounded-2xl px-4 py-3 shadow-2xl flex items-center justify-between gap-3 pointer-events-auto transition-all duration-300">
         <!-- Izquierda: Ícono del Bus e Información Dinámica -->
@@ -880,6 +879,7 @@
   <script>
     // --- ESTADO GENERAL Y RUTAS DE API ---
     var vistaActiva = 'inicio';
+    var origenVistaMapa = 'inicio';
     var meadowEngine = null;
     var esAdminAutenticado = false;
 
@@ -1169,8 +1169,6 @@
     }
 
     var busMarkers = {};
-    var busPosActual = null;
-
     var BUS_CATALOGO = {
       "bus_keisel_1": { nombre: "Bus 01", ruta: "Barranca - UNAB", placa: "EUA-482" },
       "bus_keisel_2": { nombre: "Bus 02", ruta: "Supe - UNAB", placa: "B4T-912" },
@@ -1202,6 +1200,155 @@
       }
     }
 
+    function dibujarPuntoUsuario(lat, lng) {
+      if (!map || typeof L === 'undefined') return;
+      if (!userMarker) {
+        var userIcon = L.divIcon({
+          className: 'user-marker-container',
+          html: '<div style="position:relative;"><div class="user-pulse-halo"></div><div class="user-white-dot"></div></div>',
+          iconSize: [20, 20],
+          iconAnchor: [10, 10]
+        });
+        userMarker = L.marker([lat, lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map);
+      } else {
+        userMarker.setLatLng([lat, lng]);
+      }
+    }
+
+    // --- VARIABLES DE GEOLOCALIZACIÓN Y ESTABILIZACIÓN ---
+    var userPosFijada = null;
+    var userWatchId = null;
+    var mejorAccuracyUsuario = 999;
+    var yaCentroUsuario = false;
+    var confirmacionesMovUser = 0;
+    var UMBRAL_MOVIMIENTO_METROS = 8.0;
+    var origenVistaMapa = null;
+
+    function verMapaDesdeAdmin() {
+      origenVistaMapa = 'admin';
+      navegarA('mapa');
+    }
+
+    function retrocederDesdeMapa() {
+      if (origenVistaMapa === 'admin' || esAdminAutenticado) {
+        origenVistaMapa = null;
+        navegarA('admin');
+      } else {
+        navegarA('inicio');
+      }
+    }
+
+    // --- UBICACIÓN DEL ESTUDIANTE: PUNTO BLANCO LIMPIO Y EXACTO ---
+    function dibujarPuntoBlancoUsuario(lat, lng) {
+      if (!map || typeof L === 'undefined') return;
+      if (!userMarker) {
+        var userIcon = L.divIcon({
+          className: 'user-marker-container',
+          html: '<div style="position:relative;"><div class="user-pulse-halo"></div><div class="user-white-dot"></div></div>',
+          iconSize: [18, 18],
+          iconAnchor: [9, 9]
+        });
+        userMarker = L.marker([lat, lng], { icon: userIcon, zIndexOffset: 1000 })
+          .addTo(map)
+          .bindPopup("<b>Tu ubicación actual</b>");
+      } else {
+        userMarker.setLatLng([lat, lng]);
+      }
+    }
+
+    function procesarLecturaGpsUsuario(pos) {
+      if (!pos || !pos.coords) return;
+      var lat = pos.coords.latitude;
+      var lng = pos.coords.longitude;
+      var accuracy = pos.coords.accuracy || 20;
+      var speed = pos.coords.speed;
+
+      // Si el bus está muy cerca del estudiante, vincular sutilmente para evitar jitter
+      if (busPosActual && accuracy > 15) {
+        var distAlBus = calcularDistanciaMetros(lat, lng, busPosActual[0], busPosActual[1]);
+        if (distAlBus < 150) {
+          lat = busPosActual[0] + 0.000012;
+          lng = busPosActual[1] + 0.000015;
+        }
+      }
+
+      // Primera lectura GPS: fijar punto blanco de inmediato
+      if (!userPosFijada) {
+        userPosFijada = [lat, lng];
+        userPosActual = [lat, lng];
+        mejorAccuracyUsuario = accuracy;
+        dibujarPuntoBlancoUsuario(lat, lng);
+
+        if (!yaCentroUsuario && map && !busPosActual) {
+          yaCentroUsuario = true;
+          map.flyTo(userPosActual, 17, { animate: true, duration: 1 });
+        }
+        return;
+      }
+
+      // Descartar lecturas ruidosas mayores a 50m si ya tenemos posición
+      if (accuracy > 50) {
+        return;
+      }
+
+      var distancia = calcularDistanciaMetros(userPosFijada[0], userPosFijada[1], lat, lng);
+
+      // Si está quieto o la distancia es menor al umbral de 8m, no mover el punto
+      if ((speed !== null && speed !== undefined && speed < 0.5 && distancia < 15.0) || distancia < UMBRAL_MOVIMIENTO_METROS) {
+        confirmacionesMovUser = 0;
+        return;
+      }
+
+      // 3 confirmaciones para evitar saltos bruscos
+      confirmacionesMovUser++;
+      if (confirmacionesMovUser < 3) {
+        return;
+      }
+
+      confirmacionesMovUser = 0;
+      // Suavizado exponencial para desplazamiento fluido
+      var latSuavizada = (userPosFijada[0] * 0.3) + (lat * 0.7);
+      var lngSuavizada = (userPosFijada[1] * 0.3) + (lng * 0.7);
+
+      userPosFijada = [latSuavizada, lngSuavizada];
+      userPosActual = [latSuavizada, lngSuavizada];
+      dibujarPuntoBlancoUsuario(latSuavizada, lngSuavizada);
+    }
+
+    function iniciarUbicacionUsuario() {
+      if (!navigator.geolocation) return;
+
+      navigator.geolocation.getCurrentPosition(
+        function(pos) {
+          procesarLecturaGpsUsuario(pos);
+        },
+        function(err) {
+          console.warn("Geolocalización inicial:", err.message);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+
+      if (userWatchId === null) {
+        userWatchId = navigator.geolocation.watchPosition(
+          function(pos) {
+            procesarLecturaGpsUsuario(pos);
+          },
+          function(err) {
+            console.warn("Watch geolocalización:", err.message);
+          },
+          { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+        );
+      }
+    }
+
+    function centrarEnMiUbicacion() {
+      if (userPosActual && map) {
+        map.flyTo(userPosActual, 17, { animate: true, duration: 0.8 });
+        if (userMarker) userMarker.openPopup();
+      }
+      iniciarUbicacionUsuario();
+    }
+
     function actualizarBusesActivos(busesList) {
       if (!map || typeof L === 'undefined') return;
 
@@ -1211,7 +1358,6 @@
         var lng = Number(b.longitud);
         if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) return false;
 
-        // Validar frescura del dato si viene de Supabase (máximo 6 minutos)
         if (b.actualizado_en) {
           var diffMs = Date.now() - new Date(b.actualizado_en).getTime();
           if (diffMs > 360000) return false;
@@ -1260,7 +1406,6 @@
         }
       });
 
-      // Retirar marcadores de buses que dejaron de transmitir
       Object.keys(busMarkers).forEach(function(oldId) {
         if (!idsRecibidos.has(oldId)) {
           map.removeLayer(busMarkers[oldId].marker);
