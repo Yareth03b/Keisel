@@ -228,63 +228,125 @@
   <div id="vista-mapa" class="hidden fixed inset-0 z-20 pointer-events-none flex flex-col justify-between p-4 box-border">
     <!-- Barra Superior Flotante -->
     <header class="pointer-events-auto w-full max-w-md mx-auto pt-safe">
-      <div class="bg-[#141416]/95 backdrop-blur-md border border-[#26262B] rounded-full px-4 py-2.5 flex items-center justify-between shadow-2xl">
-        <button onclick="navegarA('inicio')" class="flex items-center gap-1.5 text-xs font-bold text-white bg-neutral-900 hover:bg-neutral-800 px-3 py-1.5 rounded-full border border-neutral-700 active:scale-95 transition-all cursor-pointer" type="button">
-          <span class="material-symbols-outlined text-[16px]">arrow_back</span>
-          <span>Inicio</span>
+      <div class="h-14 w-full px-4 rounded-full bg-[#141416]/95 backdrop-blur-md border border-[#26262B] flex items-center justify-between shadow-2xl">
+        <button onclick="navegarA('inicio')" class="flex items-center gap-2 text-white hover:text-neutral-300 transition-colors py-1 pl-0.5 cursor-pointer" type="button">
+          <svg class="w-5 h-5 text-[#A0A0A0]" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <path d="M19 12H5"></path>
+            <path d="M12 19l-7-7 7-7"></path>
+          </svg>
+          <span class="text-sm font-bold tracking-tight text-white">Estudiantes</span>
         </button>
 
-        <div class="flex items-center gap-2">
-          <div id="live-dot" class="w-2.5 h-2.5 rounded-full bg-neutral-500"></div>
-          <span id="header-status" class="text-xs font-bold uppercase tracking-wider text-white">SIN BUS EN RUTA</span>
+        <div class="flex items-center gap-2 bg-[#222222] px-3.5 py-1.5 rounded-full border border-white/20">
+          <span id="live-dot" class="w-2 h-2 rounded-full bg-[#8E8E93]"></span>
+          <span id="header-status" class="text-xs font-bold text-white uppercase tracking-wider">SIN BUS EN RUTA</span>
         </div>
 
-        <div class="flex items-center gap-2">
-          <button id="btn-volver-admin" onclick="navegarA('admin')" class="hidden flex items-center gap-1 text-xs font-bold text-white bg-neutral-800 hover:bg-neutral-700 px-2.5 py-1.5 rounded-full border border-neutral-600 active:scale-95 transition-all cursor-pointer" title="Panel Administrador">
-            <span class="material-symbols-outlined text-[14px]">admin_panel_settings</span>
-            <span>Admin</span>
-          </button>
-          <button onclick="centrarEnMiUbicacion()" class="w-8 h-8 rounded-full bg-neutral-900 hover:bg-neutral-800 text-white flex items-center justify-center border border-neutral-700 active:scale-95 transition-all cursor-pointer" title="Mi Ubicación">
-            <span class="material-symbols-outlined text-[16px]">my_location</span>
-          </button>
-        </div>
+        <button id="btn-volver-admin" onclick="navegarA('admin')" class="hidden flex items-center gap-1 text-xs font-bold text-white bg-neutral-800 hover:bg-neutral-700 px-2.5 py-1.5 rounded-full border border-neutral-600 active:scale-95 transition-all cursor-pointer" title="Panel Administrador">
+          <span class="material-symbols-outlined text-[14px]">admin_panel_settings</span>
+          <span>Admin</span>
+        </button>
       </div>
     </header>
 
-    <!-- Tarjeta Inferior de Información de Bus -->
-    <footer class="pointer-events-auto w-full max-w-md mx-auto pb-safe">
-      <div id="panel-tarjeta-bus" class="bg-[#141416]/95 backdrop-blur-md border border-white/20 rounded-3xl p-5 shadow-2xl flex flex-col gap-3">
+    <!-- Controles Laterales Flotantes y Tarjeta Inferior Desplegable -->
+    <div class="w-full max-w-md mx-auto flex flex-col gap-3 pointer-events-none pb-safe">
+      <div class="flex justify-end pointer-events-none">
+        <div class="flex flex-col gap-2 pointer-events-auto">
+          <!-- 1. Botón Centrar Mi Ubicación -->
+          <button aria-label="Centrar en mi ubicación" class="w-11 h-11 rounded-full bg-[#141416]/95 backdrop-blur-md border border-[#26262B] text-white flex items-center justify-center shadow-2xl hover:bg-[#202024] active:scale-95 transition-all cursor-pointer" onclick="centrarEnMiUbicacion()" type="button" title="Ir a mi ubicación">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="7"></circle>
+              <circle cx="12" cy="12" r="2.5" fill="currentColor"></circle>
+              <line x1="12" y1="2" x2="12" y2="5"></line>
+              <line x1="12" y1="19" x2="12" y2="22"></line>
+              <line x1="2" y1="12" x2="5" y2="12"></line>
+              <line x1="19" y1="12" x2="22" y2="12"></line>
+            </svg>
+          </button>
+
+          <!-- 2. Botón Centrar en el Bus -->
+          <button id="btn-centrar-bus" style="display: none;" aria-label="Centrar en el Bus" class="w-11 h-11 rounded-full bg-[#141416]/95 backdrop-blur-md border border-[#26262B] text-white flex items-center justify-center shadow-2xl hover:bg-[#202024] active:scale-95 transition-all cursor-pointer" onclick="centrarEnBus()" type="button" title="Centrar mapa en el bus">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <rect height="16" rx="4" width="18" x="3" y="3"></rect>
+              <path d="M3 11h18"></path>
+              <circle cx="7.5" cy="15" fill="currentColor" r="1.2" stroke="none"></circle>
+              <circle cx="16.5" cy="15" fill="currentColor" r="1.2" stroke="none"></circle>
+              <path d="M6 19v2"></path>
+              <path d="M18 19v2"></path>
+            </svg>
+          </button>
+          
+          <!-- 3 y 4. Controles de Zoom -->
+          <div class="rounded-2xl bg-[#141416]/95 backdrop-blur-md border border-[#26262B] flex flex-col items-center overflow-hidden shadow-2xl">
+            <button aria-label="Acercar" class="w-11 h-10 text-white flex items-center justify-center hover:bg-[#202024] active:scale-95 transition-all border-b border-[#242429] cursor-pointer" onclick="if(map) map.zoomIn()" type="button">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+            <button aria-label="Alejar" class="w-11 h-10 text-white flex items-center justify-center hover:bg-[#202024] active:scale-95 transition-all cursor-pointer" onclick="if(map) map.zoomOut()" type="button">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTÓN FLOTANTE TIPO CIRCULITO (VISIBLE POR DEFECTO AL INICIAR) -->
+      <div id="btn-desplegar-buses" style="display: flex;" class="pointer-events-auto flex justify-end">
+        <button onclick="expandirPanelBuses()" class="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center shadow-2xl border-2 border-black hover:bg-neutral-200 active:scale-95 transition-all cursor-pointer relative group" style="width: 44px; height: 44px; border-radius: 9999px; aspect-ratio: 1 / 1;" title="Ver información del bus">
+          <svg class="w-5 h-5" fill="none" stroke="#000000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+            <rect height="16" rx="4" width="18" x="3" y="3"></rect>
+            <path d="M3 11h18"></path>
+            <circle cx="7.5" cy="15" fill="#000000" r="1.2" stroke="none"></circle>
+            <circle cx="16.5" cy="15" fill="#000000" r="1.2" stroke="none"></circle>
+            <path d="M6 19v2"></path>
+            <path d="M18 19v2"></path>
+          </svg>
+          <span class="absolute -top-0.5 -right-0.5 w-3 h-3 bg-white border-2 border-black rounded-full animate-ping"></span>
+          <span class="absolute -top-0.5 -right-0.5 w-3 h-3 bg-white border-2 border-black rounded-full"></span>
+        </button>
+      </div>
+
+      <!-- Tarjeta Flotante del Bus Activo (Oculta al iniciar, se abre al tocar la bolita) -->
+      <div id="panel-tarjeta-bus" style="display: none;" class="w-full bg-[#141416]/95 backdrop-blur-xl border border-white/20 rounded-3xl p-5 shadow-2xl flex flex-col gap-3 pointer-events-auto transition-all duration-300">
+        <!-- Encabezado con Nombre del Bus, Badge En Vivo y Botón para Achicar -->
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div id="bus-card-icon-bg" class="w-11 h-11 rounded-2xl bg-neutral-800 text-neutral-400 flex items-center justify-center shadow-inner">
-              <svg id="bus-card-icon" class="w-6 h-6 text-neutral-400" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" viewBox="0 0 24 24">
+            <div class="w-11 h-11 rounded-2xl bg-[#222222] text-white flex items-center justify-center shadow-md" id="bus-card-icon-bg">
+              <svg class="w-6 h-6 text-white" id="bus-card-icon" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
                 <rect height="16" rx="4" width="18" x="3" y="3"></rect>
                 <path d="M3 11h18"></path>
-                <path d="M19 19v2"></path>
-                <path d="M5 19v2"></path>
                 <circle cx="7.5" cy="15" fill="currentColor" r="1.2" stroke="none"></circle>
                 <circle cx="16.5" cy="15" fill="currentColor" r="1.2" stroke="none"></circle>
+                <path d="M6 19v2"></path>
+                <path d="M18 19v2"></path>
               </svg>
             </div>
             <div>
-              <p id="bus-main-name" class="text-base font-extrabold text-white leading-tight">Bus Universitario</p>
-              <p id="bus-subtext" class="text-xs text-neutral-400 font-medium">Esperando señal GPS activa...</p>
+              <p class="text-base font-extrabold text-white leading-tight" id="bus-main-name">Bus Universitario</p>
+              <p class="text-xs text-neutral-400 font-medium" id="bus-subtext">Esperando señal GPS activa...</p>
             </div>
           </div>
-          <span id="bus-live-badge" class="text-[9px] font-bold text-neutral-400 bg-neutral-800 px-2 py-0.5 rounded-full tracking-wider uppercase">
-            DESCONECTADO
-          </span>
+          <div class="flex items-center gap-2">
+            <span class="text-[9px] font-bold text-neutral-400 bg-neutral-800 px-2 py-0.5 rounded-full tracking-wider uppercase" id="bus-live-badge">DESCONECTADO</span>
+            <button onclick="achicarPanelBuses()" class="w-7 h-7 rounded-full bg-neutral-800 hover:bg-neutral-700 text-neutral-300 flex items-center justify-center active:scale-95 transition-all cursor-pointer" title="Minimizar panel">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"></path></svg>
+            </button>
+          </div>
         </div>
 
         <div class="flex items-center justify-between pt-1 border-t border-neutral-800">
-          <span id="bus-speed-text" class="text-xs text-neutral-400">Velocidad: -- km/h</span>
-          <button id="btn-centrar-bus" onclick="centrarEnBus()" class="text-xs font-bold text-white bg-white/10 hover:bg-white/20 px-3 py-1 rounded-lg transition-colors cursor-pointer flex items-center gap-1">
+          <span class="text-xs text-neutral-400" id="bus-speed-text">Velocidad: -- km/h</span>
+          <button id="btn-seguir-bus" onclick="centrarEnBus()" class="text-xs font-bold text-white bg-white/10 hover:bg-white/20 px-3 py-1 rounded-lg transition-colors cursor-pointer flex items-center gap-1">
             <span class="material-symbols-outlined text-[14px]">center_focus_strong</span>
             <span>Seguir Bus</span>
           </button>
         </div>
       </div>
-    </footer>
+    </div>
   </div>
 
 
@@ -848,6 +910,7 @@
         }
         initLeafletMap();
         iniciarPollingGps();
+        achicarPanelBuses();
         if (map) {
           setTimeout(function() { map.invalidateSize(); }, 150);
         }
@@ -1035,6 +1098,21 @@
       iniciarGeolocalizacionUsuario();
     }
 
+    
+    function achicarPanelBuses() {
+      var panel = document.getElementById('panel-tarjeta-bus');
+      var btnCirculo = document.getElementById('btn-desplegar-buses');
+      if (panel) panel.style.display = 'none';
+      if (btnCirculo) btnCirculo.style.display = 'flex';
+    }
+
+    function expandirPanelBuses() {
+      var panel = document.getElementById('panel-tarjeta-bus');
+      var btnCirculo = document.getElementById('btn-desplegar-buses');
+      if (btnCirculo) btnCirculo.style.display = 'none';
+      if (panel) panel.style.display = 'flex';
+    }
+
     function centrarEnMiUbicacion() {
       if (map && userPosActual) {
         map.flyTo(userPosActual, 17, { animate: true, duration: 1 });
@@ -1106,6 +1184,8 @@
       if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-white animate-pulse";
       var status = document.getElementById('header-status');
       if (status) status.innerText = "BUS EN RUTA";
+      var btnC = document.getElementById('btn-centrar-bus');
+      if (btnC) btnC.style.display = 'flex';
       var badge = document.getElementById('bus-live-badge');
       if (badge) {
         badge.innerText = "EN VIVO";
@@ -1125,6 +1205,8 @@
       if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-neutral-600";
       var status = document.getElementById('header-status');
       if (status) status.innerText = "SIN BUS EN RUTA";
+      var btnC = document.getElementById('btn-centrar-bus');
+      if (btnC) btnC.style.display = 'none';
       var badge = document.getElementById('bus-live-badge');
       if (badge) {
         badge.innerText = "DESCONECTADO";
