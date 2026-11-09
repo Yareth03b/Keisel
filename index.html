@@ -10,12 +10,12 @@
   <meta name="supported-color-schemes" content="dark">
   <title>Keisel - Sistema de Transporte Universitario</title>
   
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=5">
-  <link rel="icon" type="image/png" sizes="192x192" href="android-chrome-192x192.png?v=5">
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png?v=5">
-  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png?v=5">
-  <link rel="shortcut icon" href="favicon.ico?v=5">
-  <link rel="manifest" href="site.webmanifest?v=5">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=6">
+  <link rel="icon" type="image/png" sizes="192x192" href="android-chrome-192x192.png?v=6">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png?v=6">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png?v=6">
+  <link rel="shortcut icon" href="favicon.ico?v=6">
+  <link rel="manifest" href="site.webmanifest?v=6">
   
   <!-- Tipografías e Iconos -->
   <link href="https://fonts.googleapis.com" rel="preconnect">
@@ -23,7 +23,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
 
-  <!-- Librerías de Mapa y Estilos (Locales con respaldo CDN) -->
+  <!-- Librerías de Mapa y Estilos -->
   <script src="assets/tailwind.js"></script>
   <script>
     if (!window.tailwind) {
@@ -63,11 +63,16 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: #111317;
+      background: #0d0f14;
       z-index: 1;
     }
 
-    /* Tarjetas de Selección de Rol (Estilo Stitch / Uber) */
+    /* Filtro Oscuro Nativo para OpenStreetMap (Cero Dependencia de API Keys / Sin marcas de agua) */
+    #map .leaflet-tile {
+      filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+    }
+
+    /* Tarjetas de Selección de Rol */
     .selection-card {
       background-color: #161616;
       border: 2px solid #FFFFFF;
@@ -162,17 +167,14 @@
   <div id="vista-inicio" class="fixed inset-0 z-30 flex flex-col items-center justify-center bg-black overflow-y-auto px-4 py-8">
     <main class="w-full max-w-[390px] flex flex-col items-center mx-auto space-y-6">
       
-      <!-- Logo Oficial Keisel en Vector Blanco/Dark (Sin deformaciones) -->
+      <!-- Logo Oficial Keisel en Vector Blanco/Dark -->
       <header class="w-full flex flex-col items-center justify-center pt-2 pb-2" data-purpose="brand-header">
-        <img src="logo_keisel_dark.svg?v=5" alt="Keisel Transit Logo" class="h-24 sm:h-28 w-auto max-w-[280px] object-contain drop-shadow-lg" />
-        <p class="text-xs font-semibold tracking-wider uppercase text-neutral-400 mt-2">
-          Red Universitaria de Tránsito
-        </p>
+        <img src="logo_keisel_dark.svg?v=6" alt="Keisel Logo" class="h-24 sm:h-28 w-auto max-w-[280px] object-contain drop-shadow-lg" />
       </header>
 
-      <!-- TARJETA 1: ESTUDIANTES -->
+      <!-- TARJETA 1: ESTUDIANTES (Sin texto extra abajo) -->
       <section class="w-full" data-purpose="card-estudiantes-wrapper">
-        <div onclick="navegarA('mapa')" class="selection-card w-full h-[200px] rounded-[30px] p-6 flex flex-col justify-between cursor-pointer" role="button" tabindex="0" aria-label="Acceder como Estudiante">
+        <div onclick="navegarA('mapa')" class="selection-card w-full h-[185px] rounded-[30px] p-6 flex flex-col justify-between cursor-pointer" role="button" tabindex="0" aria-label="Acceder como Estudiante">
           <div class="w-full flex items-center justify-between">
             <div class="w-13 h-13 rounded-2xl bg-[#27272a] flex items-center justify-center shadow-inner">
               <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" viewBox="0 0 24 24">
@@ -191,19 +193,16 @@
             </div>
           </div>
           <div class="w-full pb-1">
-            <span class="block text-[30px] font-black text-white tracking-tight leading-none">
+            <span class="block text-[32px] font-black text-white tracking-tight leading-none">
               Estudiantes
-            </span>
-            <span class="block text-xs text-neutral-400 mt-1 font-medium">
-              Rastreo satelital de buses en tiempo real
             </span>
           </div>
         </div>
       </section>
 
-      <!-- TARJETA 2: ADMINISTRADOR -->
+      <!-- TARJETA 2: ADMINISTRADOR (Sin texto extra abajo) -->
       <section class="w-full" data-purpose="card-admin-wrapper">
-        <div onclick="navegarA('admin-login')" class="selection-card w-full h-[200px] rounded-[30px] p-6 flex flex-col justify-between cursor-pointer" role="button" tabindex="0" aria-label="Acceder como Administrador">
+        <div onclick="navegarA('admin-login')" class="selection-card w-full h-[185px] rounded-[30px] p-6 flex flex-col justify-between cursor-pointer" role="button" tabindex="0" aria-label="Acceder como Administrador">
           <div class="w-full flex items-center justify-between">
             <div class="w-13 h-13 rounded-2xl bg-[#27272a] flex items-center justify-center shadow-inner">
               <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" viewBox="0 0 24 24">
@@ -218,21 +217,12 @@
             </div>
           </div>
           <div class="w-full pb-1">
-            <span class="block text-[30px] font-black text-white tracking-tight leading-none">
+            <span class="block text-[32px] font-black text-white tracking-tight leading-none">
               Administrador
-            </span>
-            <span class="block text-xs text-neutral-400 mt-1 font-medium">
-              Gestión de flota, rutas y corte de emergencia
             </span>
           </div>
         </div>
       </section>
-
-      <footer class="w-full pt-4 text-center">
-        <p class="text-[11px] text-neutral-500 font-semibold tracking-wider uppercase">
-          Keisel Transit System • UNAB
-        </p>
-      </footer>
     </main>
   </div>
 
@@ -254,9 +244,15 @@
           <span id="header-status" class="text-xs font-bold uppercase tracking-wider text-white">SIN BUS EN RUTA</span>
         </div>
 
-        <button onclick="centrarEnMiUbicacion()" class="w-8 h-8 rounded-full bg-neutral-900 hover:bg-neutral-800 text-white flex items-center justify-center border border-neutral-700 active:scale-95 transition-all cursor-pointer" title="Mi Ubicación">
-          <span class="material-symbols-outlined text-[16px]">my_location</span>
-        </button>
+        <div class="flex items-center gap-2">
+          <button id="btn-volver-admin" onclick="navegarA('admin')" class="hidden flex items-center gap-1 text-xs font-bold text-white bg-neutral-800 hover:bg-neutral-700 px-2.5 py-1.5 rounded-full border border-neutral-600 active:scale-95 transition-all cursor-pointer" title="Panel Administrador">
+            <span class="material-symbols-outlined text-[14px]">admin_panel_settings</span>
+            <span>Admin</span>
+          </button>
+          <button onclick="centrarEnMiUbicacion()" class="w-8 h-8 rounded-full bg-neutral-900 hover:bg-neutral-800 text-white flex items-center justify-center border border-neutral-700 active:scale-95 transition-all cursor-pointer" title="Mi Ubicación">
+            <span class="material-symbols-outlined text-[16px]">my_location</span>
+          </button>
+        </div>
       </div>
     </header>
 
@@ -315,27 +311,27 @@
       </button>
     </div>
 
-    <!-- Tarjeta de Login Admin (Glassmorphic) -->
+    <!-- Tarjeta de Login Admin (Glassmorphic, campos vacíos por seguridad) -->
     <div class="relative z-10 w-full max-w-md mx-auto px-5 py-6">
       <div class="bg-black/75 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl p-7 transition-all duration-300">
         <div class="flex flex-col items-center text-center mb-6">
-          <img src="logo_keisel_dark.svg?v=5" alt="Keisel Logo" class="h-16 w-auto object-contain mb-3 drop-shadow-md" />
+          <img src="logo_keisel_dark.svg?v=6" alt="Keisel Logo" class="h-16 w-auto object-contain mb-3 drop-shadow-md" />
           <h1 class="text-2xl font-black text-white tracking-tight">Administración</h1>
           <p class="text-xs text-neutral-400 mt-1 max-w-xs">
-            Ingresa tus credenciales autorizadas de Active Directory y SQL Server
+            Ingresa tus credenciales autorizadas
           </p>
         </div>
 
         <form class="flex flex-col space-y-4" id="adminLoginForm" onsubmit="handleAdminLoginSubmit(event)">
           <div class="space-y-1">
             <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-300" for="adminEmail">
-              Usuario o Correo Institucional
+              Usuario o Correo
             </label>
             <div class="relative flex items-center group">
               <span class="material-symbols-outlined absolute left-3.5 text-neutral-400 pointer-events-none text-[20px]">
                 alternate_email
               </span>
-              <input autocomplete="username" class="w-full bg-neutral-900/90 border border-neutral-700 focus:border-white text-white placeholder:text-neutral-500 text-sm pl-11 pr-4 py-3 rounded-xl focus:outline-none transition-all" id="adminEmail" name="adminEmail" placeholder="adm-teso@keisel.me" required="" type="text" value="adm-teso@keisel.me">
+              <input autocomplete="username" class="w-full bg-neutral-900/90 border border-neutral-700 focus:border-white text-white placeholder:text-neutral-500 text-sm pl-11 pr-4 py-3 rounded-xl focus:outline-none transition-all" id="adminEmail" name="adminEmail" placeholder="usuario@keisel.me" required="" type="text" value="">
             </div>
           </div>
 
@@ -349,7 +345,7 @@
               <span class="material-symbols-outlined absolute left-3.5 text-neutral-400 pointer-events-none text-[20px]">
                 lock
               </span>
-              <input autocomplete="current-password" class="w-full bg-neutral-900/90 border border-neutral-700 focus:border-white text-white placeholder:text-neutral-500 text-sm pl-11 pr-11 py-3 rounded-xl focus:outline-none transition-all" id="adminPassword" name="adminPassword" placeholder="••••••••••••" required="" type="password" value="Th42913416">
+              <input autocomplete="current-password" class="w-full bg-neutral-900/90 border border-neutral-700 focus:border-white text-white placeholder:text-neutral-500 text-sm pl-11 pr-11 py-3 rounded-xl focus:outline-none transition-all" id="adminPassword" name="adminPassword" placeholder="••••••••••••" required="" type="password" value="">
               <button aria-label="Mostrar contraseña" class="absolute right-3.5 text-neutral-400 hover:text-white p-1 focus:outline-none transition-colors cursor-pointer" onclick="toggleAdminPasswordVis()" type="button">
                 <span class="material-symbols-outlined text-[20px]" id="adminEyeIcon">visibility_off</span>
               </button>
@@ -363,29 +359,24 @@
             </button>
           </div>
         </form>
-
-        <div class="mt-5 flex items-center justify-center gap-4 text-[11px] text-neutral-500 font-medium">
-          <span>Active Directory: keisel.me</span>
-          <span>•</span>
-          <span>SQL Server 2022</span>
-        </div>
       </div>
     </div>
   </div>
 
 
   <!-- ====================================================================== -->
-  <!-- VISTA 4: PANEL DE ADMINISTRADOR MINIMALISTA (GESTIÓN COMPLETA)         -->
+  <!-- VISTA 4: PANEL DE ADMINISTRADOR (COMPLETO, SCROLLABLE Y SUPERPUESTO)   -->
   <!-- ====================================================================== -->
 <!-- VISTA 3: PANEL DE ADMINISTRADOR MINIMALISTA (UBER STYLE)               -->
   <!-- ====================================================================== -->
-  <div id="vista-admin" class="hidden flex-col flex-1 w-full min-h-screen bg-black">
+  <div id="vista-admin" class="hidden fixed inset-0 z-30 flex-col w-full h-full bg-black overflow-y-auto">
     <!-- Cabecera Ultra-Simple Admin -->
     <header class="sticky top-0 w-full z-40 bg-black/95 backdrop-blur-md border-b border-neutral-900 pt-safe">
       <div class="h-14 px-5 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <span class="text-[17px] font-semibold tracking-tight text-white whitespace-nowrap">Admin</span>
-          <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-white text-black">Active Directory</span> <button onclick="navegarA('mapa')" class="text-xs font-bold text-white bg-neutral-900 hover:bg-neutral-800 px-3 py-1 rounded-full border border-neutral-700 flex items-center gap-1 cursor-pointer"><span class="material-symbols-outlined text-[14px]">map</span><span>Ver Mapa</span></button>
+          <button type="button" onclick="navegarA('mapa')" class="text-xs font-bold text-white bg-neutral-900 hover:bg-neutral-800 px-3 py-1.5 rounded-full border border-neutral-700 flex items-center gap-1 cursor-pointer"><span class="material-symbols-outlined text-[15px]">map</span><span>Ver Mapa</span></button>
+          
         </div>
         <div class="flex items-center gap-4">
           <button aria-label="Cerrar sesión" class="text-neutral-400 hover:text-white transition-colors flex items-center justify-center p-1 cursor-pointer" onclick="handleLogoutAdmin()">
@@ -827,6 +818,7 @@
     // --- ESTADO GENERAL Y RUTAS DE API ---
     var vistaActiva = 'inicio';
     var meadowEngine = null;
+    var esAdminAutenticado = false;
 
     var API_BASE_URL = (function() {
       if (window.location.protocol.startsWith('http')) {
@@ -843,25 +835,36 @@
       var vMapa = document.getElementById('vista-mapa');
       var vAdminLogin = document.getElementById('vista-admin-login');
       var vAdmin = document.getElementById('vista-admin');
+      var btnVolverAdmin = document.getElementById('btn-volver-admin');
 
-      if (vInicio) vInicio.classList.add('hidden');
-      if (vMapa) vMapa.classList.add('hidden');
-      if (vAdminLogin) vAdminLogin.classList.add('hidden');
-      if (vAdmin) vAdmin.classList.add('hidden');
+      if (vInicio) { vInicio.classList.add('hidden'); vInicio.style.display = 'none'; }
+      if (vMapa) { vMapa.classList.add('hidden'); vMapa.style.display = 'none'; }
+      if (vAdminLogin) { vAdminLogin.classList.add('hidden'); vAdminLogin.style.display = 'none'; }
+      if (vAdmin) { vAdmin.classList.add('hidden'); vAdmin.style.display = 'none'; }
 
       if (vista === 'inicio') {
-        if (vInicio) vInicio.classList.remove('hidden');
+        if (vInicio) { vInicio.classList.remove('hidden'); vInicio.style.display = 'flex'; }
         detenerPollingGps();
       } else if (vista === 'mapa') {
-        if (vMapa) vMapa.classList.remove('hidden');
+        if (vMapa) { vMapa.classList.remove('hidden'); vMapa.style.display = 'flex'; }
+        if (btnVolverAdmin) {
+          if (esAdminAutenticado) btnVolverAdmin.classList.remove('hidden');
+          else btnVolverAdmin.classList.add('hidden');
+        }
         initLeafletMap();
         iniciarPollingGps();
+        if (map) {
+          setTimeout(function() { map.invalidateSize(); }, 150);
+        }
       } else if (vista === 'admin-login') {
-        if (vAdminLogin) vAdminLogin.classList.remove('hidden');
+        if (vAdminLogin) { vAdminLogin.classList.remove('hidden'); vAdminLogin.style.display = 'flex'; }
         detenerPollingGps();
         iniciarFondoSunsetMeadow();
       } else if (vista === 'admin') {
-        if (vAdmin) vAdmin.classList.remove('hidden');
+        if (vAdmin) {
+          vAdmin.classList.remove('hidden');
+          vAdmin.style.display = 'flex';
+        }
         detenerPollingGps();
       }
     }
@@ -897,12 +900,11 @@
           console.warn('Error inicializando Sunset Meadow:', e);
         }
       } else {
-        // Reintentar en breve si el módulo ESM sigue cargando
         setTimeout(iniciarFondoSunsetMeadow, 200);
       }
     }
 
-    // --- AUTENTICACIÓN ADMINISTRADOR ---
+    // --- AUTENTICACIÓN ADMINISTRADOR (100% DINÁMICA POR SERVIDOR - CERO CLAVES EN PLANO) ---
     async function handleAdminLoginSubmit(e) {
       if (e) e.preventDefault();
       var acc = document.getElementById('adminEmail').value.trim();
@@ -910,13 +912,13 @@
       var btn = document.getElementById('btnAdminLogin');
 
       if (!acc || !pwd) {
-        showToast("Ingresa usuario y contraseña.");
+        showToast("Ingresa tu usuario y contraseña.");
         return;
       }
 
       var origHtml = btn.innerHTML;
       btn.disabled = true;
-      btn.innerHTML = '<span>Verificando en SQL Server...</span>';
+      btn.innerHTML = '<span>Ingresando...</span>';
 
       try {
         var endpoints = [API_BASE_URL, API_TAILSCALE_URL];
@@ -937,16 +939,22 @@
                 if (data.usuario.rol === 'ADMIN') {
                   API_BASE_URL = endpoints[i];
                   loggedIn = true;
-                  showToast("Acceso Concedido: Administrador");
+                  esAdminAutenticado = true;
+                  showToast("Acceso Concedido");
                   navegarA('admin');
                   break;
                 } else {
-                  showToast("Acceso denegado: Esta cuenta no tiene permisos de Administrador.");
+                  showToast("Acceso denegado: Usuario no autorizado como Administrador.");
                   btn.disabled = false;
                   btn.innerHTML = origHtml;
                   return;
                 }
               }
+            } else if (resp.status === 401) {
+              showToast("Credenciales inválidas.");
+              btn.disabled = false;
+              btn.innerHTML = origHtml;
+              return;
             }
           } catch (netErr) {
             // Continúa al siguiente endpoint
@@ -962,19 +970,19 @@
         console.warn("Fallo de conexión:", err);
       }
 
-      // Respaldo de credenciales locales institucional
-      if ((acc === 'adm-teso@keisel.me' || acc === 'adm-teso') && pwd === 'Th42913416') {
-        showToast("Sesión iniciada (Modo offline / LAN)");
-        navegarA('admin');
-      } else {
-        showToast("Credenciales inválidas. Verifica tu usuario o contraseña.");
-      }
-
+      showToast("No se pudo conectar con el servidor de autenticación.");
       btn.disabled = false;
       btn.innerHTML = origHtml;
     }
 
-    
+    function handleAdminLogout() {
+      esAdminAutenticado = false;
+      showToast("Cerrando sesión de Administrador...");
+      setTimeout(function() {
+        navegarA('inicio');
+      }, 350);
+    }
+
     function handleLogoutAdmin() {
       handleAdminLogout();
     }
@@ -998,14 +1006,7 @@
       });
     }
 
-    function handleAdminLogout() {
-      showToast("Cerrando sesión de Administrador...");
-      setTimeout(function() {
-        navegarA('inicio');
-      }, 350);
-    }
-
-    // --- MAPA LEAFLET EN TIEMPO REAL ---
+    // --- MAPA LEAFLET EN TIEMPO REAL (OPENSTREETMAP OSCURO - CERO WATERMARK) ---
     var map = null;
     var busMarker = null;
     var userMarker = null;
@@ -1030,9 +1031,9 @@
         attributionControl: false
       });
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        maxZoom: 19,
-        subdomains: 'abcd'
+      // Capa de Mapa Gratuita sin API Key (OpenStreetMap con filtro CSS Dark)
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19
       }).addTo(map);
 
       iniciarGeolocalizacionUsuario();
@@ -1115,7 +1116,7 @@
         badge.className = "text-[9px] font-bold text-black bg-white px-2 py-0.5 rounded-full tracking-wider uppercase";
       }
       var sub = document.getElementById('bus-subtext');
-      if (sub) sub.innerText = "Transmitiendo posición vía SQL Server";
+      if (sub) sub.innerText = "Posición GPS activa";
     }
 
     function ocultarBus() {

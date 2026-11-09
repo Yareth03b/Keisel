@@ -1,0 +1,10 @@
+# Archivos de configuración local y credenciales protegidas
+*.local.php
+config.php
+.env
+.env.*
+
+# Logs y temporales
+*.log
+.DS_Store
+Thumbs.db

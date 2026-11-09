@@ -17,12 +17,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// Parámetros de conexión a SQL Server
-$db_host = '100.86.248.110'; // IP verificada de conexión (Tailscale / Servidor SQL)
-$db_port = '1433';
-$db_name = 'KeiselDB';
-$db_user = 'keisel_rhel';
-$db_pass = 'KeiselUNAB2026*';
+// Parámetros de conexión a SQL Server (Variables de entorno o configuración protegida)
+$db_host = getenv('DB_HOST') ?: '100.86.248.110';
+$db_port = getenv('DB_PORT') ?: '1433';
+$db_name = getenv('DB_NAME') ?: 'KeiselDB';
+$db_user = getenv('DB_USER') ?: 'keisel_rhel';
+$db_pass = getenv('DB_PASS') ?: '';
+
+// Soporte para archivo de configuración local excluido del repositorio público
+if (file_exists(__DIR__ . '/config.local.php')) {
+    include __DIR__ . '/config.local.php';
+}
 
 // Conexión PDO con soporte híbrido (sqlsrv oficial o dblib/FreeTDS)
 try {

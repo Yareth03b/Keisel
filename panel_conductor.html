@@ -84,7 +84,7 @@
               Cuenta o correo electrónico
             </label>
             <div class="w-full bg-[#161616] rounded-xl border border-[#262833] focus-within:border-white transition-colors">
-              <input autocomplete="username" class="w-full h-14 bg-transparent px-4 text-sm text-white placeholder:text-[#555A69] focus:outline-none" id="accountInput" placeholder="conductor1@keisel.me" required="" type="text" value="conductor1@keisel.me">
+              <input autocomplete="username" class="w-full h-14 bg-transparent px-4 text-sm text-white placeholder:text-[#555A69] focus:outline-none" id="accountInput" placeholder="conductor1@keisel.me" required="" type="text" value="">
             </div>
           </div>
 
@@ -94,28 +94,14 @@
               Contraseña
             </label>
             <div class="relative flex items-center w-full bg-[#161616] rounded-xl border border-[#262833] focus-within:border-white transition-colors">
-              <input autocomplete="current-password" class="w-full h-14 bg-transparent pl-4 pr-12 text-sm text-white placeholder:text-[#555A69] focus:outline-none" id="passwordInput" placeholder="••••••••" required="" type="password" value="conductor123">
+              <input autocomplete="current-password" class="w-full h-14 bg-transparent pl-4 pr-12 text-sm text-white placeholder:text-[#555A69] focus:outline-none" id="passwordInput" placeholder="••••••••" required="" type="password" value="">
               <button aria-label="Mostrar u ocultar contraseña" class="absolute right-3 p-1 flex items-center justify-center text-[#8E8E93] hover:text-white transition-colors focus:outline-none cursor-pointer" id="togglePasswordBtn" onclick="togglePasswordVis()" type="button">
                 <span class="material-symbols-outlined text-[20px]" id="passwordIcon">visibility_off</span>
               </button>
             </div>
           </div>
 
-          <!-- Quick Selector Pill Badges (Ayuda rápida de acceso) -->
-          <div class="flex flex-wrap gap-2 pt-1">
-            <button type="button" onclick="cargarCredencialDemo('conductor1@keisel.me', 'conductor123')" class="text-[11px] px-2.5 py-1 rounded-full bg-[#181A22] border border-[#262833] text-neutral-300 hover:border-neutral-500 hover:text-white transition-all cursor-pointer">
-              Conductor 1 (Barranca)
-            </button>
-            <button type="button" onclick="cargarCredencialDemo('conductor2@keisel.me', 'conductor123')" class="text-[11px] px-2.5 py-1 rounded-full bg-[#181A22] border border-[#262833] text-neutral-300 hover:border-neutral-500 hover:text-white transition-all cursor-pointer">
-              Conductor 2 (Supe)
-            </button>
-            <button type="button" onclick="cargarCredencialDemo('conductor3@keisel.me', 'conductor123')" class="text-[11px] px-2.5 py-1 rounded-full bg-[#181A22] border border-[#262833] text-neutral-300 hover:border-neutral-500 hover:text-white transition-all cursor-pointer">
-              Conductor 3 (Paramonga)
-            </button>
-            <button type="button" onclick="cargarCredencialDemo('adm-teso@keisel.me', 'Th42913416')" class="text-[11px] px-2.5 py-1 rounded-full bg-[#181A22] border border-white/40 text-white font-medium hover:bg-neutral-800 transition-all cursor-pointer">
-              Admin AD (adm-teso)
-            </button>
-          </div>
+
         </form>
       </div>
     </div>
@@ -215,89 +201,11 @@
   <script>
     // --- USUARIOS CONFIGURADOS (ACTIVE DIRECTORY + 3 CONDUCTORES) ---
     var USUARIOS_SISTEMA = {
-      // 1. Administrador (Cuenta Active Directory institucional)
-      "adm-teso@keisel.me": {
-        rol: "ADMIN",
-        pass: "Th42913416",
-        dni: "60610700",
-        nombre: "Yareth Belinda Trujillo Sanchez (adm-teso)",
-        detalles: "Administrador de Dominio Active Directory (keisel.me)"
-      },
-      "adm-teso": {
-        rol: "ADMIN",
-        pass: "Th42913416",
-        dni: "60610700",
-        nombre: "Yareth Belinda Trujillo Sanchez (adm-teso)",
-        detalles: "Administrador de Dominio Active Directory (keisel.me)"
-      },
-
-      // 2. Conductor 1: Ruta Barranca
-      "conductor1@keisel.me": {
-        rol: "CONDUCTOR",
-        pass: "conductor123",
-        nombre: "Conductor 01",
-        dni: "00000001",
-        ruta: "Bus 01 • Barranca -> UNAB",
-        placa: "EUA-482",
-        busId: "bus_keisel_1",
-        detalles: "Bus 01 • Barranca -> UNAB • EUA-482"
-      },
-      "conductor1": {
-        rol: "CONDUCTOR",
-        pass: "conductor123",
-        nombre: "Conductor 01",
-        dni: "00000001",
-        ruta: "Bus 01 • Barranca -> UNAB",
-        placa: "EUA-482",
-        busId: "bus_keisel_1",
-        detalles: "Bus 01 • Barranca -> UNAB • EUA-482"
-      },
-
-      // 3. Conductor 2: Ruta Supe
-      "conductor2@keisel.me": {
-        rol: "CONDUCTOR",
-        pass: "conductor123",
-        nombre: "Conductor 02",
-        dni: "00000002",
-        ruta: "Bus 02 • Supe -> UNAB",
-        placa: "EUA-519",
-        busId: "bus_keisel_2",
-        detalles: "Bus 02 • Supe -> UNAB • EUA-519"
-      },
-      "conductor2": {
-        rol: "CONDUCTOR",
-        pass: "conductor123",
-        nombre: "Conductor 02",
-        dni: "00000002",
-        ruta: "Bus 02 • Supe -> UNAB",
-        placa: "EUA-519",
-        busId: "bus_keisel_2",
-        detalles: "Bus 02 • Supe -> UNAB • EUA-519"
-      },
-
-      // 4. Conductor 3: Ruta Paramonga
-      "conductor3@keisel.me": {
-        rol: "CONDUCTOR",
-        pass: "conductor123",
-        nombre: "Conductor 03",
-        dni: "00000003",
-        ruta: "Bus 03 • Paramonga -> UNAB",
-        placa: "EUA-604",
-        busId: "bus_keisel_3",
-        detalles: "Bus 03 • Paramonga -> UNAB • EUA-604"
-      },
-      "conductor3": {
-        rol: "CONDUCTOR",
-        pass: "conductor123",
-        nombre: "Conductor 03",
-        dni: "00000003",
-        ruta: "Bus 03 • Paramonga -> UNAB",
-        placa: "EUA-604",
-        busId: "bus_keisel_3",
-        detalles: "Bus 03 • Paramonga -> UNAB • EUA-604"
-      }
+      // Conductores oficiales registrados
+      "conductor1@keisel.me": { rol: "CONDUCTOR", nombre: "Conductor 01", busId: "bus_keisel_1", ruta: "Barranca" },
+      "conductor2@keisel.me": { rol: "CONDUCTOR", nombre: "Conductor 02", busId: "bus_keisel_2", ruta: "Supe" },
+      "conductor3@keisel.me": { rol: "CONDUCTOR", nombre: "Conductor 03", busId: "bus_keisel_3", ruta: "Paramonga" }
     };
-
     var usuarioActivo = null;
 
     // --- CONFIGURACIÓN DE CONEXIÓN A LA API RHEL (SQL SERVER) ---
@@ -311,12 +219,7 @@
     // Respaldo secundario si la app móvil sale por Tailscale
     var API_TAILSCALE_URL = 'http://100.67.14.105:3000/api';
 
-    function cargarCredencialDemo(user, pass) {
-      var acc = document.getElementById('accountInput');
-      var pwd = document.getElementById('passwordInput');
-      if (acc) acc.value = user;
-      if (pwd) pwd.value = pass;
-    }
+
 
     function togglePasswordVis() {
       var p = document.getElementById('passwordInput');
@@ -394,20 +297,8 @@
         console.warn("Fallo de conexión API:", err);
       }
 
-      // 2. Respaldo local si los servidores están apagados
-      var record = USUARIOS_SISTEMA[acc];
-      if (record && record.pass === pwd) {
-        usuarioActivo = record;
-        showToast("Conectado en modo local (sin servidor)");
-        if (record.rol === 'ADMIN') {
-          showToast("Acceso restringido: El portal de Administrador se gestiona en la Web institucional.");
-          return;
-        } else {
-          abrirPanelConductor(record);
-        }
-      } else {
-        showToast("Credenciales incorrectas. Verifica tu cuenta o contraseña.");
-      }
+      // Respaldo de seguridad: no se guardan contraseñas en plano en el cliente
+      showToast("No se pudo autenticar con el servidor de la base de datos.");
     }
 
     function abrirPanelConductor(conductor) {
