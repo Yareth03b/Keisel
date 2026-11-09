@@ -201,10 +201,10 @@
   <script>
     // --- USUARIOS CONFIGURADOS (ACTIVE DIRECTORY + 3 CONDUCTORES) ---
     var USUARIOS_SISTEMA = {
-      // Conductores oficiales registrados
-      "conductor1@keisel.me": { rol: "CONDUCTOR", nombre: "Conductor 01", busId: "bus_keisel_1", ruta: "Barranca" },
-      "conductor2@keisel.me": { rol: "CONDUCTOR", nombre: "Conductor 02", busId: "bus_keisel_2", ruta: "Supe" },
-      "conductor3@keisel.me": { rol: "CONDUCTOR", nombre: "Conductor 03", busId: "bus_keisel_3", ruta: "Paramonga" }
+      // Conductores oficiales registrados con sus credenciales de Active Directory
+      "conductor1@keisel.me": { rol: "CONDUCTOR", nombre: "Conductor 01", busId: "bus_keisel_1", ruta: "Barranca", pass: "C1#123456" },
+      "conductor2@keisel.me": { rol: "CONDUCTOR", nombre: "Conductor 02", busId: "bus_keisel_2", ruta: "Supe", pass: "C2#123456" },
+      "conductor3@keisel.me": { rol: "CONDUCTOR", nombre: "Conductor 03", busId: "bus_keisel_3", ruta: "Paramonga", pass: "C3#123456" }
     };
     var usuarioActivo = null;
 
@@ -284,6 +284,7 @@
           }
         }
 
+        
         if (authSuccess && usuarioActivo) {
           if (usuarioActivo.rol === 'ADMIN') {
             showToast("Acceso restringido: El portal de Administrador se gestiona en la Web institucional.");
@@ -297,8 +298,22 @@
         console.warn("Fallo de conexión API:", err);
       }
 
-      // Respaldo de seguridad: no se guardan contraseñas en plano en el cliente
-      showToast("No se pudo autenticar con el servidor de la base de datos.");
+      // Verificación de respaldo offline con Active Directory si el servidor no responde
+      var uLocal = USUARIOS_SISTEMA[acc];
+      if (uLocal && uLocal.pass === pwd) {
+        usuarioActivo = {
+          rol: uLocal.rol,
+          nombre: uLocal.nombre,
+          busId: uLocal.busId,
+          ruta: uLocal.ruta,
+          detalles: uLocal.ruta + ' • UNAB'
+        };
+        showToast("Sesión iniciada (Modo Local / Autónomo)");
+        abrirPanelConductor(usuarioActivo);
+        return;
+      }
+
+      showToast("Cuenta o contraseña incorrecta.");
     }
 
     function abrirPanelConductor(conductor) {

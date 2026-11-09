@@ -229,12 +229,12 @@
     <!-- Barra Superior Flotante -->
     <header class="pointer-events-auto w-full max-w-md mx-auto pt-safe">
       <div class="h-14 w-full px-4 rounded-full bg-[#141416]/95 backdrop-blur-md border border-[#26262B] flex items-center justify-between shadow-2xl">
-        <button onclick="navegarA('inicio')" class="flex items-center gap-2 text-white hover:text-neutral-300 transition-colors py-1 pl-0.5 cursor-pointer" type="button">
+        <button onclick="retrocederDesdeMapa()" class="flex items-center gap-2 text-white hover:text-neutral-300 transition-colors py-1 pl-0.5 cursor-pointer" type="button">
           <svg class="w-5 h-5 text-[#A0A0A0]" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
             <path d="M19 12H5"></path>
             <path d="M12 19l-7-7 7-7"></path>
           </svg>
-          <span class="text-sm font-bold tracking-tight text-white">Estudiantes</span>
+          <span id="btn-mapa-back-text" class="text-sm font-bold tracking-tight text-white">Estudiantes</span>
         </button>
 
         <div class="flex items-center gap-2 bg-[#222222] px-3.5 py-1.5 rounded-full border border-white/20">
@@ -441,7 +441,7 @@
       <div class="h-14 px-5 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <span class="text-[17px] font-semibold tracking-tight text-white whitespace-nowrap">Admin</span>
-          <button type="button" onclick="navegarA('mapa')" class="text-xs font-bold text-white bg-neutral-900 hover:bg-neutral-800 px-3 py-1.5 rounded-full border border-neutral-700 flex items-center gap-1 cursor-pointer"><span class="material-symbols-outlined text-[15px]">map</span><span>Ver Mapa</span></button>
+          <button type="button" onclick="verMapaDesdeAdmin()" class="text-xs font-bold text-white bg-neutral-900 hover:bg-neutral-800 px-3 py-1.5 rounded-full border border-neutral-700 flex items-center gap-1 cursor-pointer"><span class="material-symbols-outlined text-[15px]">map</span><span>Ver Mapa</span></button>
           
         </div>
         <div class="flex items-center gap-4">
@@ -912,6 +912,14 @@
         if (vInicio) { vInicio.classList.remove('hidden'); vInicio.style.display = 'flex'; }
         detenerPollingGps();
       } else if (vista === 'mapa') {
+        var backText = document.getElementById('btn-mapa-back-text');
+        if (backText) {
+          if (origenVistaMapa === 'admin' || esAdminAutenticado) {
+            backText.innerText = "Panel Admin";
+          } else {
+            backText.innerText = "Estudiantes";
+          }
+        }
         if (vMapa) { vMapa.classList.remove('hidden'); vMapa.style.display = 'flex'; }
         if (btnVolverAdmin) {
           if (esAdminAutenticado) btnVolverAdmin.classList.remove('hidden');
@@ -1132,7 +1140,7 @@
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       }).addTo(map);
 
-      iniciarGeolocalizacionUsuario();
+      iniciarUbicacionUsuario();
     }
 
     
@@ -1185,145 +1193,138 @@
       }
     }
 
-    // --- GESTIÓN DE PERMISOS Y GEOLOCALIZACIÓN PRECISA ---
-    var userAccuracyCircle = null;
+    // --- VARIABLES DE GEOLOCALIZACIÓN Y ESTABILIZACIÓN ---
+    var userPosFijada = null;
+    var userWatchId = null;
+    var mejorAccuracyUsuario = 999;
+    var yaCentroUsuario = false;
+    var confirmacionesMovUser = 0;
+    var UMBRAL_MOVIMIENTO_METROS = 8.0;
+    var origenVistaMapa = null;
 
-    function abrirModalUbicacion() {
-      var modal = document.getElementById('modal-permiso-ubicacion');
-      if (modal) modal.classList.remove('hidden');
+    function verMapaDesdeAdmin() {
+      origenVistaMapa = 'admin';
+      navegarA('mapa');
     }
 
-    function cerrarModalUbicacion() {
-      var modal = document.getElementById('modal-permiso-ubicacion');
-      if (modal) modal.classList.add('hidden');
-    }
-
-    function configurarPermisoUbicacion(tipo) {
-      cerrarModalUbicacion();
-      if (tipo === 'siempre') {
-        localStorage.setItem('keisel_permiso_ubicacion', 'siempre');
-        showToast("Permiso configurado como 'Siempre'");
+    function retrocederDesdeMapa() {
+      if (origenVistaMapa === 'admin' || esAdminAutenticado) {
+        origenVistaMapa = null;
+        navegarA('admin');
       } else {
-        localStorage.removeItem('keisel_permiso_ubicacion');
-        showToast("Permiso configurado para esta sesión");
-      }
-      obtenerUbicacionAltaPrecision();
-    }
-
-    function iniciarGeolocalizacionUsuario() {
-      // 1. Revisar si hay una ubicación manual previamente fijada por el usuario (útil en PC)
-      var savedManual = localStorage.getItem('keisel_pos_manual');
-      if (savedManual) {
-        try {
-          var parsed = JSON.parse(savedManual);
-          if (Array.isArray(parsed) && parsed.length === 2) {
-            userPosActual = parsed;
-            dibujarPuntoUsuario(userPosActual[0], userPosActual[1], 15);
-          }
-        } catch(e) {}
-      }
-
-      // 2. Verificar preferencia de permiso
-      var pref = localStorage.getItem('keisel_permiso_ubicacion');
-      if (pref === 'siempre') {
-        obtenerUbicacionAltaPrecision();
-      } else {
-        abrirModalUbicacion();
+        navegarA('inicio');
       }
     }
 
-    function obtenerUbicacionAltaPrecision() {
-      if (!navigator.geolocation) {
-        showToast("Tu navegador no soporta geolocalización.");
-        return;
-      }
-
-      var geoOptions = {
-        enableHighAccuracy: true,
-        timeout: 12000,
-        maximumAge: 0 // Fuerza consulta GPS en tiempo real sin usar caché del ISP
-      };
-
-      navigator.geolocation.getCurrentPosition(
-        function(pos) {
-          userPosActual = [pos.coords.latitude, pos.coords.longitude];
-          var acc = pos.coords.accuracy || 20;
-          dibujarPuntoUsuario(userPosActual[0], userPosActual[1], acc);
-          if (map) {
-            map.flyTo(userPosActual, 17, { animate: true, duration: 1 });
-          }
-        },
-        function(err) {
-          console.warn("Fallo de geolocalización precisa:", err);
-          showToast("No se pudo obtener señal GPS satelital. Puedes arrastrar tu punto en el mapa.");
-        },
-        geoOptions
-      );
-
-      if (watchUserLocationId) {
-        navigator.geolocation.clearWatch(watchUserLocationId);
-      }
-      watchUserLocationId = navigator.geolocation.watchPosition(
-        function(pos) {
-          // Si el usuario no movió manualmente su pin, seguir GPS
-          if (!localStorage.getItem('keisel_pos_manual_activa')) {
-            userPosActual = [pos.coords.latitude, pos.coords.longitude];
-            dibujarPuntoUsuario(userPosActual[0], userPosActual[1], pos.coords.accuracy || 20);
-          }
-        },
-        function() {},
-        { enableHighAccuracy: true, maximumAge: 5000 }
-      );
-    }
-
-    function dibujarPuntoUsuario(lat, lng, accuracyMetros) {
+    // --- UBICACIÓN DEL ESTUDIANTE: PUNTO BLANCO LIMPIO Y EXACTO ---
+    function dibujarPuntoBlancoUsuario(lat, lng) {
       if (!map || typeof L === 'undefined') return;
-
       if (!userMarker) {
         var userIcon = L.divIcon({
           className: 'user-marker-container',
-          html: '<div style="position:relative;cursor:grab;" title="Tu ubicación (Arrastra para corregir)"><div class="user-pulse-ring"></div><div class="user-pin-core"></div></div>',
-          iconSize: [24, 24],
-          iconAnchor: [12, 12]
+          html: '<div style="position:relative;"><div class="user-pulse-halo"></div><div class="user-white-dot"></div></div>',
+          iconSize: [18, 18],
+          iconAnchor: [9, 9]
         });
-
-        userMarker = L.marker([lat, lng], {
-          icon: userIcon,
-          zIndexOffset: 1000,
-          draggable: true
-        }).addTo(map);
-
-        userMarker.bindTooltip("Tu ubicación (Arrastra para afinar)", { direction: "top", offset: [0, -14] });
-
-        userMarker.on('dragend', function(e) {
-          var nPos = e.target.getLatLng();
-          userPosActual = [nPos.lat, nPos.lng];
-          localStorage.setItem('keisel_pos_manual', JSON.stringify(userPosActual));
-          localStorage.setItem('keisel_pos_manual_activa', '1');
-          if (userAccuracyCircle) {
-            userAccuracyCircle.setLatLng(nPos);
-          }
-          showToast("Ubicación afinada manualmente.");
-        });
+        userMarker = L.marker([lat, lng], { icon: userIcon, zIndexOffset: 1000 })
+          .addTo(map)
+          .bindPopup("<b>Tu ubicación actual</b>");
       } else {
         userMarker.setLatLng([lat, lng]);
       }
+    }
 
-      // Dibujar radio de precisión sutil
-      if (accuracyMetros && map) {
-        if (!userAccuracyCircle) {
-          userAccuracyCircle = L.circle([lat, lng], {
-            radius: Math.min(accuracyMetros, 100),
-            color: '#60A5FA',
-            fillColor: '#3B82F6',
-            fillOpacity: 0.12,
-            weight: 1
-          }).addTo(map);
-        } else {
-          userAccuracyCircle.setLatLng([lat, lng]);
-          userAccuracyCircle.setRadius(Math.min(accuracyMetros, 100));
+    function procesarLecturaGpsUsuario(pos) {
+      if (!pos || !pos.coords) return;
+      var lat = pos.coords.latitude;
+      var lng = pos.coords.longitude;
+      var accuracy = pos.coords.accuracy || 20;
+      var speed = pos.coords.speed;
+
+      // Si el bus está muy cerca del estudiante, vincular sutilmente para evitar jitter
+      if (busPosActual && accuracy > 15) {
+        var distAlBus = calcularDistanciaMetros(lat, lng, busPosActual[0], busPosActual[1]);
+        if (distAlBus < 150) {
+          lat = busPosActual[0] + 0.000012;
+          lng = busPosActual[1] + 0.000015;
         }
       }
+
+      // Primera lectura GPS: fijar punto blanco de inmediato
+      if (!userPosFijada) {
+        userPosFijada = [lat, lng];
+        userPosActual = [lat, lng];
+        mejorAccuracyUsuario = accuracy;
+        dibujarPuntoBlancoUsuario(lat, lng);
+
+        if (!yaCentroUsuario && map && !busPosActual) {
+          yaCentroUsuario = true;
+          map.flyTo(userPosActual, 17, { animate: true, duration: 1 });
+        }
+        return;
+      }
+
+      // Descartar lecturas ruidosas mayores a 50m si ya tenemos posición
+      if (accuracy > 50) {
+        return;
+      }
+
+      var distancia = calcularDistanciaMetros(userPosFijada[0], userPosFijada[1], lat, lng);
+
+      // Si está quieto o la distancia es menor al umbral de 8m, no mover el punto
+      if ((speed !== null && speed !== undefined && speed < 0.5 && distancia < 15.0) || distancia < UMBRAL_MOVIMIENTO_METROS) {
+        confirmacionesMovUser = 0;
+        return;
+      }
+
+      // 3 confirmaciones para evitar saltos bruscos
+      confirmacionesMovUser++;
+      if (confirmacionesMovUser < 3) {
+        return;
+      }
+
+      confirmacionesMovUser = 0;
+      // Suavizado exponencial para desplazamiento fluido
+      var latSuavizada = (userPosFijada[0] * 0.3) + (lat * 0.7);
+      var lngSuavizada = (userPosFijada[1] * 0.3) + (lng * 0.7);
+
+      userPosFijada = [latSuavizada, lngSuavizada];
+      userPosActual = [latSuavizada, lngSuavizada];
+      dibujarPuntoBlancoUsuario(latSuavizada, lngSuavizada);
+    }
+
+    function iniciarUbicacionUsuario() {
+      if (!navigator.geolocation) return;
+
+      navigator.geolocation.getCurrentPosition(
+        function(pos) {
+          procesarLecturaGpsUsuario(pos);
+        },
+        function(err) {
+          console.warn("Geolocalización inicial:", err.message);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+
+      if (userWatchId === null) {
+        userWatchId = navigator.geolocation.watchPosition(
+          function(pos) {
+            procesarLecturaGpsUsuario(pos);
+          },
+          function(err) {
+            console.warn("Watch geolocalización:", err.message);
+          },
+          { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
+        );
+      }
+    }
+
+    function centrarEnMiUbicacion() {
+      if (userPosActual && map) {
+        map.flyTo(userPosActual, 17, { animate: true, duration: 0.8 });
+        if (userMarker) userMarker.openPopup();
+      }
+      iniciarUbicacionUsuario();
     }
 
     function actualizarPosicionBus(lat, lng) {
