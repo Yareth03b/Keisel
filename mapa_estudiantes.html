@@ -314,38 +314,35 @@
       </div>
 
       <!-- Tarjeta Flotante del Bus Activo (Oculta al iniciar, se abre al tocar la bolita) -->
-      <div id="panel-tarjeta-bus" style="display: none;" class="w-full bg-[#141416]/95 backdrop-blur-xl border border-white/20 rounded-3xl p-5 shadow-2xl flex flex-col gap-3 pointer-events-auto transition-all duration-300">
-        <!-- Encabezado con Nombre del Bus, Badge En Vivo y Botón para Achicar -->
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="w-11 h-11 rounded-2xl bg-[#222222] text-white flex items-center justify-center shadow-md" id="bus-card-icon-bg">
-              <svg class="w-6 h-6 text-white" id="bus-card-icon" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-                <rect height="16" rx="4" width="18" x="3" y="3"></rect>
-                <path d="M3 11h18"></path>
-                <circle cx="7.5" cy="15" fill="currentColor" r="1.2" stroke="none"></circle>
-                <circle cx="16.5" cy="15" fill="currentColor" r="1.2" stroke="none"></circle>
-                <path d="M6 19v2"></path>
-                <path d="M18 19v2"></path>
-              </svg>
-            </div>
-            <div>
-              <p class="text-base font-extrabold text-white leading-tight" id="bus-main-name">Bus Universitario</p>
-              <p class="text-xs text-neutral-400 font-medium" id="bus-subtext">Esperando señal GPS activa...</p>
-            </div>
+      <!-- Tarjeta Flotante Inferior de Información del Bus (Compacta, Fila Única) -->
+      <div id="panel-tarjeta-bus" style="display: none;" class="w-full bg-[#141416]/95 backdrop-blur-xl border border-white/20 rounded-2xl px-4 py-3 shadow-2xl flex items-center justify-between gap-3 pointer-events-auto transition-all duration-300">
+        <!-- Izquierda: Ícono del Bus e Información Dinámica -->
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-xl bg-[#222222] text-white flex items-center justify-center shadow-md shrink-0" id="bus-card-icon-bg">
+            <svg class="w-5 h-5 text-white" id="bus-card-icon" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+              <rect height="16" rx="4" width="18" x="3" y="3"></rect>
+              <path d="M3 11h18"></path>
+              <circle cx="7.5" cy="15" fill="currentColor" r="1.2" stroke="none"></circle>
+              <circle cx="16.5" cy="15" fill="currentColor" r="1.2" stroke="none"></circle>
+              <path d="M6 19v2"></path>
+              <path d="M18 19v2"></path>
+            </svg>
           </div>
-          <div class="flex items-center gap-2">
-            <span class="text-[9px] font-bold text-neutral-400 bg-neutral-800 px-2 py-0.5 rounded-full tracking-wider uppercase" id="bus-live-badge">DESCONECTADO</span>
-            <button onclick="achicarPanelBuses()" class="w-7 h-7 rounded-full bg-neutral-800 hover:bg-neutral-700 text-neutral-300 flex items-center justify-center active:scale-95 transition-all cursor-pointer" title="Minimizar panel">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"></path></svg>
-            </button>
+          <div class="min-w-0">
+            <p class="text-sm font-extrabold text-white leading-tight truncate" id="bus-main-name">Bus Universitario</p>
+            <p class="text-[11px] text-neutral-400 font-medium truncate" id="bus-subtext">Esperando señal GPS activa...</p>
           </div>
         </div>
 
-        <div class="flex items-center justify-between pt-1 border-t border-neutral-800">
-          <span class="text-xs text-neutral-400" id="bus-speed-text">Velocidad: -- km/h</span>
-          <button id="btn-seguir-bus" onclick="centrarEnBus()" class="text-xs font-bold text-white bg-white/10 hover:bg-white/20 px-3 py-1 rounded-lg transition-colors cursor-pointer flex items-center gap-1">
-            <span class="material-symbols-outlined text-[14px]">center_focus_strong</span>
+        <!-- Derecha: Botón Seguir Bus, Badge EN VIVO y Botón Minimizar -->
+        <div class="flex items-center gap-2 shrink-0">
+          <span class="text-[9px] font-bold text-neutral-400 bg-neutral-800 px-2 py-0.5 rounded-full tracking-wider uppercase" id="bus-live-badge">DESCONECTADO</span>
+          <button id="btn-seguir-bus" onclick="centrarEnBus()" class="text-xs font-bold text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1 active:scale-95" title="Centrar bus en el mapa">
+            <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M3 12h3m12 0h3M12 3v3m0 12v3"></path></svg>
             <span>Seguir Bus</span>
+          </button>
+          <button onclick="achicarPanelBuses()" class="w-7 h-7 rounded-full bg-neutral-800 hover:bg-neutral-700 text-neutral-300 flex items-center justify-center active:scale-95 transition-all cursor-pointer" title="Minimizar panel">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"></path></svg>
           </button>
         </div>
       </div>
@@ -1171,222 +1168,165 @@
       }
     }
 
+    var busMarkers = {};
+    var busPosActual = null;
+
+    var BUS_CATALOGO = {
+      "bus_keisel_1": { nombre: "Bus 01", ruta: "Barranca - UNAB", placa: "EUA-482" },
+      "bus_keisel_2": { nombre: "Bus 02", ruta: "Supe - UNAB", placa: "B4T-912" },
+      "bus_keisel_3": { nombre: "Bus 03", ruta: "Paramonga - UNAB", placa: "C1V-554" }
+    };
+
     function centrarEnBus() {
-      if (map && busPosActual) {
-        map.flyTo(busPosActual, 17, { animate: true, duration: 1 });
-        if (busMarker) busMarker.openPopup();
+      if (!map) return;
+      var ids = Object.keys(busMarkers);
+      if (ids.length === 0) {
+        showToast("No hay ningún bus transmitiendo en este momento.");
+        return;
       }
-    }
-
-    function dibujarPuntoUsuario(lat, lng) {
-      if (!map || typeof L === 'undefined') return;
-      if (!userMarker) {
-        var userIcon = L.divIcon({
-          className: 'user-marker-container',
-          html: '<div style="position:relative;"><div class="user-pulse-halo"></div><div class="user-white-dot"></div></div>',
-          iconSize: [20, 20],
-          iconAnchor: [10, 10]
+      if (ids.length === 1) {
+        var b = busMarkers[ids[0]];
+        map.flyTo([b.lat, b.lng], 16, { animate: true, duration: 1 });
+        b.marker.openPopup();
+      } else {
+        var group = [];
+        ids.forEach(function(id) {
+          group.push([busMarkers[id].lat, busMarkers[id].lng]);
         });
-        userMarker = L.marker([lat, lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map);
-      } else {
-        userMarker.setLatLng([lat, lng]);
-      }
-    }
-
-    // --- VARIABLES DE GEOLOCALIZACIÓN Y ESTABILIZACIÓN ---
-    var userPosFijada = null;
-    var userWatchId = null;
-    var mejorAccuracyUsuario = 999;
-    var yaCentroUsuario = false;
-    var confirmacionesMovUser = 0;
-    var UMBRAL_MOVIMIENTO_METROS = 8.0;
-    var origenVistaMapa = null;
-
-    function verMapaDesdeAdmin() {
-      origenVistaMapa = 'admin';
-      navegarA('mapa');
-    }
-
-    function retrocederDesdeMapa() {
-      if (origenVistaMapa === 'admin' || esAdminAutenticado) {
-        origenVistaMapa = null;
-        navegarA('admin');
-      } else {
-        navegarA('inicio');
-      }
-    }
-
-    // --- UBICACIÓN DEL ESTUDIANTE: PUNTO BLANCO LIMPIO Y EXACTO ---
-    function dibujarPuntoBlancoUsuario(lat, lng) {
-      if (!map || typeof L === 'undefined') return;
-      if (!userMarker) {
-        var userIcon = L.divIcon({
-          className: 'user-marker-container',
-          html: '<div style="position:relative;"><div class="user-pulse-halo"></div><div class="user-white-dot"></div></div>',
-          iconSize: [18, 18],
-          iconAnchor: [9, 9]
-        });
-        userMarker = L.marker([lat, lng], { icon: userIcon, zIndexOffset: 1000 })
-          .addTo(map)
-          .bindPopup("<b>Tu ubicación actual</b>");
-      } else {
-        userMarker.setLatLng([lat, lng]);
-      }
-    }
-
-    function procesarLecturaGpsUsuario(pos) {
-      if (!pos || !pos.coords) return;
-      var lat = pos.coords.latitude;
-      var lng = pos.coords.longitude;
-      var accuracy = pos.coords.accuracy || 20;
-      var speed = pos.coords.speed;
-
-      // Si el bus está muy cerca del estudiante, vincular sutilmente para evitar jitter
-      if (busPosActual && accuracy > 15) {
-        var distAlBus = calcularDistanciaMetros(lat, lng, busPosActual[0], busPosActual[1]);
-        if (distAlBus < 150) {
-          lat = busPosActual[0] + 0.000012;
-          lng = busPosActual[1] + 0.000015;
+        if (userPosActual) {
+          group.push(userPosActual);
         }
-      }
-
-      // Primera lectura GPS: fijar punto blanco de inmediato
-      if (!userPosFijada) {
-        userPosFijada = [lat, lng];
-        userPosActual = [lat, lng];
-        mejorAccuracyUsuario = accuracy;
-        dibujarPuntoBlancoUsuario(lat, lng);
-
-        if (!yaCentroUsuario && map && !busPosActual) {
-          yaCentroUsuario = true;
-          map.flyTo(userPosActual, 17, { animate: true, duration: 1 });
-        }
-        return;
-      }
-
-      // Descartar lecturas ruidosas mayores a 50m si ya tenemos posición
-      if (accuracy > 50) {
-        return;
-      }
-
-      var distancia = calcularDistanciaMetros(userPosFijada[0], userPosFijada[1], lat, lng);
-
-      // Si está quieto o la distancia es menor al umbral de 8m, no mover el punto
-      if ((speed !== null && speed !== undefined && speed < 0.5 && distancia < 15.0) || distancia < UMBRAL_MOVIMIENTO_METROS) {
-        confirmacionesMovUser = 0;
-        return;
-      }
-
-      // 3 confirmaciones para evitar saltos bruscos
-      confirmacionesMovUser++;
-      if (confirmacionesMovUser < 3) {
-        return;
-      }
-
-      confirmacionesMovUser = 0;
-      // Suavizado exponencial para desplazamiento fluido
-      var latSuavizada = (userPosFijada[0] * 0.3) + (lat * 0.7);
-      var lngSuavizada = (userPosFijada[1] * 0.3) + (lng * 0.7);
-
-      userPosFijada = [latSuavizada, lngSuavizada];
-      userPosActual = [latSuavizada, lngSuavizada];
-      dibujarPuntoBlancoUsuario(latSuavizada, lngSuavizada);
-    }
-
-    function iniciarUbicacionUsuario() {
-      if (!navigator.geolocation) return;
-
-      navigator.geolocation.getCurrentPosition(
-        function(pos) {
-          procesarLecturaGpsUsuario(pos);
-        },
-        function(err) {
-          console.warn("Geolocalización inicial:", err.message);
-        },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-      );
-
-      if (userWatchId === null) {
-        userWatchId = navigator.geolocation.watchPosition(
-          function(pos) {
-            procesarLecturaGpsUsuario(pos);
-          },
-          function(err) {
-            console.warn("Watch geolocalización:", err.message);
-          },
-          { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
-        );
+        var bounds = L.latLngBounds(group);
+        map.fitBounds(bounds, { padding: [60, 60], maxZoom: 16 });
+        showToast("Centrando mapa en los " + ids.length + " buses activos");
       }
     }
 
-    function centrarEnMiUbicacion() {
-      if (userPosActual && map) {
-        map.flyTo(userPosActual, 17, { animate: true, duration: 0.8 });
-        if (userMarker) userMarker.openPopup();
-      }
-      iniciarUbicacionUsuario();
-    }
-
-    function actualizarPosicionBus(lat, lng) {
+    function actualizarBusesActivos(busesList) {
       if (!map || typeof L === 'undefined') return;
-      busPosActual = [lat, lng];
 
-      if (!busMarker) {
-        var busSvg = '<svg style="width:18px;height:18px;" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect height="16" rx="4" width="18" x="3" y="3"></rect><path d="M3 11h18"></path><path d="M19 19v2"></path><path d="M5 19v2"></path><circle cx="7.5" cy="15" fill="#FFFFFF" r="1.2" stroke="none"></circle><circle cx="16.5" cy="15" fill="#FFFFFF" r="1.2" stroke="none"></circle></svg>';
-        var busIcon = L.divIcon({
-          className: 'bus-marker-container',
-          html: '<div style="position:relative;"><div class="bus-pulse-ring"></div><div class="bus-pin-core">' + busSvg + '</div></div>',
-          iconSize: [32, 32],
-          iconAnchor: [16, 16]
-        });
-        busMarker = L.marker(busPosActual, { icon: busIcon, zIndexOffset: 1500 })
-          .addTo(map)
-          .bindPopup("<b>Bus Universitario</b><br>Ruta en Curso");
-      } else {
-        busMarker.setLatLng(busPosActual);
-      }
+      var validos = (busesList || []).filter(function(b) {
+        if (!b || b.latitud === null || b.longitud === null) return false;
+        var lat = Number(b.latitud);
+        var lng = Number(b.longitud);
+        if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) return false;
+
+        // Validar frescura del dato si viene de Supabase (máximo 6 minutos)
+        if (b.actualizado_en) {
+          var diffMs = Date.now() - new Date(b.actualizado_en).getTime();
+          if (diffMs > 360000) return false;
+        }
+        return true;
+      });
+
+      var idsRecibidos = new Set();
+
+      validos.forEach(function(b) {
+        var bId = b.id || 'bus_keisel_1';
+        idsRecibidos.add(bId);
+
+        var lat = Number(b.latitud);
+        var lng = Number(b.longitud);
+        var info = BUS_CATALOGO[bId] || {
+          nombre: b.nombre || ("Bus " + bId.replace('bus_keisel_', '')),
+          ruta: b.ruta || "Ruta Universitaria Activa"
+        };
+
+        if (!busMarkers[bId]) {
+          var busSvg = '<svg style="width:16px;height:16px;" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect height="16" rx="4" width="18" x="3" y="3"></rect><path d="M3 11h18"></path><path d="M19 19v2"></path><path d="M5 19v2"></path><circle cx="7.5" cy="15" fill="#FFFFFF" r="1.2" stroke="none"></circle><circle cx="16.5" cy="15" fill="#FFFFFF" r="1.2" stroke="none"></circle></svg>';
+          
+          var busHtml = '<div style="position:relative; display:flex; flex-direction:column; align-items:center;">' +
+                          '<div class="bus-pulse-ring"></div>' +
+                          '<div class="bus-pin-core">' + busSvg + '</div>' +
+                          '<span style="background:#141416; color:#FFFFFF; border:1px solid rgba(255,255,255,0.4); font-size:10px; font-weight:800; padding:1px 6px; border-radius:6px; margin-top:3px; white-space:nowrap; box-shadow:0 2px 8px rgba(0,0,0,0.8); letter-spacing:0.02em;">' + info.nombre + '</span>' +
+                        '</div>';
+
+          var busIcon = L.divIcon({
+            className: 'bus-marker-container',
+            html: busHtml,
+            iconSize: [40, 52],
+            iconAnchor: [20, 20]
+          });
+
+          var marker = L.marker([lat, lng], { icon: busIcon, zIndexOffset: 1500 })
+            .addTo(map)
+            .bindPopup("<b>" + info.nombre + "</b><br>" + info.ruta + (info.placa ? "<br>Placa: " + info.placa : ""));
+
+          busMarkers[bId] = { marker: marker, lat: lat, lng: lng, info: info };
+        } else {
+          busMarkers[bId].marker.setLatLng([lat, lng]);
+          busMarkers[bId].lat = lat;
+          busMarkers[bId].lng = lng;
+        }
+      });
+
+      // Retirar marcadores de buses que dejaron de transmitir
+      Object.keys(busMarkers).forEach(function(oldId) {
+        if (!idsRecibidos.has(oldId)) {
+          map.removeLayer(busMarkers[oldId].marker);
+          delete busMarkers[oldId];
+        }
+      });
+
+      var activeCount = Object.keys(busMarkers).length;
 
       var dot = document.getElementById('live-dot');
-      if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-white animate-pulse";
       var status = document.getElementById('header-status');
-      if (status) status.innerText = "BUS EN RUTA";
       var btnC = document.getElementById('btn-centrar-bus');
-      if (btnC) btnC.style.display = 'flex';
       var badge = document.getElementById('bus-live-badge');
-      if (badge) {
-        badge.innerText = "EN VIVO";
-        badge.className = "text-[9px] font-bold text-black bg-white px-2 py-0.5 rounded-full tracking-wider uppercase";
-      }
+      var nameEl = document.getElementById('bus-main-name');
       var sub = document.getElementById('bus-subtext');
-      if (sub) sub.innerText = "Posición GPS activa";
+
+      if (activeCount === 0) {
+        busPosActual = null;
+        if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-neutral-600";
+        if (status) status.innerText = "SIN BUS EN RUTA";
+        if (btnC) btnC.style.display = 'none';
+        if (badge) {
+          badge.innerText = "DESCONECTADO";
+          badge.className = "text-[9px] font-bold text-neutral-400 bg-neutral-800 px-2 py-0.5 rounded-full tracking-wider uppercase";
+        }
+        if (nameEl) nameEl.innerText = "Bus Universitario";
+        if (sub) sub.innerText = "Esperando señal GPS activa...";
+      } else if (activeCount === 1) {
+        var firstId = Object.keys(busMarkers)[0];
+        var firstBus = busMarkers[firstId];
+        busPosActual = [firstBus.lat, firstBus.lng];
+
+        if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-white animate-pulse";
+        if (status) status.innerText = "1 BUS EN RUTA";
+        if (btnC) btnC.style.display = 'flex';
+        if (badge) {
+          badge.innerText = "EN VIVO";
+          badge.className = "text-[9px] font-bold text-black bg-white px-2 py-0.5 rounded-full tracking-wider uppercase";
+        }
+        if (nameEl) nameEl.innerText = firstBus.info.nombre;
+        if (sub) sub.innerText = firstBus.info.ruta;
+      } else {
+        var firstBus = busMarkers[Object.keys(busMarkers)[0]];
+        busPosActual = [firstBus.lat, firstBus.lng];
+
+        if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-white animate-pulse";
+        if (status) status.innerText = activeCount + " BUSES EN RUTA";
+        if (btnC) btnC.style.display = 'flex';
+        if (badge) {
+          badge.innerText = activeCount + " EN VIVO";
+          badge.className = "text-[9px] font-bold text-black bg-white px-2 py-0.5 rounded-full tracking-wider uppercase";
+        }
+        if (nameEl) nameEl.innerText = "Buses Universitarios (" + activeCount + ")";
+        if (sub) sub.innerText = activeCount + " unidades en transmisión activa";
+      }
     }
 
     function ocultarBus() {
-      if (busMarker && map) {
-        map.removeLayer(busMarker);
-        busMarker = null;
-      }
-      busPosActual = null;
-      var dot = document.getElementById('live-dot');
-      if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-neutral-600";
-      var status = document.getElementById('header-status');
-      if (status) status.innerText = "SIN BUS EN RUTA";
-      var btnC = document.getElementById('btn-centrar-bus');
-      if (btnC) btnC.style.display = 'none';
-      var badge = document.getElementById('bus-live-badge');
-      if (badge) {
-        badge.innerText = "DESCONECTADO";
-        badge.className = "text-[9px] font-bold text-neutral-400 bg-neutral-800 px-2 py-0.5 rounded-full tracking-wider uppercase";
-      }
-      var sub = document.getElementById('bus-subtext');
-      if (sub) sub.innerText = "Esperando señal GPS activa...";
+      actualizarBusesActivos([]);
     }
 
-        var SUPABASE_REST_URL = "https://mcqcfdivpikmrkkfbhsm.supabase.co/rest/v1/rastreo";
+    var SUPABASE_REST_URL = "https://mcqcfdivpikmrkkfbhsm.supabase.co/rest/v1/rastreo";
     var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jcWNmZGl2cGlrbXJra2ZiaHNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyNzg5NDIsImV4cCI6MjEwODg1NDk0Mn0.F6Yz31dJI4wQiINS1NwK-cNunO0V_3UEvD3IHgTJSC0";
 
     function consultarSupabaseFallback() {
-      fetch(SUPABASE_REST_URL + '?select=*&order=actualizado_en.desc&limit=5', {
+      fetch(SUPABASE_REST_URL + '?select=*&order=actualizado_en.desc&limit=10', {
         method: 'GET',
         headers: {
           'apikey': SUPABASE_KEY,
@@ -1401,21 +1341,7 @@
           ocultarBus();
           return;
         }
-        var busActivo = buses.find(function(b) {
-          if (b.latitud === null || b.longitud === null) return false;
-          // Validar que la posición no sea más antigua de 6 minutos
-          if (b.actualizado_en) {
-            var diffMs = Date.now() - new Date(b.actualizado_en).getTime();
-            if (diffMs > 360000) return false;
-          }
-          return true;
-        });
-
-        if (busActivo && busActivo.latitud !== null && busActivo.longitud !== null) {
-          actualizarPosicionBus(Number(busActivo.latitud), Number(busActivo.longitud));
-        } else {
-          ocultarBus();
-        }
+        actualizarBusesActivos(buses);
       })
       .catch(function() {
         ocultarBus();
@@ -1423,8 +1349,6 @@
     }
 
     function cargarPosicionApi() {
-      // Si estamos en HTTPS (como Cloudflare Pages o GitHub Pages), consultar Supabase directamente
-      // para evitar el bloqueo del navegador por contenido mixto (Mixed Content HTTP -> HTTPS)
       if (window.location.protocol === 'https:') {
         consultarSupabaseFallback();
         return;
@@ -1437,20 +1361,14 @@
             consultarSupabaseFallback();
             return;
           }
-          var busActivo = buses.find(function(b) { return b.latitud !== null && b.longitud !== null; });
-          if (busActivo && busActivo.latitud !== null && busActivo.longitud !== null) {
-            actualizarPosicionBus(Number(busActivo.latitud), Number(busActivo.longitud));
-          } else {
-            consultarSupabaseFallback();
-          }
+          actualizarBusesActivos(buses);
         })
         .catch(function() {
           fetch(API_TAILSCALE_URL + '/obtener-gps', { method: 'GET', cache: 'no-store' })
             .then(function(r) { return r.json(); })
             .then(function(buses) {
-              var busActivo = buses.find(function(b) { return b.latitud !== null && b.longitud !== null; });
-              if (busActivo && busActivo.latitud !== null && busActivo.longitud !== null) {
-                actualizarPosicionBus(Number(busActivo.latitud), Number(busActivo.longitud));
+              if (Array.isArray(buses) && buses.length) {
+                actualizarBusesActivos(buses);
               } else {
                 consultarSupabaseFallback();
               }
