@@ -737,9 +737,16 @@
 
     var usuarioActivo = null;
 
-    // --- CONFIGURACIÓN DE CONEXIÓN GPS / SUPABASE ---
-    var SUPABASE_REST_URL = "https://mcqcfdivpikmrkkfbhsm.supabase.co/rest/v1/rastreo";
-    var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jcWNmZGl2cGlrbXJra2ZiaHNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyNzg5NDIsImV4cCI6MjEwODg1NDk0Mn0.F6Yz31dJI4wQiINS1NwK-cNunO0V_3UEvD3IHgTJSC0";
+    // --- CONFIGURACIÓN DE CONEXIÓN A LA API RHEL (SQL SERVER) ---
+    var API_BASE_URL = (function() {
+      if (window.location.protocol.startsWith('http')) {
+        return window.location.origin.replace(/:[0-9]+$/, '') + ':3000/api';
+      }
+      return 'http://192.168.1.252:3000/api';
+    })();
+
+    // Respaldo secundario si la app móvil sale por Tailscale
+    var API_TAILSCALE_URL = 'http://100.67.14.105:3000/api';
 
     function cargarCredencialDemo(user, pass) {
       var acc = document.getElementById('accountInput');
@@ -758,23 +765,83 @@
       }
     }
 
-    function handleFormLogin(e) {
+    async function handleFormLogin(e) {
       if (e) e.preventDefault();
       var acc = document.getElementById('accountInput').value.trim().toLowerCase();
       var pwd = document.getElementById('passwordInput').value.trim();
 
-      var record = USUARIOS_SISTEMA[acc];
-      if (!record || record.pass !== pwd) {
-        showToast("Credenciales incorrectas. Verifica tu cuenta o contraseña.");
+      if (!acc || !pwd) {
+        showToast("Por favor ingresa usuario y contraseña.");
         return;
       }
 
-      usuarioActivo = record;
+      showToast("Verificando con SQL Server...");
 
-      if (record.rol === 'ADMIN') {
-        abrirPanelAdmin();
-      } else if (record.rol === 'CONDUCTOR') {
-        abrirPanelConductor(record);
+      // 1. Intento de autenticación dinámica contra la API en RHEL (SQL Server)
+      try {
+        var endpoints = [API_BASE_URL, API_TAILSCALE_URL];
+        var authSuccess = false;
+
+        for (var i = 0; i < endpoints.length; i++) {
+          try {
+            var resp = await fetch(endpoints[i] + '/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ usuario: acc, contrasena: pwd }),
+              signal: AbortSignal.timeout(3000)
+            });
+
+            if (resp.ok) {
+              var data = await resp.json();
+              if (data.status === 'success' && data.usuario) {
+                var u = data.usuario;
+                usuarioActivo = {
+                  rol: u.rol,
+                  nombre: u.nombre,
+                  dni: u.dni,
+                  ruta: u.ruta,
+                  placa: u.placa,
+                  busId: u.busId || 'bus_keisel_1',
+                  detalles: (u.ruta || 'Sin ruta') + ' • ' + (u.placa || 'UNAB')
+                };
+
+                API_BASE_URL = endpoints[i]; // Fijar endpoint activo
+                authSuccess = true;
+                break;
+              }
+            } else if (resp.status === 401) {
+              showToast("Credenciales inválidas en SQL Server.");
+              return;
+            }
+          } catch (netErr) {
+            // Continúa al siguiente endpoint si hay timeout
+          }
+        }
+
+        if (authSuccess && usuarioActivo) {
+          if (usuarioActivo.rol === 'ADMIN') {
+            abrirPanelAdmin();
+          } else {
+            abrirPanelConductor(usuarioActivo);
+          }
+          return;
+        }
+      } catch (err) {
+        console.warn("Fallo de conexión API:", err);
+      }
+
+      // 2. Respaldo local si los servidores están apagados
+      var record = USUARIOS_SISTEMA[acc];
+      if (record && record.pass === pwd) {
+        usuarioActivo = record;
+        showToast("Conectado en modo local (sin servidor)");
+        if (record.rol === 'ADMIN') {
+          abrirPanelAdmin();
+        } else {
+          abrirPanelConductor(record);
+        }
+      } else {
+        showToast("Credenciales incorrectas. Verifica tu cuenta o contraseña.");
       }
     }
 
@@ -922,42 +989,42 @@
       var payload = JSON.stringify({
         id: targetBusId,
         latitud: latExacta,
-        longitud: lngExacta,
-        actualizado_en: new Date().toISOString()
+        longitud: lngExacta
       });
 
-      fetch(SUPABASE_REST_URL, {
+      // Envío directo a la API local de SQL Server en RHEL
+      fetch(API_BASE_URL + '/actualizar-gps', {
         method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': 'Bearer ' + SUPABASE_KEY,
-          'Content-Type': 'application/json',
-          'Prefer': 'resolution=merge-duplicates'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: payload
       }).catch(function(err) {
-        console.error("Error al enviar coordenadas:", err);
+        // Reintento con la IP de Tailscale si está en datos móviles
+        fetch(API_TAILSCALE_URL + '/actualizar-gps', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload
+        }).catch(function(e) {
+          console.warn("Fallo envio GPS local:", e);
+        });
       });
     }
 
     function limpiarSenalSupabase(customBusId) {
       var targetBusId = customBusId || obtenerBusIdActivo();
-      fetch(SUPABASE_REST_URL, {
+      var payload = JSON.stringify({ id: targetBusId });
+
+      fetch(API_BASE_URL + '/corte-emergencia', {
         method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': 'Bearer ' + SUPABASE_KEY,
-          'Content-Type': 'application/json',
-          'Prefer': 'resolution=merge-duplicates'
-        },
-        body: JSON.stringify({
-          id: targetBusId,
-          latitud: null,
-          longitud: null,
-          actualizado_en: new Date(0).toISOString()
-        })
-      }).catch(function(err) {
-        console.warn("Error al limpiar señal:", err);
+        headers: { 'Content-Type': 'application/json' },
+        body: payload
+      }).catch(function() {
+        fetch(API_TAILSCALE_URL + '/corte-emergencia', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload
+        }).catch(function(e) {
+          console.warn("Error en corte de señal:", e);
+        });
       });
     }
 

@@ -393,32 +393,15 @@
   </div>
 
   <script>
-    // --- SUPABASE & PROXY CONFIG (SOPORTE HIBRIDO LAN SIN INTERNET + CLOUDFLARE) ---
-    var SUPABASE_DIRECT_URL = "https://mcqcfdivpikmrkkfbhsm.supabase.co";
-    var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jcWNmZGl2cGlrbXJra2ZiaHNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyNzg5NDIsImV4cCI6MjEwODg1NDk0Mn0.F6Yz31dJI4wQiINS1NwK-cNunO0V_3UEvD3IHgTJSC0";
-
-    // Detectar si el cliente esta entrando al Servidor Web RHEL local (no Cloudflare Pages)
-    var ES_SERVIDOR_LOCAL_LAN = (
-      window.location.protocol.indexOf('http') === 0 &&
-      window.location.hostname.indexOf('pages.dev') === -1 &&
-      window.location.hostname.indexOf('github.io') === -1
-    );
-
-    // Si entra por el Servidor RHEL y tiene configurado el Proxy Inverso (/supabase-api), el servidor RHEL sale a Internet por el cliente
-    var SUPABASE_PROXY_URL = window.location.origin + "/supabase-api";
-    var usarProxyRhel = ES_SERVIDOR_LOCAL_LAN;
-
-    var supabaseClient = null;
-    function getSupabase() {
-      if (!supabaseClient && window.supabase && typeof window.supabase.createClient === 'function') {
-        try {
-          supabaseClient = window.supabase.createClient(SUPABASE_DIRECT_URL, SUPABASE_ANON_KEY);
-        } catch (e) {
-          console.warn("Supabase init:", e);
-        }
+    // --- CONFIGURACIÓN DE CONEXIÓN CON LA API LOCAL RHEL (SQL SERVER) ---
+    var API_BASE_URL = (function() {
+      if (window.location.protocol.startsWith('http')) {
+        return window.location.origin.replace(/:[0-9]+$/, '') + ':3000/api';
       }
-      return supabaseClient;
-    }
+      return 'http://192.168.1.252:3000/api';
+    })();
+
+    var API_TAILSCALE_URL = 'http://100.67.14.105:3000/api';
 
     var UNI_LAT = -10.72635;
     var UNI_LNG = -77.77373;
@@ -806,69 +789,46 @@
     }
 
     function cargarUltimaPosicion() {
-      var baseEndpoint = usarProxyRhel ? SUPABASE_PROXY_URL : SUPABASE_DIRECT_URL;
-      fetch(baseEndpoint + "/rest/v1/rastreo?id=eq.bus_keisel_1&select=*", {
-        method: 'GET',
-        headers: {
-          'apikey': SUPABASE_ANON_KEY,
-          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-          'Cache-Control': 'no-cache'
-        },
-        cache: 'no-store'
-      })
-      .then(function(r) {
-        if (!r.ok && usarProxyRhel) {
-          usarProxyRhel = false;
-          return fetch(SUPABASE_DIRECT_URL + "/rest/v1/rastreo?id=eq.bus_keisel_1&select=*", {
-            method: 'GET',
-            headers: {
-              'apikey': SUPABASE_ANON_KEY,
-              'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-              'Cache-Control': 'no-cache'
-            },
-            cache: 'no-store'
-          });
-        }
-        return r;
-      })
-      .then(function(r) { return r.json(); })
-      .then(procesarFilasRastreo)
-      .catch(function(err) {
-        if (usarProxyRhel) {
-          usarProxyRhel = false;
-        }
-        console.warn("Error consultando posicion:", err);
-      });
-    }
-
-    function conectarRealtime() {
-      var client = getSupabase();
-      if (!client) return;
-
-      try {
-        client
-          .channel('keisel-realtime')
-          .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'rastreo' },
-            function(payload) {
-              if (payload.new && payload.new.latitud !== null && payload.new.longitud !== null) {
-                ultimoTimestampVisto = payload.new.actualizado_en;
-                primeraConsultaTabla = false;
-                actualizarPosicionBus(Number(payload.new.latitud), Number(payload.new.longitud));
+      var url = API_BASE_URL + "/obtener-gps";
+      fetch(url, { method: 'GET', cache: 'no-store' })
+        .then(function(r) { return r.json(); })
+        .then(function(buses) {
+          if (!Array.isArray(buses) || !buses.length) {
+            ocultarBus();
+            return;
+          }
+          var busActivo = buses.find(function(b) { return b.latitud !== null && b.longitud !== null; });
+          if (busActivo && busActivo.latitud !== null && busActivo.longitud !== null) {
+            actualizarPosicionBus(Number(busActivo.latitud), Number(busActivo.longitud));
+          } else {
+            ocultarBus();
+          }
+        })
+        .catch(function(err) {
+          // Reintento por Tailscale si la IP local de LAN no responde
+          fetch(API_TAILSCALE_URL + "/obtener-gps", { method: 'GET', cache: 'no-store' })
+            .then(function(r) { return r.json(); })
+            .then(function(buses) {
+              var busActivo = buses.find(function(b) { return b.latitud !== null && b.longitud !== null; });
+              if (busActivo && busActivo.latitud !== null && busActivo.longitud !== null) {
+                actualizarPosicionBus(Number(busActivo.latitud), Number(busActivo.longitud));
               } else {
                 ocultarBus();
               }
-            }
-          )
-          .subscribe();
-      } catch (e) {
-        console.warn("Realtime error:", e);
-      }
+            }).catch(function(e) {
+              console.warn("Error consultando telemetria SQL Server:", e);
+            });
+        });
+    }
+
+    function iniciarRastreoEnVivo() {
+      cargarUltimaPosicion();
+      setInterval(cargarUltimaPosicion, 1500);
     }
 
     window.addEventListener('load', function() {
       initLeafletMap();
+      iniciarRastreoEnVivo();
     });
   </script>
 </body>
