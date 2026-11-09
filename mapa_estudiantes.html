@@ -335,6 +335,7 @@
 
         <!-- Derecha: Botón Seguir Bus, Badge EN VIVO y Botón Minimizar -->
         <div class="flex items-center gap-2 shrink-0">
+          <div id="bus-chips-container" class="hidden sm:flex items-center gap-1"></div>
           <span class="text-[9px] font-bold text-neutral-400 bg-neutral-800 px-2 py-0.5 rounded-full tracking-wider uppercase" id="bus-live-badge">DESCONECTADO</span>
           <button id="btn-seguir-bus" onclick="centrarEnBus()" class="text-xs font-bold text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1 active:scale-95" title="Centrar bus en el mapa">
             <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M3 12h3m12 0h3M12 3v3m0 12v3"></path></svg>
@@ -1168,6 +1169,58 @@
       }
     }
 
+    function calcularDistanciaMetros(lat1, lon1, lat2, lon2) {
+      var R = 6371000;
+      var dLat = (lat2 - lat1) * Math.PI / 180;
+      var dLon = (lon2 - lon1) * Math.PI / 180;
+      var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+
+    function aplicarDispersionVisual(buses) {
+      if (!buses || buses.length <= 1) return buses;
+      var lista = buses.map(function(b) {
+        var lat = Number(b.latitud);
+        var lng = Number(b.longitud);
+        return {
+          id: b.id,
+          nombre: b.nombre,
+          ruta: b.ruta,
+          placa: b.placa,
+          latitud: lat,
+          longitud: lng,
+          latReal: lat,
+          lngReal: lng,
+          actualizado_en: b.actualizado_en
+        };
+      });
+
+      // Detecta colisiones directas (< 35 metros) para que los marcadores no se tapen
+      for (var i = 0; i < lista.length; i++) {
+        var colisiones = [i];
+        for (var j = i + 1; j < lista.length; j++) {
+          var d = calcularDistanciaMetros(lista[i].latReal, lista[i].lngReal, lista[j].latReal, lista[j].lngReal);
+          if (d < 35.0) {
+            colisiones.push(j);
+          }
+        }
+        if (colisiones.length > 1) {
+          // Separación angular limpia de ~22 metros para visualización simultánea de todos los buses
+          var radioGrados = 0.00020;
+          for (var k = 0; k < colisiones.length; k++) {
+            var idx = colisiones[k];
+            var angulo = (2 * Math.PI / colisiones.length) * k;
+            lista[idx].latitud = Number((lista[idx].latReal + Math.sin(angulo) * radioGrados).toFixed(7));
+            lista[idx].longitud = Number((lista[idx].lngReal + Math.cos(angulo) * radioGrados).toFixed(7));
+          }
+        }
+      }
+      return lista;
+    }
+
     var busMarkers = {};
     var BUS_CATALOGO = {
       "bus_keisel_1": { nombre: "Bus 01", ruta: "Barranca - UNAB", placa: "EUA-482" },
@@ -1175,28 +1228,35 @@
       "bus_keisel_3": { nombre: "Bus 03", ruta: "Paramonga - UNAB", placa: "C1V-554" }
     };
 
-    function centrarEnBus() {
+    function centrarEnBus(especificoId) {
       if (!map) return;
       var ids = Object.keys(busMarkers);
       if (ids.length === 0) {
-        showToast("No hay ningún bus transmitiendo en este momento.");
+        if (typeof showToast === 'function') showToast("No hay ningún bus transmitiendo en este momento.");
         return;
       }
+
+      if (especificoId && busMarkers[especificoId]) {
+        var target = busMarkers[especificoId];
+        map.flyTo([target.lat, target.lng], 17, { animate: true, duration: 0.8 });
+        target.marker.openPopup();
+        return;
+      }
+
       if (ids.length === 1) {
         var b = busMarkers[ids[0]];
-        map.flyTo([b.lat, b.lng], 16, { animate: true, duration: 1 });
+        map.flyTo([b.lat, b.lng], 16, { animate: true, duration: 0.8 });
         b.marker.openPopup();
       } else {
         var group = [];
         ids.forEach(function(id) {
           group.push([busMarkers[id].lat, busMarkers[id].lng]);
         });
-        if (userPosActual) {
+        if (typeof userPosActual !== 'undefined' && userPosActual) {
           group.push(userPosActual);
         }
         var bounds = L.latLngBounds(group);
-        map.fitBounds(bounds, { padding: [60, 60], maxZoom: 16 });
-        showToast("Centrando mapa en los " + ids.length + " buses activos");
+        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 17 });
       }
     }
 
@@ -1359,23 +1419,29 @@
         if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) return false;
 
         if (b.actualizado_en) {
-          var diffMs = Date.now() - new Date(b.actualizado_en).getTime();
-          if (diffMs > 360000) return false;
+          var t = new Date(b.actualizado_en).getTime();
+          if (!isNaN(t)) {
+            var diffSeg = (Date.now() - t) / 1000;
+            if (diffSeg > 600) return false;
+          }
         }
         return true;
       });
 
+      // Aplica dispersión visual inteligente si están muy juntos para que ambos se vean simultáneamente
+      var dispersados = aplicarDispersionVisual(validos);
       var idsRecibidos = new Set();
 
-      validos.forEach(function(b) {
+      dispersados.forEach(function(b) {
         var bId = b.id || 'bus_keisel_1';
         idsRecibidos.add(bId);
 
-        var lat = Number(b.latitud);
-        var lng = Number(b.longitud);
+        var lat = b.latitud;
+        var lng = b.longitud;
         var info = BUS_CATALOGO[bId] || {
           nombre: b.nombre || ("Bus " + bId.replace('bus_keisel_', '')),
-          ruta: b.ruta || "Ruta Universitaria Activa"
+          ruta: b.ruta || "Ruta Universitaria Activa",
+          placa: b.placa || ""
         };
 
         if (!busMarkers[bId]) {
@@ -1398,14 +1464,21 @@
             .addTo(map)
             .bindPopup("<b>" + info.nombre + "</b><br>" + info.ruta + (info.placa ? "<br>Placa: " + info.placa : ""));
 
+          marker.on('click', function() {
+            expandirPanelBuses();
+            centrarEnBus(bId);
+          });
+
           busMarkers[bId] = { marker: marker, lat: lat, lng: lng, info: info };
         } else {
           busMarkers[bId].marker.setLatLng([lat, lng]);
           busMarkers[bId].lat = lat;
           busMarkers[bId].lng = lng;
+          busMarkers[bId].info = info;
         }
       });
 
+      // Remover del mapa buses que hayan apagado transmisión
       Object.keys(busMarkers).forEach(function(oldId) {
         if (!idsRecibidos.has(oldId)) {
           map.removeLayer(busMarkers[oldId].marker);
@@ -1421,6 +1494,7 @@
       var badge = document.getElementById('bus-live-badge');
       var nameEl = document.getElementById('bus-main-name');
       var sub = document.getElementById('bus-subtext');
+      var chips = document.getElementById('bus-chips-container');
 
       if (activeCount === 0) {
         busPosActual = null;
@@ -1433,6 +1507,7 @@
         }
         if (nameEl) nameEl.innerText = "Bus Universitario";
         if (sub) sub.innerText = "Esperando señal GPS activa...";
+        if (chips) chips.innerHTML = '';
       } else if (activeCount === 1) {
         var firstId = Object.keys(busMarkers)[0];
         var firstBus = busMarkers[firstId];
@@ -1447,8 +1522,10 @@
         }
         if (nameEl) nameEl.innerText = firstBus.info.nombre;
         if (sub) sub.innerText = firstBus.info.ruta;
+        if (chips) chips.innerHTML = '';
       } else {
-        var firstBus = busMarkers[Object.keys(busMarkers)[0]];
+        var idsActivos = Object.keys(busMarkers);
+        var firstBus = busMarkers[idsActivos[0]];
         busPosActual = [firstBus.lat, firstBus.lng];
 
         if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-white animate-pulse";
@@ -1458,8 +1535,20 @@
           badge.innerText = activeCount + " EN VIVO";
           badge.className = "text-[9px] font-bold text-black bg-white px-2 py-0.5 rounded-full tracking-wider uppercase";
         }
-        if (nameEl) nameEl.innerText = "Buses Universitarios (" + activeCount + ")";
-        if (sub) sub.innerText = activeCount + " unidades en transmisión activa";
+        if (nameEl) nameEl.innerText = activeCount + " Buses en Ruta";
+        
+        var nombresRutas = idsActivos.map(function(id) {
+          return busMarkers[id].info.nombre + " (" + busMarkers[id].info.ruta.split(' - ')[0] + ")";
+        }).join(" · ");
+        if (sub) sub.innerText = nombresRutas;
+
+        if (chips) {
+          var chipsHtml = '<button onclick="centrarEnBus()" class="text-[10px] bg-white/10 hover:bg-white/20 text-white font-bold px-2 py-0.5 rounded-lg transition-all cursor-pointer">Todos</button>';
+          idsActivos.forEach(function(id) {
+            chipsHtml += '<button onclick="centrarEnBus(\'' + id + '\')" class="text-[10px] bg-white/10 hover:bg-white/20 text-white font-bold px-2 py-0.5 rounded-lg transition-all cursor-pointer">' + busMarkers[id].info.nombre + '</button>';
+          });
+          chips.innerHTML = chipsHtml;
+        }
       }
     }
 
@@ -1471,7 +1560,7 @@
     var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jcWNmZGl2cGlrbXJra2ZiaHNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyNzg5NDIsImV4cCI6MjEwODg1NDk0Mn0.F6Yz31dJI4wQiINS1NwK-cNunO0V_3UEvD3IHgTJSC0";
 
     function consultarSupabaseFallback() {
-      fetch(SUPABASE_REST_URL + '?select=*&order=actualizado_en.desc&limit=10', {
+      fetch(SUPABASE_REST_URL + '?select=*&order=actualizado_en.desc&limit=10&_t=' + Date.now(), {
         method: 'GET',
         headers: {
           'apikey': SUPABASE_KEY,
