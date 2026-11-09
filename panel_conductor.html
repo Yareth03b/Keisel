@@ -13,7 +13,7 @@
   
   <!-- Tipografía e Iconos -->
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+  
   
   <!-- Fallback local o CDN de Tailwind -->
   <script src="assets/tailwind.js"></script>
@@ -61,7 +61,7 @@
       <!-- Minimalist Top Navigation Header -->
       <header class="flex items-center justify-between w-full h-14 border-b border-[#1E2026]">
         <button aria-label="Volver" class="flex items-center justify-center w-10 h-10 -ml-2 rounded-full text-white hover:bg-[#161616] active:scale-95 transition-all" onclick="window.history.back()" type="button">
-          <span class="material-symbols-outlined text-[24px]">arrow_back</span>
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
         </button>
         <div class="flex items-center">
           <span class="text-xs font-semibold tracking-wider uppercase text-[#8E8E93]">KEISEL CONDUCTOR</span>
@@ -84,7 +84,7 @@
               Cuenta o correo electrónico
             </label>
             <div class="w-full bg-[#161616] rounded-xl border border-[#262833] focus-within:border-white transition-colors">
-              <input autocomplete="username" class="w-full h-14 bg-transparent px-4 text-sm text-white placeholder:text-[#555A69] focus:outline-none" id="accountInput" placeholder="conductor1@keisel.me" required="" type="text" value="">
+              <input autocomplete="username" class="w-full h-14 bg-transparent px-4 text-sm text-white placeholder:text-[#555A69] focus:outline-none" id="accountInput" placeholder="ejemplo@keisel.me" required="" type="text" value="">
             </div>
           </div>
 
@@ -94,13 +94,19 @@
               Contraseña
             </label>
             <div class="relative flex items-center w-full bg-[#161616] rounded-xl border border-[#262833] focus-within:border-white transition-colors">
-              <input autocomplete="current-password" class="w-full h-14 bg-transparent pl-4 pr-12 text-sm text-white placeholder:text-[#555A69] focus:outline-none" id="passwordInput" placeholder="••••••••" required="" type="password" value="">
+              <input autocomplete="current-password" class="w-full h-14 bg-transparent pl-4 pr-12 text-sm text-white placeholder:text-[#555A69] focus:outline-none" id="passwordInput" placeholder="Contraseña" required="" type="password" value="">
               <button aria-label="Mostrar u ocultar contraseña" class="absolute right-3 p-1 flex items-center justify-center text-[#8E8E93] hover:text-white transition-colors focus:outline-none cursor-pointer" id="togglePasswordBtn" onclick="togglePasswordVis()" type="button">
-                <span class="material-symbols-outlined text-[20px]" id="passwordIcon">visibility_off</span>
+                <span id="passwordIcon" class="flex items-center justify-center text-[#8E8E93]"><svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg></span>
               </button>
             </div>
           </div>
 
+
+        
+          <!-- Error Box -->
+          <div id="conductor-login-error" class="hidden text-xs text-rose-300 bg-rose-950/80 border border-rose-800/80 rounded-xl p-3 text-center font-medium transition-all">
+            Cuenta o contraseña incorrecta
+          </div>
 
         </form>
       </div>
@@ -108,7 +114,7 @@
 
     <!-- Bottom Fixed-Feel Uber-style CTA -->
     <div class="flex flex-col w-full pt-6 pb-2">
-      <button class="flex items-center justify-center w-full h-14 rounded-2xl bg-white hover:bg-neutral-200 text-black font-bold text-base tracking-tight active:scale-[0.98] transition-transform shadow-xl cursor-pointer" form="driverLoginForm" type="submit">
+      <button type="button" onclick="handleFormLogin(event)" class="flex items-center justify-center w-full h-14 rounded-2xl bg-white hover:bg-neutral-200 text-black font-bold text-base tracking-tight active:scale-[0.98] transition-transform shadow-xl cursor-pointer" id="btnSubmitLogin">
         Ingresar
       </button>
     </div>
@@ -124,12 +130,12 @@
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
           <button aria-label="Volver" class="w-10 h-10 flex items-center justify-center text-white hover:text-neutral-300 active:scale-95 transition-all cursor-pointer" onclick="regresarAlLogin()" type="button">
-            <span class="material-symbols-outlined text-[24px]">arrow_back</span>
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M19 12H5"></path><path d="M12 19l-7-7 7-7"></path></svg>
           </button>
           <span class="text-base font-bold tracking-tight text-white">Trip Telemetry</span>
         </div>
         <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center">
-          <span class="material-symbols-outlined text-black font-bold text-[18px]">person</span>
+          <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
         </div>
       </div>
     </header>
@@ -145,14 +151,14 @@
           </div>
           <button class="flex items-center gap-1 py-1 px-2.5 rounded-lg text-[#8E8E93] hover:text-white text-xs font-semibold cursor-pointer" onclick="regresarAlLogin()" type="button">
             <span>Cerrar sesión</span>
-            <span class="material-symbols-outlined text-[16px]">logout</span>
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
           </button>
         </div>
 
         <!-- Info Dinámica del Conductor Autenticado -->
         <div class="pt-3 pb-4">
           <div class="flex items-center gap-1.5 mb-1">
-            <span class="material-symbols-outlined text-white text-[16px]">verified_user</span>
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="M9 12l2 2 4-4"></path></svg>
             <span class="text-[11px] font-bold text-[#8E8E93] tracking-wide uppercase">Conductor Verificado</span>
           </div>
           <h1 class="text-2xl font-extrabold text-white tracking-tight" id="conductor-nombre">
@@ -168,7 +174,7 @@
           <div class="relative w-24 h-24 flex items-center justify-center my-2">
             <div class="absolute inset-0 rounded-full bg-[#8E8E93]/10" id="radar-ring"></div>
             <div class="w-16 h-16 rounded-full bg-[#181A22] border border-[#262833] flex items-center justify-center shadow-xl" id="gps-icon-bg">
-              <span class="material-symbols-outlined text-3xl text-[#8E8E93]" id="gps-main-icon">location_disabled</span>
+              <div id="gps-main-icon" class="w-8 h-8 text-[#8E8E93] flex items-center justify-center"><svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="1" y1="1" x2="23" y2="23"></line><path d="M12 2a10 10 0 0 1 10 10 9.9 9.9 0 0 1-2.93 7.07"></path><path d="M2 12a10 10 0 0 1 10-10"></path><path d="M4.93 4.93A10 10 0 0 0 2 12c0 5.52 4.48 10 10 10 2.76 0 5.26-1.12 7.07-2.93"></path></svg></div>
             </div>
           </div>
 
@@ -184,12 +190,12 @@
       <!-- Botones de Acción Conductor -->
       <div class="flex flex-col gap-3 pb-4 pt-2">
         <button class="w-full h-15 py-4 bg-white text-black rounded-2xl text-base font-extrabold flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-xl hover:bg-neutral-200 cursor-pointer" id="btn-start" onclick="iniciarViajeReal()" type="button">
-          <span class="material-symbols-outlined text-[24px]">play_arrow</span>
+          <svg class="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
           <span id="btn-start-label">Iniciar Transmisión GPS</span>
         </button>
 
         <button class="w-full h-14 py-3.5 bg-black border-2 border-white text-white hover:bg-neutral-900 rounded-2xl text-sm font-extrabold flex items-center justify-center gap-2 active:scale-[0.98] transition-all cursor-pointer" id="btn-end" onclick="terminarViaje()" type="button">
-          <span class="material-symbols-outlined text-[20px] text-white">stop</span>
+          <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"></rect></svg>
           <span>Detener Transmisión</span>
         </button>
       </div>
@@ -227,40 +233,89 @@
       if (p && icon) {
         var isPass = p.type === 'password';
         p.type = isPass ? 'text' : 'password';
-        icon.innerText = isPass ? 'visibility' : 'visibility_off';
+        if (isPass) {
+          icon.innerHTML = '<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+        } else {
+          icon.innerHTML = '<svg class="w-5 h-5 text-[#8E8E93]" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>';
+        }
       }
     }
 
     async function handleFormLogin(e) {
-      if (e) e.preventDefault();
-      var acc = document.getElementById('accountInput').value.trim().toLowerCase();
-      var pwd = document.getElementById('passwordInput').value.trim();
+      if (e && e.preventDefault) e.preventDefault();
+      var accRaw = (document.getElementById('accountInput').value || '').trim().toLowerCase();
+      var pwd = (document.getElementById('passwordInput').value || '').trim();
+      var errEl = document.getElementById('conductor-login-error');
+      var btn = document.getElementById('btnSubmitLogin');
 
-      if (!acc || !pwd) {
+      if (errEl) errEl.classList.add('hidden');
+
+      if (!accRaw || !pwd) {
+        if (errEl) {
+          errEl.innerText = "Por favor ingresa usuario y contraseña.";
+          errEl.classList.remove('hidden');
+        }
         showToast("Por favor ingresa usuario y contraseña.");
         return;
       }
 
-      showToast("Verificando con SQL Server...");
+      var acc = accRaw;
+      if (!acc.includes('@')) {
+        acc = acc + '@keisel.me';
+      }
 
-      // 1. Intento de autenticación dinámica contra la API en RHEL (SQL Server)
+      var origBtn = btn ? btn.innerHTML : 'Ingresar';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = 'Verificando...';
+      }
+
+      function mostrarErrorAuth() {
+        if (errEl) {
+          errEl.innerText = "Cuenta o contraseña incorrecta";
+          errEl.classList.remove('hidden');
+        }
+        showToast("Cuenta o contraseña incorrecta");
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = origBtn;
+        }
+        var pInput = document.getElementById('passwordInput');
+        if (pInput) {
+          pInput.value = '';
+          pInput.focus();
+        }
+      }
+
+      // Verificación directa en Active Directory (3 conductores)
+      var uLocal = USUARIOS_SISTEMA[acc];
+      var credencialValidaLocal = (uLocal && uLocal.pass === pwd);
+
+      // Intento con API en RHEL (SQL Server) si está disponible en la red
       try {
         var endpoints = [API_BASE_URL, API_TAILSCALE_URL];
-        var authSuccess = false;
-
         for (var i = 0; i < endpoints.length; i++) {
           try {
+            var controller = new AbortController();
+            var timeoutId = setTimeout(function() { controller.abort(); }, 2500);
+
             var resp = await fetch(endpoints[i] + '/login', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ usuario: acc, contrasena: pwd }),
-              signal: AbortSignal.timeout(3000)
+              signal: controller.signal
             });
+            clearTimeout(timeoutId);
 
             if (resp.ok) {
               var data = await resp.json();
               if (data.status === 'success' && data.usuario) {
                 var u = data.usuario;
+                if (u.rol === 'ADMIN') {
+                  showToast("Acceso restringido al portal Web.");
+                  if (btn) { btn.disabled = false; btn.innerHTML = origBtn; }
+                  return;
+                }
                 usuarioActivo = {
                   rol: u.rol,
                   nombre: u.nombre,
@@ -268,39 +323,23 @@
                   ruta: u.ruta,
                   placa: u.placa,
                   busId: u.busId || 'bus_keisel_1',
-                  detalles: (u.ruta || 'Sin ruta') + ' • ' + (u.placa || 'UNAB')
+                  detalles: (u.ruta || 'Ruta activa') + ' • ' + (u.placa || 'UNAB')
                 };
-
-                API_BASE_URL = endpoints[i]; // Fijar endpoint activo
-                authSuccess = true;
-                break;
+                API_BASE_URL = endpoints[i];
+                if (btn) { btn.disabled = false; btn.innerHTML = origBtn; }
+                abrirPanelConductor(usuarioActivo);
+                return;
               }
             } else if (resp.status === 401) {
-              showToast("Credenciales inválidas en SQL Server.");
+              mostrarErrorAuth();
               return;
             }
-          } catch (netErr) {
-            // Continúa al siguiente endpoint si hay timeout
-          }
+          } catch(netErr) {}
         }
+      } catch(e) {}
 
-        
-        if (authSuccess && usuarioActivo) {
-          if (usuarioActivo.rol === 'ADMIN') {
-            showToast("Acceso restringido: El portal de Administrador se gestiona en la Web institucional.");
-            return;
-          } else {
-            abrirPanelConductor(usuarioActivo);
-          }
-          return;
-        }
-      } catch (err) {
-        console.warn("Fallo de conexión API:", err);
-      }
-
-      // Verificación de respaldo offline con Active Directory si el servidor no responde
-      var uLocal = USUARIOS_SISTEMA[acc];
-      if (uLocal && uLocal.pass === pwd) {
+      // Respaldo de red: si el servidor SQL en LAN no responde, validar credenciales oficiales
+      if (credencialValidaLocal) {
         usuarioActivo = {
           rol: uLocal.rol,
           nombre: uLocal.nombre,
@@ -308,12 +347,13 @@
           ruta: uLocal.ruta,
           detalles: uLocal.ruta + ' • UNAB'
         };
-        showToast("Sesión iniciada (Modo Local / Autónomo)");
+        showToast("Sesión iniciada correctamente");
+        if (btn) { btn.disabled = false; btn.innerHTML = origBtn; }
         abrirPanelConductor(usuarioActivo);
         return;
       }
 
-      showToast("Cuenta o contraseña incorrecta.");
+      mostrarErrorAuth();
     }
 
     function abrirPanelConductor(conductor) {
@@ -593,7 +633,7 @@
       var icon = document.getElementById('gps-main-icon');
       if (icon) {
         icon.className = "material-symbols-outlined text-3xl text-[#8E8E93]";
-        icon.innerText = "location_disabled";
+        icon.innerHTML = '<svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="1" y1="1" x2="23" y2="23"></line><path d="M12 2a10 10 0 0 1 10 10 9.9 9.9 0 0 1-2.93 7.07"></path><path d="M2 12a10 10 0 0 1 10-10"></path><path d="M4.93 4.93A10 10 0 0 0 2 12c0 5.52 4.48 10 10 10 2.76 0 5.26-1.12 7.07-2.93"></path></svg>';
       }
 
       var title = document.getElementById('gps-title');
