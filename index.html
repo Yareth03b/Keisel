@@ -1560,7 +1560,7 @@
     var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jcWNmZGl2cGlrbXJra2ZiaHNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyNzg5NDIsImV4cCI6MjEwODg1NDk0Mn0.F6Yz31dJI4wQiINS1NwK-cNunO0V_3UEvD3IHgTJSC0";
 
     function consultarSupabaseFallback() {
-      fetch(SUPABASE_REST_URL + '?select=*&order=actualizado_en.desc&limit=10&_t=' + Date.now(), {
+      fetch(SUPABASE_REST_URL + '?select=*&order=actualizado_en.desc&limit=10', {
         method: 'GET',
         headers: {
           'apikey': SUPABASE_KEY,
