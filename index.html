@@ -1707,6 +1707,14 @@
       }
     });
   
+  
+    // Soporte para acceso directo al mapa vía URL (#mapa o ?vista=mapa)
+    window.addEventListener('load', function() {
+      if (window.location.hash === '#mapa' || window.location.search.includes('mapa')) {
+        navegarA('mapa');
+      }
+    });
+
   </script>
 
   <!-- MODAL DE CONFIGURACIÓN DE PERMISO DE UBICACIÓN -->
