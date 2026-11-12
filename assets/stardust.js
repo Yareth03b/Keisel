@@ -88,8 +88,12 @@
     canvas.style.height = '100%';
     canvas.style.display = 'block';
     canvas.style.pointerEvents = 'none';
-    container.style.position = 'relative';
+    container.style.position = 'absolute';
+    container.style.inset = '0';
+    container.style.width = '100%';
+    container.style.height = '100%';
     container.style.overflow = 'hidden';
+    container.style.pointerEvents = 'none';
     container.appendChild(canvas);
 
     var ctx = canvas.getContext('2d');
