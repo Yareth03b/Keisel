@@ -376,13 +376,11 @@ button, [role="button"] { cursor: pointer; background: transparent; -webkit-tap-
       if (window.location.protocol.startsWith('http')) {
         return window.location.origin.replace(/:[0-9]+$/, '') + ':3000/api';
       }
-      return 'http://192.168.1.252:3000/api';
+      return 'http://192.168.50.252:3000/api';
     })();
 
-    // Respaldo secundario si la app móvil sale por Tailscale
+    // Respaldo secundario si la app móvil sale por Tailscale VPN
     var API_TAILSCALE_URL = 'http://100.67.14.105:3000/api';
-    var SUPABASE_REST_URL = "https://mcqcfdivpikmrkkfbhsm.supabase.co/rest/v1/rastreo";
-    var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jcWNmZGl2cGlrbXJra2ZiaHNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyNzg5NDIsImV4cCI6MjEwODg1NDk0Mn0.F6Yz31dJI4wQiINS1NwK-cNunO0V_3UEvD3IHgTJSC0";
 
 
 
@@ -698,7 +696,7 @@ button, [role="button"] { cursor: pointer; background: transparent; -webkit-tap-
         actualizado_en: new Date().toISOString()
       });
 
-      // 1. Envío a API local / Tailscale
+      // Envío de coordenadas directas a la API Node.js / SQL Server (Red LAN / VPN Tailscale)
       fetch(API_BASE_URL + '/actualizar-gps', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -710,31 +708,11 @@ button, [role="button"] { cursor: pointer; background: transparent; -webkit-tap-
           body: payloadLocal
         }).catch(function() {});
       });
-
-      // 2. Envío a Supabase Cloud (garantiza recepción inmediata en la Web estudiantil)
-      fetch(SUPABASE_REST_URL, {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': 'Bearer ' + SUPABASE_KEY,
-          'Content-Type': 'application/json',
-          'Prefer': 'resolution=merge-duplicates'
-        },
-        body: payloadSupabase
-      }).catch(function(e) {
-        console.warn("Fallo Supabase:", e);
-      });
     }
 
     function limpiarSenalSupabase(customBusId) {
       var targetBusId = customBusId || obtenerBusIdActivo();
       var payloadLocal = JSON.stringify({ id: targetBusId });
-      var payloadSupabase = JSON.stringify({
-        id: targetBusId,
-        latitud: null,
-        longitud: null,
-        actualizado_en: new Date(0).toISOString()
-      });
 
       fetch(API_BASE_URL + '/corte-emergencia', {
         method: 'POST',
@@ -747,17 +725,6 @@ button, [role="button"] { cursor: pointer; background: transparent; -webkit-tap-
           body: payloadLocal
         }).catch(function() {});
       });
-
-      fetch(SUPABASE_REST_URL, {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': 'Bearer ' + SUPABASE_KEY,
-          'Content-Type': 'application/json',
-          'Prefer': 'resolution=merge-duplicates'
-        },
-        body: payloadSupabase
-      }).catch(function() {});
     }
 
     function iniciarViajeReal() {

@@ -20,8 +20,8 @@
   <!-- Tipografías e Iconos -->
   <link href="https://fonts.googleapis.com" rel="preconnect">
   <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" media="print" onload="this.media='all'">
 
   <!-- Librerías de Mapa y Estilos -->
   <script src="assets/tailwind.js"></script>
@@ -888,7 +888,7 @@
       if (window.location.protocol.startsWith('http')) {
         return window.location.origin.replace(/:[0-9]+$/, '') + ':3000/api';
       }
-      return 'http://192.168.1.252:3000/api';
+      return 'http://192.168.50.252:3000/api';
     })();
     var API_TAILSCALE_URL = 'http://100.67.14.105:3000/api';
 
@@ -1556,58 +1556,52 @@
       actualizarBusesActivos([]);
     }
 
-    var SUPABASE_REST_URL = "https://mcqcfdivpikmrkkfbhsm.supabase.co/rest/v1/rastreo";
-    var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1jcWNmZGl2cGlrbXJra2ZiaHNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyNzg5NDIsImV4cCI6MjEwODg1NDk0Mn0.F6Yz31dJI4wQiINS1NwK-cNunO0V_3UEvD3IHgTJSC0";
-
-    function consultarSupabaseFallback() {
-      fetch(SUPABASE_REST_URL + '?select=*&order=actualizado_en.desc&limit=10', {
-        method: 'GET',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': 'Bearer ' + SUPABASE_KEY,
-          'Accept': 'application/json'
-        },
-        cache: 'no-store'
-      })
-      .then(function(r) { return r.json(); })
-      .then(function(buses) {
-        if (!Array.isArray(buses) || !buses.length) {
-          ocultarBus();
-          return;
-        }
-        actualizarBusesActivos(buses);
-      })
-      .catch(function() {
-        ocultarBus();
-      });
-    }
-
+    // --- TELEMETRÍA NATIVA: API NODE.JS + SQL SERVER (LAN / TAILSCALE) ---
     function cargarPosicionApi() {
-      if (window.location.protocol === 'https:') {
-        consultarSupabaseFallback();
-        return;
-      }
-
+      // 1. Probar endpoint primario API en RHEL (LAN 192.168.50.252 / Hostname local)
       fetch(API_BASE_URL + '/obtener-gps', { method: 'GET', cache: 'no-store' })
-        .then(function(r) { return r.json(); })
+        .then(function(r) {
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          return r.json();
+        })
         .then(function(buses) {
-          if (!Array.isArray(buses) || !buses.length) {
-            consultarSupabaseFallback();
-            return;
+          if (Array.isArray(buses)) {
+            actualizarBusesActivos(buses);
+          } else {
+            ocultarBus();
           }
-          actualizarBusesActivos(buses);
         })
         .catch(function() {
+          // 2. Probar endpoint de respaldo vía VPN Tailscale (100.67.14.105)
           fetch(API_TAILSCALE_URL + '/obtener-gps', { method: 'GET', cache: 'no-store' })
-            .then(function(r) { return r.json(); })
+            .then(function(r) {
+              if (!r.ok) throw new Error("HTTP " + r.status);
+              return r.json();
+            })
             .then(function(buses) {
-              if (Array.isArray(buses) && buses.length) {
+              if (Array.isArray(buses)) {
                 actualizarBusesActivos(buses);
               } else {
-                consultarSupabaseFallback();
+                ocultarBus();
               }
-            }).catch(function() {
-              consultarSupabaseFallback();
+            })
+            .catch(function() {
+              // 3. Probar ruta relativa /api/obtener-gps (Apache Proxy inverso o Cloudflare Tunnel)
+              fetch('/api/obtener-gps', { method: 'GET', cache: 'no-store' })
+                .then(function(r) {
+                  if (!r.ok) throw new Error("HTTP " + r.status);
+                  return r.json();
+                })
+                .then(function(buses) {
+                  if (Array.isArray(buses)) {
+                    actualizarBusesActivos(buses);
+                  } else {
+                    ocultarBus();
+                  }
+                })
+                .catch(function() {
+                  ocultarBus();
+                });
             });
         });
     }
