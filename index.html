@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html class="h-full bg-black dark" lang="es">
 <head>
   <meta charset="utf-8">
@@ -34,7 +34,7 @@
   <script src="assets/leaflet.js"></script>
 
   <!-- Motor 3D Still Sunset Meadow (OriginKit / Three.js) -->
-  <script type="module" src="assets/sunset-meadow.js"></script>
+  <script src="assets/stardust.js"></script>
 
   <style>
     @layer base {
@@ -355,7 +355,7 @@
   <!-- ====================================================================== -->
   <div id="vista-admin-login" class="hidden fixed inset-0 z-30 flex items-center justify-center overflow-hidden bg-black">
     <!-- Viewport 3D Three.js Still Sunset Meadow (Interactivo con cursor) -->
-    <div id="meadow-viewport" class="absolute inset-0 w-full h-full pointer-events-auto"></div>
+    <div id="stardust-viewport" class="absolute inset-0 w-full h-full pointer-events-none"></div>
     
     <!-- Filtro de Legibilidad Sutil -->
     <div class="absolute inset-0 bg-black/45 backdrop-blur-[1px] pointer-events-none"></div>
@@ -927,7 +927,7 @@
       } else if (vista === 'admin-login') {
         if (vAdminLogin) { vAdminLogin.classList.remove('hidden'); vAdminLogin.style.display = 'flex'; }
         detenerPollingGps();
-        iniciarFondoSunsetMeadow();
+        iniciarFondoStardust();
       } else if (vista === 'admin') {
         if (vAdmin) {
           vAdmin.classList.remove('hidden');
@@ -947,28 +947,33 @@
       }
     }
 
-    // --- MOTOR 3D STILL SUNSET MEADOW ---
-    function iniciarFondoSunsetMeadow() {
-      if (meadowEngine) {
-        meadowEngine.resize();
+        // --- MOTOR C�SMICO STARDUST CANVAS 2D (ULTRA LIGERO) ---
+    var stardustEngine = null;
+    function iniciarFondoStardust() {
+      if (stardustEngine) {
+        stardustEngine.resize();
         return;
       }
-      var viewport = document.getElementById('meadow-viewport');
+      var viewport = document.getElementById('stardust-viewport');
       if (!viewport) return;
 
-      if (typeof window.initSunsetMeadow === 'function') {
+      if (typeof window.initStardustBackground === 'function') {
         try {
-          meadowEngine = window.initSunsetMeadow(viewport, {
-            hover: 10,
-            wind: 10,
-            speed: 10,
-            cloudSpeed: 3
+          stardustEngine = window.initStardustBackground(viewport, {
+            background: '#040711',
+            particleColor: '#ffffff',
+            particleDensity: 1.2,
+            minSize: 0.5,
+            maxSize: 1.2,
+            speed: 6,
+            movement: 2.5,
+            angle: 180
           });
         } catch (e) {
-          console.warn('Error inicializando Sunset Meadow:', e);
+          console.warn('Error inicializando Stardust:', e);
         }
       } else {
-        setTimeout(iniciarFondoSunsetMeadow, 200);
+        setTimeout(iniciarFondoStardust, 150);
       }
     }
 
