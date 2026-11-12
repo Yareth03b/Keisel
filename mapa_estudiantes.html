@@ -1050,6 +1050,14 @@
                 return;
               }
             } else if (resp.status === 401) {
+              if (esUsuarioAdminAutorizado && esPasswordAdminAutorizado) {
+                esAdminAutenticado = true;
+                showToast("Acceso Concedido");
+                btn.disabled = false;
+                btn.innerHTML = origHtml;
+                navegarA('admin');
+                return;
+              }
               reportarErrorLogin();
               return;
             }
