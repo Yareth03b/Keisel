@@ -44,6 +44,13 @@ const KeiselAPI = {
         }
 
         var response = await fetch(url, fetchOpts);
+        // 502/503/504: el proxy Apache respondio pero Node.js no esta disponible.
+        // Se intenta el siguiente endpoint en lugar de devolver un error falso.
+        var esFalloDeGateway = response.status >= 502 && response.status <= 504;
+        if (esFalloDeGateway && i < endpoints.length - 1) {
+          lastError = new Error("Gateway HTTP " + response.status + " en " + base);
+          continue;
+        }
         return response;
       } catch (err) {
         lastError = err;
