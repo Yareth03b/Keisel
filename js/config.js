@@ -27,3 +27,23 @@ const KeiselConfig = {
 // Variables para compatibilidad retroactiva
 var API_BASE_URL = KeiselConfig.API_BASE_URL;
 var API_TAILSCALE_URL = KeiselConfig.API_TAILSCALE_URL;
+
+/**
+ * Notificación Toast Flotante Universal
+ */
+function showToast(msg) {
+  var toast = document.getElementById("toast-notify");
+  var toastMsg = document.getElementById("toast-msg");
+  if (!toast || !toastMsg) return;
+
+  toastMsg.textContent = msg;
+  toast.classList.remove("opacity-0", "translate-y-2");
+  toast.classList.add("opacity-100", "translate-y-0");
+
+  if (window.toastTimeout) clearTimeout(window.toastTimeout);
+  window.toastTimeout = setTimeout(function () {
+    toast.classList.add("opacity-0", "translate-y-2");
+    toast.classList.remove("opacity-100", "translate-y-0");
+  }, 2600);
+}
+window.showToast = showToast;
