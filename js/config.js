@@ -5,6 +5,7 @@
 const KeiselConfig = {
   // Endpoints del Backend Node.js / Express
   API_BASE_URL: "/api",
+  API_LAN_URL: "http://192.168.50.252:3000/api",
   API_TAILSCALE_URL: "http://100.67.14.105:3000/api",
 
   // Configuración del Mapa Leaflet

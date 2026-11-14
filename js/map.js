@@ -451,20 +451,21 @@ function actualizarBusesActivos(busesList) {
   if (!map || typeof L === "undefined") return;
 
   var validos = (busesList || []).filter(function (b) {
-    if (!b || b.latitud === null || b.longitud === null) return false;
+    if (!b) return false;
+    var rawLat = b.latitud !== undefined ? b.latitud : b.lat;
+    var rawLng = b.longitud !== undefined ? b.longitud : b.lng;
+    if (rawLat === null || rawLng === null || rawLat === undefined || rawLng === undefined) return false;
 
-    var lat = Number(b.latitud);
-
-    var lng = Number(b.longitud);
+    var lat = Number(rawLat);
+    var lng = Number(rawLng);
 
     if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) return false;
 
-    if (b.actualizado_en) {
-      var t = new Date(b.actualizado_en).getTime();
-
+    var fecha = b.actualizado_en || b.fecha_actualizacion || b.timestamp;
+    if (fecha) {
+      var t = new Date(fecha).getTime();
       if (!isNaN(t)) {
         var diffSeg = (Date.now() - t) / 1000;
-
         if (diffSeg > 600) return false;
       }
     }
@@ -473,19 +474,15 @@ function actualizarBusesActivos(busesList) {
   });
 
   // Aplica dispersión visual inteligente si están muy juntos para que ambos se vean simultáneamente
-
   var dispersados = aplicarDispersionVisual(validos);
-
   var idsRecibidos = new Set();
 
   dispersados.forEach(function (b) {
-    var bId = b.id || "bus_keisel_1";
-
+    var bId = b.id || b.bus_id || b.busId || "bus_keisel_1";
     idsRecibidos.add(bId);
 
-    var lat = b.latitud;
-
-    var lng = b.longitud;
+    var lat = Number(b.latitud !== undefined ? b.latitud : b.lat);
+    var lng = Number(b.longitud !== undefined ? b.longitud : b.lng);
 
     var info = BUS_CATALOGO[bId] || {
       nombre: b.nombre || "Bus " + bId.replace("bus_keisel_", ""),
