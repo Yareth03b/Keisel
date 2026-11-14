@@ -1,799 +1,1775 @@
-﻿<!DOCTYPE html>
+﻿<!doctype html>
 <html class="h-full bg-black dark" lang="es">
-<head>
-  <meta charset="utf-8">
-  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  <meta name="color-scheme" content="only dark">
-  <meta name="supported-color-schemes" content="dark">
-  <title>Keisel - Sistema de Transporte Universitario</title>
-  
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=6">
-  <link rel="icon" type="image/png" sizes="192x192" href="android-chrome-192x192.png?v=6">
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png?v=6">
-  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png?v=6">
-  <link rel="shortcut icon" href="favicon.ico?v=6">
-  <link rel="manifest" href="site.webmanifest?v=6">
-  
-  <!-- Tipografías e Iconos -->
-  <link href="https://fonts.googleapis.com" rel="preconnect">
-  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" media="print" onload="this.media='all'">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+      name="viewport"
+    />
+    <meta
+      http-equiv="Cache-Control"
+      content="no-cache, no-store, must-revalidate"
+    />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="color-scheme" content="only dark" />
+    <meta name="supported-color-schemes" content="dark" />
+    <title>Keisel - Sistema de Transporte Universitario</title>
 
-  <!-- Librerías de Mapa y Estilos -->
-  <script src="assets/tailwind.js"></script>
-  <script>
-    if (!window.tailwind) {
-      document.write('<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"><\/script>');
-    }
-  </script>
-  <link rel="stylesheet" href="assets/leaflet.css"/>
-  <script src="assets/leaflet.js"></script>
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="apple-touch-icon.png?v=6"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="android-chrome-192x192.png?v=6"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="favicon-32x32.png?v=6"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="favicon-16x16.png?v=6"
+    />
+    <link rel="shortcut icon" href="favicon.ico?v=6" />
+    <link rel="manifest" href="site.webmanifest?v=6" />
 
-  <!-- Motor 3D Still Sunset Meadow (OriginKit / Three.js) -->
-  <script src="assets/stardust.js"></script>
+    <!-- Tipografías e Iconos -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media = 'all'"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+      rel="stylesheet"
+      media="print"
+      onload="this.media = 'all'"
+    />
+
+    <!-- Librerías de Mapa y Estilos -->
+    <script src="assets/tailwind.js"></script>
+    <script>
+      if (!window.tailwind) {
+        document.write(
+          '<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"><\/script>',
+        );
+      }
+    </script>
+    <link rel="stylesheet" href="assets/leaflet.css" />
+    <script src="assets/leaflet.js"></script>
+
+    <!-- Motor 3D Still Sunset Meadow (OriginKit / Three.js) -->
+    <script src="assets/stardust.js"></script>
 
     <!-- Estilos CSS Modulares de Keisel -->
-  <link rel="stylesheet" href="css/styles.css">
-</head>
-<body class="h-full bg-black text-white flex flex-col justify-between selection:bg-white selection:text-black select-none overflow-hidden">
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body
+    class="h-full bg-black text-white flex flex-col justify-between selection:bg-white selection:text-black select-none overflow-hidden"
+  >
+    <!-- ====================================================================== -->
+    <!-- MAPA PRINCIPAL (LEAFLET EN EL FONDO)                                  -->
+    <!-- ====================================================================== -->
+    <div id="map"></div>
 
-  <!-- ====================================================================== -->
-  <!-- MAPA PRINCIPAL (LEAFLET EN EL FONDO)                                  -->
-  <!-- ====================================================================== -->
-  <div id="map"></div>
+    <!-- ====================================================================== -->
+    <!-- VISTA 1: INICIO DE ROLES (ESTUDIANTES & ADMINISTRADOR)                -->
+    <!-- ====================================================================== -->
+    <div
+      id="vista-inicio"
+      class="fixed inset-0 z-30 flex flex-col items-center justify-center bg-black overflow-y-auto px-4 py-8"
+    >
+      <main
+        class="w-full max-w-[390px] flex flex-col items-center mx-auto space-y-6"
+      >
+        <!-- Logo Oficial Keisel en Vector Blanco/Dark -->
+        <header
+          class="w-full flex flex-col items-center justify-center pt-2 pb-2"
+          data-purpose="brand-header"
+        >
+          <img
+            src="logo_keisel_dark.svg?v=6"
+            alt="Keisel Logo"
+            class="h-24 sm:h-28 w-auto max-w-[280px] object-contain drop-shadow-lg"
+          />
+        </header>
 
-
-  <!-- ====================================================================== -->
-  <!-- VISTA 1: INICIO DE ROLES (ESTUDIANTES & ADMINISTRADOR)                -->
-  <!-- ====================================================================== -->
-  <div id="vista-inicio" class="fixed inset-0 z-30 flex flex-col items-center justify-center bg-black overflow-y-auto px-4 py-8">
-    <main class="w-full max-w-[390px] flex flex-col items-center mx-auto space-y-6">
-      
-      <!-- Logo Oficial Keisel en Vector Blanco/Dark -->
-      <header class="w-full flex flex-col items-center justify-center pt-2 pb-2" data-purpose="brand-header">
-        <img src="logo_keisel_dark.svg?v=6" alt="Keisel Logo" class="h-24 sm:h-28 w-auto max-w-[280px] object-contain drop-shadow-lg" />
-      </header>
-
-      <!-- TARJETA 1: ESTUDIANTES (Sin texto extra abajo) -->
-      <section class="w-full" data-purpose="card-estudiantes-wrapper">
-        <div onclick="navegarA('mapa')" class="selection-card w-full h-[185px] rounded-[30px] p-6 flex flex-col justify-between cursor-pointer" role="button" tabindex="0" aria-label="Acceder como Estudiante">
-          <div class="w-full flex items-center justify-between">
-            <div class="w-13 h-13 rounded-2xl bg-[#27272a] flex items-center justify-center shadow-inner">
-              <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" viewBox="0 0 24 24">
-                <rect height="16" rx="4" width="18" x="3" y="3"></rect>
-                <path d="M3 11h18"></path>
-                <path d="M19 19v2"></path>
-                <path d="M5 19v2"></path>
-                <circle cx="7.5" cy="15" fill="currentColor" r="1.2" stroke="none"></circle>
-                <circle cx="16.5" cy="15" fill="currentColor" r="1.2" stroke="none"></circle>
-              </svg>
+        <!-- TARJETA 1: ESTUDIANTES (Sin texto extra abajo) -->
+        <section class="w-full" data-purpose="card-estudiantes-wrapper">
+          <div
+            onclick="navegarA('mapa')"
+            class="selection-card w-full h-[185px] rounded-[30px] p-6 flex flex-col justify-between cursor-pointer"
+            role="button"
+            tabindex="0"
+            aria-label="Acceder como Estudiante"
+          >
+            <div class="w-full flex items-center justify-between">
+              <div
+                class="w-13 h-13 rounded-2xl bg-[#27272a] flex items-center justify-center shadow-inner"
+              >
+                <svg
+                  class="w-7 h-7 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2.3"
+                  viewBox="0 0 24 24"
+                >
+                  <rect height="16" rx="4" width="18" x="3" y="3"></rect>
+                  <path d="M3 11h18"></path>
+                  <path d="M19 19v2"></path>
+                  <path d="M5 19v2"></path>
+                  <circle
+                    cx="7.5"
+                    cy="15"
+                    fill="currentColor"
+                    r="1.2"
+                    stroke="none"
+                  ></circle>
+                  <circle
+                    cx="16.5"
+                    cy="15"
+                    fill="currentColor"
+                    r="1.2"
+                    stroke="none"
+                  ></circle>
+                </svg>
+              </div>
+              <div
+                class="w-7 h-7 rounded-full bg-white flex items-center justify-center shadow-sm"
+              >
+                <svg
+                  class="w-4 h-4 text-black stroke-[3.5]"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  viewBox="0 0 24 24"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </div>
             </div>
-            <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center shadow-sm">
-              <svg class="w-4 h-4 text-black stroke-[3.5]" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
+            <div class="w-full pb-1">
+              <span
+                class="block text-[32px] font-black text-white tracking-tight leading-none"
+              >
+                Estudiantes
+              </span>
             </div>
           </div>
-          <div class="w-full pb-1">
-            <span class="block text-[32px] font-black text-white tracking-tight leading-none">
-              Estudiantes
-            </span>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      <!-- TARJETA 2: ADMINISTRADOR (Sin texto extra abajo) -->
-      <section class="w-full" data-purpose="card-admin-wrapper">
-        <div onclick="navegarA('admin-login')" class="selection-card w-full h-[185px] rounded-[30px] p-6 flex flex-col justify-between cursor-pointer" role="button" tabindex="0" aria-label="Acceder como Administrador">
-          <div class="w-full flex items-center justify-between">
-            <div class="w-13 h-13 rounded-2xl bg-[#27272a] flex items-center justify-center shadow-inner">
-              <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.3" viewBox="0 0 24 24">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                <circle cx="12" cy="10" r="3"></circle>
-              </svg>
+        <!-- TARJETA 2: ADMINISTRADOR (Sin texto extra abajo) -->
+        <section class="w-full" data-purpose="card-admin-wrapper">
+          <div
+            onclick="navegarA('admin-login')"
+            class="selection-card w-full h-[185px] rounded-[30px] p-6 flex flex-col justify-between cursor-pointer"
+            role="button"
+            tabindex="0"
+            aria-label="Acceder como Administrador"
+          >
+            <div class="w-full flex items-center justify-between">
+              <div
+                class="w-13 h-13 rounded-2xl bg-[#27272a] flex items-center justify-center shadow-inner"
+              >
+                <svg
+                  class="w-7 h-7 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2.3"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+              </div>
+              <div
+                class="w-7 h-7 rounded-full bg-white flex items-center justify-center shadow-sm"
+              >
+                <svg
+                  class="w-4 h-4 text-black stroke-[3.5]"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  viewBox="0 0 24 24"
+                >
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </div>
             </div>
-            <div class="w-7 h-7 rounded-full bg-white flex items-center justify-center shadow-sm">
-              <svg class="w-4 h-4 text-black stroke-[3.5]" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-                <polyline points="20 6 9 17 4 12"></polyline>
-              </svg>
+            <div class="w-full pb-1">
+              <span
+                class="block text-[32px] font-black text-white tracking-tight leading-none"
+              >
+                Administrador
+              </span>
             </div>
           </div>
-          <div class="w-full pb-1">
-            <span class="block text-[32px] font-black text-white tracking-tight leading-none">
-              Administrador
-            </span>
+        </section>
+      </main>
+    </div>
+
+    <!-- ====================================================================== -->
+    <!-- VISTA 2: MAPA DE ESTUDIANTES EN VIVO (HUD DE SEGUIMIENTO)              -->
+    <!-- ====================================================================== -->
+    <div
+      id="vista-mapa"
+      class="hidden fixed inset-0 z-20 pointer-events-none flex flex-col justify-between p-4 box-border"
+    >
+      <!-- Barra Superior Flotante -->
+      <header class="pointer-events-auto w-full max-w-md mx-auto pt-safe">
+        <div
+          class="h-14 w-full px-4 rounded-full bg-[#141416]/95 backdrop-blur-md border border-[#26262B] flex items-center justify-between shadow-2xl"
+        >
+          <button
+            onclick="retrocederDesdeMapa()"
+            class="flex items-center gap-2 text-white hover:text-neutral-300 transition-colors py-1 pl-0.5 cursor-pointer"
+            type="button"
+          >
+            <svg
+              class="w-5 h-5 text-[#A0A0A0]"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              viewBox="0 0 24 24"
+            >
+              <path d="M19 12H5"></path>
+              <path d="M12 19l-7-7 7-7"></path>
+            </svg>
+            <span
+              id="btn-mapa-back-text"
+              class="text-sm font-bold tracking-tight text-white"
+              >Estudiantes</span
+            >
+          </button>
+
+          <div
+            class="flex items-center gap-2 bg-[#222222] px-3.5 py-1.5 rounded-full border border-white/20"
+          >
+            <span
+              id="live-dot"
+              class="w-2 h-2 rounded-full bg-[#8E8E93]"
+            ></span>
+            <span
+              id="header-status"
+              class="text-xs font-bold text-white uppercase tracking-wider"
+              >SIN BUS EN RUTA</span
+            >
           </div>
-        </div>
-      </section>
-    </main>
-  </div>
 
-
-  <!-- ====================================================================== -->
-  <!-- VISTA 2: MAPA DE ESTUDIANTES EN VIVO (HUD DE SEGUIMIENTO)              -->
-  <!-- ====================================================================== -->
-  <div id="vista-mapa" class="hidden fixed inset-0 z-20 pointer-events-none flex flex-col justify-between p-4 box-border">
-    <!-- Barra Superior Flotante -->
-    <header class="pointer-events-auto w-full max-w-md mx-auto pt-safe">
-      <div class="h-14 w-full px-4 rounded-full bg-[#141416]/95 backdrop-blur-md border border-[#26262B] flex items-center justify-between shadow-2xl">
-        <button onclick="retrocederDesdeMapa()" class="flex items-center gap-2 text-white hover:text-neutral-300 transition-colors py-1 pl-0.5 cursor-pointer" type="button">
-          <svg class="w-5 h-5 text-[#A0A0A0]" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-            <path d="M19 12H5"></path>
-            <path d="M12 19l-7-7 7-7"></path>
-          </svg>
-          <span id="btn-mapa-back-text" class="text-sm font-bold tracking-tight text-white">Estudiantes</span>
-        </button>
-
-        <div class="flex items-center gap-2 bg-[#222222] px-3.5 py-1.5 rounded-full border border-white/20">
-          <span id="live-dot" class="w-2 h-2 rounded-full bg-[#8E8E93]"></span>
-          <span id="header-status" class="text-xs font-bold text-white uppercase tracking-wider">SIN BUS EN RUTA</span>
-        </div>
-
-        <button onclick="abrirModalUbicacion()" class="w-8 h-8 rounded-full bg-neutral-800 hover:bg-neutral-700 text-neutral-300 flex items-center justify-center active:scale-95 transition-all cursor-pointer" title="Configurar permiso de ubicación">
+          <button
+            onclick="abrirModalUbicacion()"
+            class="w-8 h-8 rounded-full bg-neutral-800 hover:bg-neutral-700 text-neutral-300 flex items-center justify-center active:scale-95 transition-all cursor-pointer"
+            title="Configurar permiso de ubicación"
+          >
             <span class="material-symbols-outlined text-[16px]">tune</span>
           </button>
-          <button id="btn-volver-admin" onclick="navegarA('admin')" class="hidden flex items-center gap-1 text-xs font-bold text-white bg-neutral-800 hover:bg-neutral-700 px-2.5 py-1.5 rounded-full border border-neutral-600 active:scale-95 transition-all cursor-pointer" title="Panel Administrador">
-          <span class="material-symbols-outlined text-[14px]">admin_panel_settings</span>
-          <span>Admin</span>
-        </button>
-      </div>
-    </header>
-
-    <!-- Controles Laterales Flotantes y Tarjeta Inferior Desplegable -->
-    <div class="w-full max-w-md mx-auto flex flex-col gap-3 pointer-events-none pb-safe">
-      <div class="flex justify-end pointer-events-none">
-        <div class="flex flex-col gap-2 pointer-events-auto">
-          <!-- 1. Botón Centrar Mi Ubicación -->
-          <button aria-label="Centrar en mi ubicación" class="w-11 h-11 rounded-full bg-[#141416]/95 backdrop-blur-md border border-[#26262B] text-white flex items-center justify-center shadow-2xl hover:bg-[#202024] active:scale-95 transition-all cursor-pointer" onclick="centrarEnMiUbicacion()" type="button" title="Ir a mi ubicación">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="7"></circle>
-              <circle cx="12" cy="12" r="2.5" fill="currentColor"></circle>
-              <line x1="12" y1="2" x2="12" y2="5"></line>
-              <line x1="12" y1="19" x2="12" y2="22"></line>
-              <line x1="2" y1="12" x2="5" y2="12"></line>
-              <line x1="19" y1="12" x2="22" y2="12"></line>
-            </svg>
+          <button
+            id="btn-volver-admin"
+            onclick="navegarA('admin')"
+            class="hidden flex items-center gap-1 text-xs font-bold text-white bg-neutral-800 hover:bg-neutral-700 px-2.5 py-1.5 rounded-full border border-neutral-600 active:scale-95 transition-all cursor-pointer"
+            title="Panel Administrador"
+          >
+            <span class="material-symbols-outlined text-[14px]"
+              >admin_panel_settings</span
+            >
+            <span>Admin</span>
           </button>
+        </div>
+      </header>
 
-          <!-- 2. Botón Centrar en el Bus -->
-          <button id="btn-centrar-bus" style="display: none;" aria-label="Centrar en el Bus" class="w-11 h-11 rounded-full bg-[#141416]/95 backdrop-blur-md border border-[#26262B] text-white flex items-center justify-center shadow-2xl hover:bg-[#202024] active:scale-95 transition-all cursor-pointer" onclick="centrarEnBus()" type="button" title="Centrar mapa en el bus">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-              <rect height="16" rx="4" width="18" x="3" y="3"></rect>
-              <path d="M3 11h18"></path>
-              <circle cx="7.5" cy="15" fill="currentColor" r="1.2" stroke="none"></circle>
-              <circle cx="16.5" cy="15" fill="currentColor" r="1.2" stroke="none"></circle>
-              <path d="M6 19v2"></path>
-              <path d="M18 19v2"></path>
-            </svg>
-          </button>
-          
-          <!-- 3 y 4. Controles de Zoom -->
-          <div class="rounded-2xl bg-[#141416]/95 backdrop-blur-md border border-[#26262B] flex flex-col items-center overflow-hidden shadow-2xl">
-            <button aria-label="Acercar" class="w-11 h-10 text-white flex items-center justify-center hover:bg-[#202024] active:scale-95 transition-all border-b border-[#242429] cursor-pointer" onclick="if(map) map.zoomIn()" type="button">
-              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
+      <!-- Controles Laterales Flotantes y Tarjeta Inferior Desplegable -->
+      <div
+        class="w-full max-w-md mx-auto flex flex-col gap-3 pointer-events-none pb-safe"
+      >
+        <div class="flex justify-end pointer-events-none">
+          <div class="flex flex-col gap-2 pointer-events-auto">
+            <!-- 1. Botón Centrar Mi Ubicación -->
+            <button
+              aria-label="Centrar en mi ubicación"
+              class="w-11 h-11 rounded-full bg-[#141416]/95 backdrop-blur-md border border-[#26262B] text-white flex items-center justify-center shadow-2xl hover:bg-[#202024] active:scale-95 transition-all cursor-pointer"
+              onclick="centrarEnMiUbicacion()"
+              type="button"
+              title="Ir a mi ubicación"
+            >
+              <svg
+                class="w-5 h-5 text-white"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                viewBox="0 0 24 24"
+              >
+                <circle cx="12" cy="12" r="7"></circle>
+                <circle cx="12" cy="12" r="2.5" fill="currentColor"></circle>
+                <line x1="12" y1="2" x2="12" y2="5"></line>
+                <line x1="12" y1="19" x2="12" y2="22"></line>
+                <line x1="2" y1="12" x2="5" y2="12"></line>
+                <line x1="19" y1="12" x2="22" y2="12"></line>
               </svg>
             </button>
-            <button aria-label="Alejar" class="w-11 h-10 text-white flex items-center justify-center hover:bg-[#202024] active:scale-95 transition-all cursor-pointer" onclick="if(map) map.zoomOut()" type="button">
-              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" viewBox="0 0 24 24">
-                <line x1="5" y1="12" x2="19" y2="12"></line>
+
+            <!-- 2. Botón Centrar en el Bus -->
+            <button
+              id="btn-centrar-bus"
+              style="display: none"
+              aria-label="Centrar en el Bus"
+              class="w-11 h-11 rounded-full bg-[#141416]/95 backdrop-blur-md border border-[#26262B] text-white flex items-center justify-center shadow-2xl hover:bg-[#202024] active:scale-95 transition-all cursor-pointer"
+              onclick="centrarEnBus()"
+              type="button"
+              title="Centrar mapa en el bus"
+            >
+              <svg
+                class="w-5 h-5 text-white"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                viewBox="0 0 24 24"
+              >
+                <rect height="16" rx="4" width="18" x="3" y="3"></rect>
+                <path d="M3 11h18"></path>
+                <circle
+                  cx="7.5"
+                  cy="15"
+                  fill="currentColor"
+                  r="1.2"
+                  stroke="none"
+                ></circle>
+                <circle
+                  cx="16.5"
+                  cy="15"
+                  fill="currentColor"
+                  r="1.2"
+                  stroke="none"
+                ></circle>
+                <path d="M6 19v2"></path>
+                <path d="M18 19v2"></path>
               </svg>
             </button>
-          </div>
-        </div>
-      </div>
 
-      <!-- BOTÓN FLOTANTE TIPO CIRCULITO (VISIBLE POR DEFECTO AL INICIAR) -->
-      <div id="btn-desplegar-buses" style="display: flex;" class="pointer-events-auto flex justify-end">
-        <button onclick="expandirPanelBuses()" class="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center shadow-2xl border-2 border-black hover:bg-neutral-200 active:scale-95 transition-all cursor-pointer relative group" style="width: 44px; height: 44px; border-radius: 9999px; aspect-ratio: 1 / 1;" title="Ver información del bus">
-          <svg class="w-5 h-5" fill="none" stroke="#000000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-            <rect height="16" rx="4" width="18" x="3" y="3"></rect>
-            <path d="M3 11h18"></path>
-            <circle cx="7.5" cy="15" fill="#000000" r="1.2" stroke="none"></circle>
-            <circle cx="16.5" cy="15" fill="#000000" r="1.2" stroke="none"></circle>
-            <path d="M6 19v2"></path>
-            <path d="M18 19v2"></path>
-          </svg>
-          <span class="absolute -top-0.5 -right-0.5 w-3 h-3 bg-white border-2 border-black rounded-full animate-ping"></span>
-          <span class="absolute -top-0.5 -right-0.5 w-3 h-3 bg-white border-2 border-black rounded-full"></span>
-        </button>
-      </div>
-
-      <!-- Tarjeta Flotante Inferior de Información del Bus (Compacta, Fila Única) -->
-      <div id="panel-tarjeta-bus" style="display: none;" class="w-full bg-[#141416]/95 backdrop-blur-xl border border-white/20 rounded-2xl px-4 py-3 shadow-2xl flex items-center justify-between gap-3 pointer-events-auto transition-all duration-300">
-        <!-- Izquierda: Ícono del Bus e Información Dinámica -->
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="w-10 h-10 rounded-xl bg-[#222222] text-white flex items-center justify-center shadow-md shrink-0" id="bus-card-icon-bg">
-            <svg class="w-5 h-5 text-white" id="bus-card-icon" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-              <rect height="16" rx="4" width="18" x="3" y="3"></rect>
-              <path d="M3 11h18"></path>
-              <circle cx="7.5" cy="15" fill="currentColor" r="1.2" stroke="none"></circle>
-              <circle cx="16.5" cy="15" fill="currentColor" r="1.2" stroke="none"></circle>
-              <path d="M6 19v2"></path>
-              <path d="M18 19v2"></path>
-            </svg>
-          </div>
-          <div class="min-w-0">
-            <p class="text-sm font-extrabold text-white leading-tight truncate" id="bus-main-name">Bus Universitario</p>
-            <p class="text-[11px] text-neutral-400 font-medium truncate" id="bus-subtext">Esperando señal GPS activa...</p>
-          </div>
-        </div>
-
-        <!-- Derecha: Botón Seguir Bus, Badge EN VIVO y Botón Minimizar -->
-        <div class="flex items-center gap-2 shrink-0">
-          <div id="bus-chips-container" class="hidden sm:flex items-center gap-1"></div>
-          <span class="text-[9px] font-bold text-neutral-400 bg-neutral-800 px-2 py-0.5 rounded-full tracking-wider uppercase" id="bus-live-badge">DESCONECTADO</span>
-          <button id="btn-seguir-bus" onclick="centrarEnBus()" class="text-xs font-bold text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1 active:scale-95" title="Centrar bus en el mapa">
-            <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M3 12h3m12 0h3M12 3v3m0 12v3"></path></svg>
-            <span>Seguir Bus</span>
-          </button>
-          <button onclick="achicarPanelBuses()" class="w-7 h-7 rounded-full bg-neutral-800 hover:bg-neutral-700 text-neutral-300 flex items-center justify-center active:scale-95 transition-all cursor-pointer" title="Minimizar panel">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"></path></svg>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-
-  <!-- ====================================================================== -->
-  <!-- VISTA 3: LOGIN DE ADMINISTRADOR CON FONDO 3D VOXEL (SUNSET MEADOW)     -->
-  <!-- ====================================================================== -->
-  <div id="vista-admin-login" class="hidden fixed inset-0 z-30 flex items-center justify-center overflow-hidden bg-black">
-    <!-- Viewport 3D Three.js Still Sunset Meadow (Interactivo con cursor) -->
-    <div id="stardust-viewport" class="absolute inset-0 w-full h-full pointer-events-none"></div>
-    
-    <!-- Filtro de Legibilidad Sutil -->
-    <div class="absolute inset-0 bg-black/45 backdrop-blur-[1px] pointer-events-none"></div>
-
-    <!-- Botón Volver Flotante Superior -->
-    <div class="absolute top-6 left-6 z-20">
-      <button onclick="navegarA('inicio')" class="flex items-center gap-1.5 px-4 py-2 bg-black/75 hover:bg-black border border-white/20 text-white rounded-full text-xs font-bold backdrop-blur-md active:scale-95 transition-all shadow-xl cursor-pointer">
-        <span class="material-symbols-outlined text-[16px]">arrow_back</span>
-        <span>Volver al Inicio</span>
-      </button>
-    </div>
-
-    <!-- Tarjeta de Login Admin (Glassmorphic, campos vacíos por seguridad) -->
-    <div class="relative z-10 w-full max-w-md mx-auto px-5 py-6">
-      <div class="bg-black/75 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl p-7 transition-all duration-300">
-        <div class="flex flex-col items-center text-center mb-6">
-          <img src="logo_keisel_dark.svg?v=6" alt="Keisel Logo" class="h-16 w-auto object-contain mb-3 drop-shadow-md" />
-          <h1 class="text-2xl font-black text-white tracking-tight">Administración</h1>
-          <p class="text-xs text-neutral-400 mt-1 max-w-xs">
-            Ingresa tus credenciales autorizadas
-          </p>
-        </div>
-
-        <form class="flex flex-col space-y-4" id="adminLoginForm" onsubmit="handleAdminLoginSubmit(event)">
-          <div class="space-y-1">
-            <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-300" for="adminEmail">
-              Usuario o Correo
-            </label>
-            <div class="relative flex items-center group">
-              <span class="material-symbols-outlined absolute left-3.5 text-neutral-400 pointer-events-none text-[20px]">
-                alternate_email
-              </span>
-              <input autocomplete="username" class="w-full bg-neutral-900/90 border border-neutral-700 focus:border-white text-white placeholder:text-neutral-500 text-sm pl-11 pr-4 py-3 rounded-xl focus:outline-none transition-all" id="adminEmail" name="adminEmail" placeholder="usuario@keisel.me" required="" type="text" value="">
-            </div>
-          </div>
-
-          <div class="space-y-1">
-            <div class="flex items-center justify-between">
-              <label class="block text-xs font-semibold uppercase tracking-wider text-neutral-300" for="adminPassword">
-                Contraseña
-              </label>
-            </div>
-            <div class="relative flex items-center group">
-              <span class="material-symbols-outlined absolute left-3.5 text-neutral-400 pointer-events-none text-[20px]">
-                lock
-              </span>
-              <input autocomplete="current-password" class="w-full bg-neutral-900/90 border border-neutral-700 focus:border-white text-white placeholder:text-neutral-500 text-sm pl-11 pr-11 py-3 rounded-xl focus:outline-none transition-all" id="adminPassword" name="adminPassword" placeholder="••••••••••••" required="" type="password" value="">
-              <button aria-label="Mostrar contraseña" class="absolute right-3.5 text-neutral-400 hover:text-white p-1 focus:outline-none transition-colors cursor-pointer" onclick="toggleAdminPasswordVis()" type="button">
-                <span class="material-symbols-outlined text-[20px]" id="adminEyeIcon">visibility_off</span>
+            <!-- 3 y 4. Controles de Zoom -->
+            <div
+              class="rounded-2xl bg-[#141416]/95 backdrop-blur-md border border-[#26262B] flex flex-col items-center overflow-hidden shadow-2xl"
+            >
+              <button
+                aria-label="Acercar"
+                class="w-11 h-10 text-white flex items-center justify-center hover:bg-[#202024] active:scale-95 transition-all border-b border-[#242429] cursor-pointer"
+                onclick="if (map) map.zoomIn();"
+                type="button"
+              >
+                <svg
+                  class="w-4 h-4 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  viewBox="0 0 24 24"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </button>
+              <button
+                aria-label="Alejar"
+                class="w-11 h-10 text-white flex items-center justify-center hover:bg-[#202024] active:scale-95 transition-all cursor-pointer"
+                onclick="if (map) map.zoomOut();"
+                type="button"
+              >
+                <svg
+                  class="w-4 h-4 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  viewBox="0 0 24 24"
+                >
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
               </button>
             </div>
           </div>
+        </div>
 
-          
-          <!-- Mensaje de Error en Login -->
-          <div id="admin-login-error" class="hidden text-xs text-rose-300 bg-rose-950/80 border border-rose-800/80 rounded-xl p-3 text-center font-medium transition-all">
-            Cuenta o contraseña incorrecta
+        <!-- BOTÓN FLOTANTE TIPO CIRCULITO (VISIBLE POR DEFECTO AL INICIAR) -->
+        <div
+          id="btn-desplegar-buses"
+          style="display: flex"
+          class="pointer-events-auto flex justify-end"
+        >
+          <button
+            onclick="expandirPanelBuses()"
+            class="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center shadow-2xl border-2 border-black hover:bg-neutral-200 active:scale-95 transition-all cursor-pointer relative group"
+            style="
+              width: 44px;
+              height: 44px;
+              border-radius: 9999px;
+              aspect-ratio: 1 / 1;
+            "
+            title="Ver información del bus"
+          >
+            <svg
+              class="w-5 h-5"
+              fill="none"
+              stroke="#000000"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              viewBox="0 0 24 24"
+            >
+              <rect height="16" rx="4" width="18" x="3" y="3"></rect>
+              <path d="M3 11h18"></path>
+              <circle
+                cx="7.5"
+                cy="15"
+                fill="#000000"
+                r="1.2"
+                stroke="none"
+              ></circle>
+              <circle
+                cx="16.5"
+                cy="15"
+                fill="#000000"
+                r="1.2"
+                stroke="none"
+              ></circle>
+              <path d="M6 19v2"></path>
+              <path d="M18 19v2"></path>
+            </svg>
+            <span
+              class="absolute -top-0.5 -right-0.5 w-3 h-3 bg-white border-2 border-black rounded-full animate-ping"
+            ></span>
+            <span
+              class="absolute -top-0.5 -right-0.5 w-3 h-3 bg-white border-2 border-black rounded-full"
+            ></span>
+          </button>
+        </div>
+
+        <!-- Tarjeta Flotante Inferior de Información del Bus (Compacta, Fila Única) -->
+        <div
+          id="panel-tarjeta-bus"
+          style="display: none"
+          class="w-full bg-[#141416]/95 backdrop-blur-xl border border-white/20 rounded-2xl px-4 py-3 shadow-2xl flex items-center justify-between gap-3 pointer-events-auto transition-all duration-300"
+        >
+          <!-- Izquierda: Ícono del Bus e Información Dinámica -->
+          <div class="flex items-center gap-3 min-w-0">
+            <div
+              class="w-10 h-10 rounded-xl bg-[#222222] text-white flex items-center justify-center shadow-md shrink-0"
+              id="bus-card-icon-bg"
+            >
+              <svg
+                class="w-5 h-5 text-white"
+                id="bus-card-icon"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                viewBox="0 0 24 24"
+              >
+                <rect height="16" rx="4" width="18" x="3" y="3"></rect>
+                <path d="M3 11h18"></path>
+                <circle
+                  cx="7.5"
+                  cy="15"
+                  fill="currentColor"
+                  r="1.2"
+                  stroke="none"
+                ></circle>
+                <circle
+                  cx="16.5"
+                  cy="15"
+                  fill="currentColor"
+                  r="1.2"
+                  stroke="none"
+                ></circle>
+                <path d="M6 19v2"></path>
+                <path d="M18 19v2"></path>
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <p
+                class="text-sm font-extrabold text-white leading-tight truncate"
+                id="bus-main-name"
+              >
+                Bus Universitario
+              </p>
+              <p
+                class="text-[11px] text-neutral-400 font-medium truncate"
+                id="bus-subtext"
+              >
+                Esperando señal GPS activa...
+              </p>
+            </div>
           </div>
 
-          <div class="pt-2">
-            <button class="w-full bg-white text-black font-extrabold text-sm py-3.5 px-6 rounded-xl transition-all duration-200 active:scale-[0.98] hover:bg-neutral-200 flex items-center justify-center gap-2 uppercase tracking-wider shadow-xl cursor-pointer" id="btnAdminLogin" type="submit">
-              <span>Ingresar al Panel</span>
-              <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+          <!-- Derecha: Botón Seguir Bus, Badge EN VIVO y Botón Minimizar -->
+          <div class="flex items-center gap-2 shrink-0">
+            <div
+              id="bus-chips-container"
+              class="hidden sm:flex items-center gap-1"
+            ></div>
+            <span
+              class="text-[9px] font-bold text-neutral-400 bg-neutral-800 px-2 py-0.5 rounded-full tracking-wider uppercase"
+              id="bus-live-badge"
+              >DESCONECTADO</span
+            >
+            <button
+              id="btn-seguir-bus"
+              onclick="centrarEnBus()"
+              class="text-xs font-bold text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1 active:scale-95"
+              title="Centrar bus en el mapa"
+            >
+              <svg
+                class="w-3.5 h-3.5 text-white"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                viewBox="0 0 24 24"
+              >
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M3 12h3m12 0h3M12 3v3m0 12v3"></path>
+              </svg>
+              <span>Seguir Bus</span>
+            </button>
+            <button
+              onclick="achicarPanelBuses()"
+              class="w-7 h-7 rounded-full bg-neutral-800 hover:bg-neutral-700 text-neutral-300 flex items-center justify-center active:scale-95 transition-all cursor-pointer"
+              title="Minimizar panel"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                viewBox="0 0 24 24"
+              >
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
-  </div>
 
+    <!-- ====================================================================== -->
+    <!-- VISTA 3: LOGIN DE ADMINISTRADOR CON FONDO 3D VOXEL (SUNSET MEADOW)     -->
+    <!-- ====================================================================== -->
+    <div
+      id="vista-admin-login"
+      class="hidden fixed inset-0 z-30 flex items-center justify-center overflow-hidden bg-black"
+    >
+      <!-- Viewport 3D Three.js Still Sunset Meadow (Interactivo con cursor) -->
+      <div
+        id="stardust-viewport"
+        class="absolute inset-0 w-full h-full pointer-events-none"
+      ></div>
 
-  <!-- ====================================================================== -->
-  <!-- VISTA 4: PANEL DE ADMINISTRADOR (COMPLETO, SCROLLABLE Y SUPERPUESTO)   -->
-  <!-- ====================================================================== -->
-<!-- VISTA 3: PANEL DE ADMINISTRADOR MINIMALISTA (UBER STYLE)               -->
-  <!-- ====================================================================== -->
-  <div id="vista-admin" class="hidden fixed inset-0 z-30 flex-col w-full h-full bg-black overflow-y-auto">
-    <!-- Cabecera Ultra-Simple Admin -->
-    <header class="sticky top-0 w-full z-40 bg-black/95 backdrop-blur-md border-b border-neutral-900 pt-safe">
-      <div class="h-14 px-5 flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <span class="text-[17px] font-semibold tracking-tight text-white whitespace-nowrap">Admin</span>
-          <button type="button" onclick="verMapaDesdeAdmin()" class="text-xs font-bold text-white bg-neutral-900 hover:bg-neutral-800 px-3 py-1.5 rounded-full border border-neutral-700 flex items-center gap-1 cursor-pointer"><span class="material-symbols-outlined text-[15px]">map</span><span>Ver Mapa</span></button>
-          
-        </div>
-        <div class="flex items-center gap-4">
-          <button aria-label="Cerrar sesión" class="text-neutral-400 hover:text-white transition-colors flex items-center justify-center p-1 cursor-pointer" onclick="handleLogoutAdmin()">
-            <span class="material-symbols-outlined text-[20px]">logout</span>
-          </button>
-          <div class="w-7 h-7 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center text-neutral-300">
-            <span class="material-symbols-outlined text-[16px]">person</span>
+      <!-- Filtro de Legibilidad Sutil -->
+      <div
+        class="absolute inset-0 bg-black/45 backdrop-blur-[1px] pointer-events-none"
+      ></div>
+
+      <!-- Botón Volver Flotante Superior -->
+      <div class="absolute top-6 left-6 z-20">
+        <button
+          onclick="navegarA('inicio')"
+          class="flex items-center gap-1.5 px-4 py-2 bg-black/75 hover:bg-black border border-white/20 text-white rounded-full text-xs font-bold backdrop-blur-md active:scale-95 transition-all shadow-xl cursor-pointer"
+        >
+          <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+          <span>Volver al Inicio</span>
+        </button>
+      </div>
+
+      <!-- Tarjeta de Login Admin (Glassmorphic, campos vacíos por seguridad) -->
+      <div class="relative z-10 w-full max-w-md mx-auto px-5 py-6">
+        <div
+          class="bg-black/75 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl p-7 transition-all duration-300"
+        >
+          <div class="flex flex-col items-center text-center mb-6">
+            <img
+              src="logo_keisel_dark.svg?v=6"
+              alt="Keisel Logo"
+              class="h-16 w-auto object-contain mb-3 drop-shadow-md"
+            />
+            <h1 class="text-2xl font-black text-white tracking-tight">
+              Administración
+            </h1>
+            <p class="text-xs text-neutral-400 mt-1 max-w-xs">
+              Ingresa tus credenciales autorizadas
+            </p>
           </div>
+
+          <form
+            class="flex flex-col space-y-4"
+            id="adminLoginForm"
+            onsubmit="handleAdminLoginSubmit(event)"
+          >
+            <div class="space-y-1">
+              <label
+                class="block text-xs font-semibold uppercase tracking-wider text-neutral-300"
+                for="adminEmail"
+              >
+                Usuario o Correo
+              </label>
+              <div class="relative flex items-center group">
+                <span
+                  class="material-symbols-outlined absolute left-3.5 text-neutral-400 pointer-events-none text-[20px]"
+                >
+                  alternate_email
+                </span>
+                <input
+                  autocomplete="username"
+                  class="w-full bg-neutral-900/90 border border-neutral-700 focus:border-white text-white placeholder:text-neutral-500 text-sm pl-11 pr-4 py-3 rounded-xl focus:outline-none transition-all"
+                  id="adminEmail"
+                  name="adminEmail"
+                  placeholder="usuario@keisel.me"
+                  required=""
+                  type="text"
+                  value=""
+                />
+              </div>
+            </div>
+
+            <div class="space-y-1">
+              <div class="flex items-center justify-between">
+                <label
+                  class="block text-xs font-semibold uppercase tracking-wider text-neutral-300"
+                  for="adminPassword"
+                >
+                  Contraseña
+                </label>
+              </div>
+              <div class="relative flex items-center group">
+                <span
+                  class="material-symbols-outlined absolute left-3.5 text-neutral-400 pointer-events-none text-[20px]"
+                >
+                  lock
+                </span>
+                <input
+                  autocomplete="current-password"
+                  class="w-full bg-neutral-900/90 border border-neutral-700 focus:border-white text-white placeholder:text-neutral-500 text-sm pl-11 pr-11 py-3 rounded-xl focus:outline-none transition-all"
+                  id="adminPassword"
+                  name="adminPassword"
+                  placeholder="••••••••••••"
+                  required=""
+                  type="password"
+                  value=""
+                />
+                <button
+                  aria-label="Mostrar contraseña"
+                  class="absolute right-3.5 text-neutral-400 hover:text-white p-1 focus:outline-none transition-colors cursor-pointer"
+                  onclick="toggleAdminPasswordVis()"
+                  type="button"
+                >
+                  <span
+                    class="material-symbols-outlined text-[20px]"
+                    id="adminEyeIcon"
+                    >visibility_off</span
+                  >
+                </button>
+              </div>
+            </div>
+
+            <!-- Mensaje de Error en Login -->
+            <div
+              id="admin-login-error"
+              class="hidden text-xs text-rose-300 bg-rose-950/80 border border-rose-800/80 rounded-xl p-3 text-center font-medium transition-all"
+            >
+              Cuenta o contraseña incorrecta
+            </div>
+
+            <div class="pt-2">
+              <button
+                class="w-full bg-white text-black font-extrabold text-sm py-3.5 px-6 rounded-xl transition-all duration-200 active:scale-[0.98] hover:bg-neutral-200 flex items-center justify-center gap-2 uppercase tracking-wider shadow-xl cursor-pointer"
+                id="btnAdminLogin"
+                type="submit"
+              >
+                <span>Ingresar al Panel</span>
+                <span class="material-symbols-outlined text-[18px]"
+                  >arrow_forward</span
+                >
+              </button>
+            </div>
+          </form>
         </div>
       </div>
-    </header>
+    </div>
 
-    <!-- Contenido Principal Admin -->
-    <main class="flex-1 w-full max-w-lg mx-auto px-5 py-6 space-y-9">
-      <!-- 1. SECCIÓN CONDUCTORES -->
-      <section class="space-y-3" id="drivers-section">
-        <div class="flex items-center justify-between pb-1">
-          <h2 class="text-[20px] font-semibold tracking-tight text-white whitespace-nowrap">Conductores</h2>
-          <button class="text-xs font-medium text-white bg-neutral-900 hover:bg-neutral-800 px-3 py-1.5 rounded-full border border-neutral-800 transition-colors flex items-center gap-1 cursor-pointer" onclick="toggleDriverModal(true)">
-            <span class="material-symbols-outlined text-[14px]">add</span>
-            <span>Nuevo</span>
-          </button>
-        </div>
-        
-        <div class="divide-y divide-neutral-900 border-y border-neutral-900" id="drivers-list">
-          <!-- CONDUCTOR 1 -->
-          <div class="py-4 space-y-3" id="driver-card-1">
-            <div class="flex items-start justify-between">
-              <div>
-                <p class="text-[15px] font-medium text-white" id="driver-name-1">Conductor 01</p>
-                <p class="text-xs text-neutral-500 mt-0.5" id="driver-dni-1">conductor1@keisel.me • Ruta Barranca</p>
-              </div>
-              <span class="text-[11px] uppercase tracking-wide px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 font-medium" id="driver-status-1">
-                Activo
-              </span>
+    <!-- ====================================================================== -->
+    <!-- VISTA 4: PANEL DE ADMINISTRADOR (COMPLETO, SCROLLABLE Y SUPERPUESTO)   -->
+    <!-- ====================================================================== -->
+    <!-- VISTA 3: PANEL DE ADMINISTRADOR MINIMALISTA (UBER STYLE)               -->
+    <!-- ====================================================================== -->
+    <div
+      id="vista-admin"
+      class="hidden fixed inset-0 z-30 flex-col w-full h-full bg-black overflow-y-auto"
+    >
+      <!-- Cabecera Ultra-Simple Admin -->
+      <header
+        class="sticky top-0 w-full z-40 bg-black/95 backdrop-blur-md border-b border-neutral-900 pt-safe"
+      >
+        <div class="h-14 px-5 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span
+              class="text-[17px] font-semibold tracking-tight text-white whitespace-nowrap"
+              >Admin</span
+            >
+            <button
+              type="button"
+              onclick="verMapaDesdeAdmin()"
+              class="text-xs font-bold text-white bg-neutral-900 hover:bg-neutral-800 px-3 py-1.5 rounded-full border border-neutral-700 flex items-center gap-1 cursor-pointer"
+            >
+              <span class="material-symbols-outlined text-[15px]">map</span
+              ><span>Ver Mapa</span>
+            </button>
+          </div>
+          <div class="flex items-center gap-4">
+            <button
+              aria-label="Cerrar sesión"
+              class="text-neutral-400 hover:text-white transition-colors flex items-center justify-center p-1 cursor-pointer"
+              onclick="handleLogoutAdmin()"
+            >
+              <span class="material-symbols-outlined text-[20px]">logout</span>
+            </button>
+            <div
+              class="w-7 h-7 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center text-neutral-300"
+            >
+              <span class="material-symbols-outlined text-[16px]">person</span>
             </div>
-            <div class="flex items-center justify-between pt-1">
-              <div class="flex items-center gap-2">
-                <span class="text-xs text-neutral-500">Ruta:</span>
-                <div class="relative">
-                  <select class="bg-neutral-950 border border-neutral-800 text-neutral-200 text-xs rounded px-2 py-1 pr-6 focus:outline-none focus:border-neutral-600 appearance-none cursor-pointer" onchange="updateDriverRoute(1, this.value)">
-                    <option selected="" value="Barranca">Barranca</option>
-                    <option value="Supe">Supe</option>
-                    <option value="Paramonga">Paramonga</option>
-                  </select>
-                  <span class="material-symbols-outlined pointer-events-none absolute right-1 top-1.5 text-[14px] text-neutral-500">expand_more</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Contenido Principal Admin -->
+      <main class="flex-1 w-full max-w-lg mx-auto px-5 py-6 space-y-9">
+        <!-- 1. SECCIÓN CONDUCTORES -->
+        <section class="space-y-3" id="drivers-section">
+          <div class="flex items-center justify-between pb-1">
+            <h2
+              class="text-[20px] font-semibold tracking-tight text-white whitespace-nowrap"
+            >
+              Conductores
+            </h2>
+            <button
+              class="text-xs font-medium text-white bg-neutral-900 hover:bg-neutral-800 px-3 py-1.5 rounded-full border border-neutral-800 transition-colors flex items-center gap-1 cursor-pointer"
+              onclick="toggleDriverModal(true)"
+            >
+              <span class="material-symbols-outlined text-[14px]">add</span>
+              <span>Nuevo</span>
+            </button>
+          </div>
+
+          <div
+            class="divide-y divide-neutral-900 border-y border-neutral-900"
+            id="drivers-list"
+          >
+            <!-- CONDUCTOR 1 -->
+            <div class="py-4 space-y-3" id="driver-card-1">
+              <div class="flex items-start justify-between">
+                <div>
+                  <p
+                    class="text-[15px] font-medium text-white"
+                    id="driver-name-1"
+                  >
+                    Conductor 01
+                  </p>
+                  <p class="text-xs text-neutral-500 mt-0.5" id="driver-dni-1">
+                    conductor1@keisel.me • Ruta Barranca
+                  </p>
+                </div>
+                <span
+                  class="text-[11px] uppercase tracking-wide px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 font-medium"
+                  id="driver-status-1"
+                >
+                  Activo
+                </span>
+              </div>
+              <div class="flex items-center justify-between pt-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-neutral-500">Ruta:</span>
+                  <div class="relative">
+                    <select
+                      class="bg-neutral-950 border border-neutral-800 text-neutral-200 text-xs rounded px-2 py-1 pr-6 focus:outline-none focus:border-neutral-600 appearance-none cursor-pointer"
+                      onchange="updateDriverRoute(1, this.value)"
+                    >
+                      <option selected="" value="Barranca">Barranca</option>
+                      <option value="Supe">Supe</option>
+                      <option value="Paramonga">Paramonga</option>
+                    </select>
+                    <span
+                      class="material-symbols-outlined pointer-events-none absolute right-1 top-1.5 text-[14px] text-neutral-500"
+                      >expand_more</span
+                    >
+                  </div>
+                </div>
+                <div class="flex items-center gap-2.5">
+                  <button
+                    class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                    onclick="
+                      openEditDriverModal(
+                        'Conductor 01',
+                        '00000001',
+                        'Barranca',
+                        'Bus 01',
+                        'driver-card-1',
+                      )
+                    "
+                  >
+                    Editar
+                  </button>
+                  <button
+                    class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                    id="driver-btn-1"
+                    onclick="toggleDriverAccess(1)"
+                  >
+                    Desactivar
+                  </button>
+                  <button
+                    class="text-xs text-neutral-500 hover:text-white transition-colors cursor-pointer"
+                    onclick="
+                      confirmDeleteDriver('Conductor 01', 'driver-card-1')
+                    "
+                  >
+                    Eliminar
+                  </button>
                 </div>
               </div>
-              <div class="flex items-center gap-2.5">
-                <button class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer" onclick="openEditDriverModal('Conductor 01', '00000001', 'Barranca', 'Bus 01', 'driver-card-1')">Editar</button>
-                <button class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer" id="driver-btn-1" onclick="toggleDriverAccess(1)">Desactivar</button>
-                <button class="text-xs text-neutral-500 hover:text-white transition-colors cursor-pointer" onclick="confirmDeleteDriver('Conductor 01', 'driver-card-1')">Eliminar</button>
-              </div>
             </div>
-          </div>
 
-          <!-- CONDUCTOR 2 -->
-          <div class="py-4 space-y-3" id="driver-card-2">
-            <div class="flex items-start justify-between">
-              <div>
-                <p class="text-[15px] font-medium text-white" id="driver-name-2">Conductor 02</p>
-                <p class="text-xs text-neutral-500 mt-0.5" id="driver-dni-2">conductor2@keisel.me • Ruta Supe</p>
+            <!-- CONDUCTOR 2 -->
+            <div class="py-4 space-y-3" id="driver-card-2">
+              <div class="flex items-start justify-between">
+                <div>
+                  <p
+                    class="text-[15px] font-medium text-white"
+                    id="driver-name-2"
+                  >
+                    Conductor 02
+                  </p>
+                  <p class="text-xs text-neutral-500 mt-0.5" id="driver-dni-2">
+                    conductor2@keisel.me • Ruta Supe
+                  </p>
+                </div>
+                <span
+                  class="text-[11px] uppercase tracking-wide px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 font-medium"
+                  id="driver-status-2"
+                >
+                  Activo
+                </span>
               </div>
-              <span class="text-[11px] uppercase tracking-wide px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 font-medium" id="driver-status-2">
-                Activo
-              </span>
-            </div>
-            <div class="flex items-center justify-between pt-1">
-              <div class="flex items-center gap-2">
-                <span class="text-xs text-neutral-500">Ruta:</span>
-                <div class="relative">
-                  <select class="bg-neutral-950 border border-neutral-800 text-neutral-200 text-xs rounded px-2 py-1 pr-6 focus:outline-none focus:border-neutral-600 appearance-none cursor-pointer" onchange="updateDriverRoute(2, this.value)">
-                    <option value="Barranca">Barranca</option>
-                    <option selected="" value="Supe">Supe</option>
-                    <option value="Paramonga">Paramonga</option>
-                  </select>
-                  <span class="material-symbols-outlined pointer-events-none absolute right-1 top-1.5 text-[14px] text-neutral-500">expand_more</span>
+              <div class="flex items-center justify-between pt-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-neutral-500">Ruta:</span>
+                  <div class="relative">
+                    <select
+                      class="bg-neutral-950 border border-neutral-800 text-neutral-200 text-xs rounded px-2 py-1 pr-6 focus:outline-none focus:border-neutral-600 appearance-none cursor-pointer"
+                      onchange="updateDriverRoute(2, this.value)"
+                    >
+                      <option value="Barranca">Barranca</option>
+                      <option selected="" value="Supe">Supe</option>
+                      <option value="Paramonga">Paramonga</option>
+                    </select>
+                    <span
+                      class="material-symbols-outlined pointer-events-none absolute right-1 top-1.5 text-[14px] text-neutral-500"
+                      >expand_more</span
+                    >
+                  </div>
+                </div>
+                <div class="flex items-center gap-2.5">
+                  <button
+                    class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                    onclick="
+                      openEditDriverModal(
+                        'Conductor 02',
+                        '00000002',
+                        'Supe',
+                        'Bus 02',
+                        'driver-card-2',
+                      )
+                    "
+                  >
+                    Editar
+                  </button>
+                  <button
+                    class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                    id="driver-btn-2"
+                    onclick="toggleDriverAccess(2)"
+                  >
+                    Desactivar
+                  </button>
+                  <button
+                    class="text-xs text-neutral-500 hover:text-white transition-colors cursor-pointer"
+                    onclick="
+                      confirmDeleteDriver('Conductor 02', 'driver-card-2')
+                    "
+                  >
+                    Eliminar
+                  </button>
                 </div>
               </div>
-              <div class="flex items-center gap-2.5">
-                <button class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer" onclick="openEditDriverModal('Conductor 02', '00000002', 'Supe', 'Bus 02', 'driver-card-2')">Editar</button>
-                <button class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer" id="driver-btn-2" onclick="toggleDriverAccess(2)">Desactivar</button>
-                <button class="text-xs text-neutral-500 hover:text-white transition-colors cursor-pointer" onclick="confirmDeleteDriver('Conductor 02', 'driver-card-2')">Eliminar</button>
-              </div>
             </div>
-          </div>
 
-          <!-- CONDUCTOR 3 -->
-          <div class="py-4 space-y-3" id="driver-card-3">
-            <div class="flex items-start justify-between">
-              <div>
-                <p class="text-[15px] font-medium text-white" id="driver-name-3">Conductor 03</p>
-                <p class="text-xs text-neutral-500 mt-0.5" id="driver-dni-3">conductor3@keisel.me • Ruta Paramonga</p>
+            <!-- CONDUCTOR 3 -->
+            <div class="py-4 space-y-3" id="driver-card-3">
+              <div class="flex items-start justify-between">
+                <div>
+                  <p
+                    class="text-[15px] font-medium text-white"
+                    id="driver-name-3"
+                  >
+                    Conductor 03
+                  </p>
+                  <p class="text-xs text-neutral-500 mt-0.5" id="driver-dni-3">
+                    conductor3@keisel.me • Ruta Paramonga
+                  </p>
+                </div>
+                <span
+                  class="text-[11px] uppercase tracking-wide px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 font-medium"
+                  id="driver-status-3"
+                >
+                  Activo
+                </span>
               </div>
-              <span class="text-[11px] uppercase tracking-wide px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 font-medium" id="driver-status-3">
-                Activo
-              </span>
-            </div>
-            <div class="flex items-center justify-between pt-1">
-              <div class="flex items-center gap-2">
-                <span class="text-xs text-neutral-500">Ruta:</span>
-                <div class="relative">
-                  <select class="bg-neutral-950 border border-neutral-800 text-neutral-200 text-xs rounded px-2 py-1 pr-6 focus:outline-none focus:border-neutral-600 appearance-none cursor-pointer" onchange="updateDriverRoute(3, this.value)">
-                    <option value="Barranca">Barranca</option>
-                    <option value="Supe">Supe</option>
-                    <option selected="" value="Paramonga">Paramonga</option>
-                  </select>
-                  <span class="material-symbols-outlined pointer-events-none absolute right-1 top-1.5 text-[14px] text-neutral-500">expand_more</span>
+              <div class="flex items-center justify-between pt-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs text-neutral-500">Ruta:</span>
+                  <div class="relative">
+                    <select
+                      class="bg-neutral-950 border border-neutral-800 text-neutral-200 text-xs rounded px-2 py-1 pr-6 focus:outline-none focus:border-neutral-600 appearance-none cursor-pointer"
+                      onchange="updateDriverRoute(3, this.value)"
+                    >
+                      <option value="Barranca">Barranca</option>
+                      <option value="Supe">Supe</option>
+                      <option selected="" value="Paramonga">Paramonga</option>
+                    </select>
+                    <span
+                      class="material-symbols-outlined pointer-events-none absolute right-1 top-1.5 text-[14px] text-neutral-500"
+                      >expand_more</span
+                    >
+                  </div>
+                </div>
+                <div class="flex items-center gap-2.5">
+                  <button
+                    class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                    onclick="
+                      openEditDriverModal(
+                        'Conductor 03',
+                        '00000003',
+                        'Paramonga',
+                        'Bus 03',
+                        'driver-card-3',
+                      )
+                    "
+                  >
+                    Editar
+                  </button>
+                  <button
+                    class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                    id="driver-btn-3"
+                    onclick="toggleDriverAccess(3)"
+                  >
+                    Desactivar
+                  </button>
+                  <button
+                    class="text-xs text-neutral-500 hover:text-white transition-colors cursor-pointer"
+                    onclick="
+                      confirmDeleteDriver('Conductor 03', 'driver-card-3')
+                    "
+                  >
+                    Eliminar
+                  </button>
                 </div>
               </div>
-              <div class="flex items-center gap-2.5">
-                <button class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer" onclick="openEditDriverModal('Conductor 03', '00000003', 'Paramonga', 'Bus 03', 'driver-card-3')">Editar</button>
-                <button class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer" id="driver-btn-3" onclick="toggleDriverAccess(3)">Desactivar</button>
-                <button class="text-xs text-neutral-500 hover:text-white transition-colors cursor-pointer" onclick="confirmDeleteDriver('Conductor 03', 'driver-card-3')">Eliminar</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. SECCIÓN BUSES -->
+        <section class="space-y-3 pb-8" id="buses-section">
+          <div class="flex items-center justify-between pb-1">
+            <h2
+              class="text-[20px] font-semibold tracking-tight text-white whitespace-nowrap"
+            >
+              Buses
+            </h2>
+            <button
+              class="text-xs font-medium text-white bg-neutral-900 hover:bg-neutral-800 px-3 py-1.5 rounded-full border border-neutral-800 transition-colors flex items-center gap-1 cursor-pointer"
+              onclick="toggleBusModal(true)"
+            >
+              <span class="material-symbols-outlined text-[14px]">add</span>
+              <span>Nuevo</span>
+            </button>
+          </div>
+
+          <div
+            class="divide-y divide-neutral-900 border-y border-neutral-900"
+            id="buses-list"
+          >
+            <!-- BUS 01 -->
+            <div class="py-4 space-y-3" id="bus-card-1">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span
+                    class="text-[15px] font-medium text-white whitespace-nowrap"
+                    >Bus 01</span
+                  >
+                  <span class="text-neutral-600">•</span>
+                  <span class="text-[15px] text-neutral-300">Barranca</span>
+                </div>
+                <span
+                  class="text-[11px] tracking-wide uppercase px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 font-medium"
+                  id="bus-state-1"
+                  >En ruta</span
+                >
+              </div>
+              <div class="space-y-1.5 pt-0.5">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-neutral-400"
+                    ><span class="text-neutral-500">C1:</span> Conductor
+                    01</span
+                  >
+                  <span class="text-[11px] text-neutral-400 font-medium"
+                    >En turno</span
+                  >
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-neutral-500"
+                    ><span class="text-neutral-600">Placa:</span> EUA-482</span
+                  >
+                  <span class="text-[11px] text-neutral-500"
+                    >ID: bus_keisel_1</span
+                  >
+                </div>
+              </div>
+              <div
+                class="flex items-center justify-between pt-1 border-t border-neutral-900/60"
+              >
+                <span class="text-[11px] text-neutral-500"
+                  >1 conductor asignado</span
+                >
+                <div class="flex items-center gap-2">
+                  <button
+                    class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer"
+                    onclick="
+                      openEditBusModal(
+                        'Bus 01',
+                        'Barranca',
+                        'Conductor 01',
+                        '',
+                        'bus-card-1',
+                      )
+                    "
+                  >
+                    Editar
+                  </button>
+                  <button
+                    class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer"
+                    onclick="
+                      triggerEmergencyCut(
+                        'Bus 01',
+                        'bus-card-1',
+                        'bus-state-1',
+                        'bus_keisel_1',
+                      )
+                    "
+                  >
+                    Corte
+                  </button>
+                  <button
+                    class="text-xs text-neutral-500 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer"
+                    onclick="confirmDeleteBus('Bus 01', 'bus-card-1')"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- BUS 02 -->
+            <div class="py-4 space-y-3" id="bus-card-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span
+                    class="text-[15px] font-medium text-white whitespace-nowrap"
+                    >Bus 02</span
+                  >
+                  <span class="text-neutral-600">•</span>
+                  <span class="text-[15px] text-neutral-300">Supe</span>
+                </div>
+                <span
+                  class="text-[11px] tracking-wide uppercase px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 font-medium"
+                  id="bus-state-2"
+                  >En ruta</span
+                >
+              </div>
+              <div class="space-y-1.5 pt-0.5">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-neutral-400"
+                    ><span class="text-neutral-500">C1:</span> Conductor
+                    02</span
+                  >
+                  <span class="text-[11px] text-neutral-400 font-medium"
+                    >En turno</span
+                  >
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-neutral-500"
+                    ><span class="text-neutral-600">Placa:</span> EUA-519</span
+                  >
+                  <span class="text-[11px] text-neutral-500"
+                    >ID: bus_keisel_2</span
+                  >
+                </div>
+              </div>
+              <div
+                class="flex items-center justify-between pt-1 border-t border-neutral-900/60"
+              >
+                <span class="text-[11px] text-neutral-500"
+                  >1 conductor asignado</span
+                >
+                <div class="flex items-center gap-2">
+                  <button
+                    class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer"
+                    onclick="
+                      openEditBusModal(
+                        'Bus 02',
+                        'Supe',
+                        'Conductor 02',
+                        '',
+                        'bus-card-2',
+                      )
+                    "
+                  >
+                    Editar
+                  </button>
+                  <button
+                    class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer"
+                    onclick="
+                      triggerEmergencyCut(
+                        'Bus 02',
+                        'bus-card-2',
+                        'bus-state-2',
+                        'bus_keisel_2',
+                      )
+                    "
+                  >
+                    Corte
+                  </button>
+                  <button
+                    class="text-xs text-neutral-500 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer"
+                    onclick="confirmDeleteBus('Bus 02', 'bus-card-2')"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- BUS 03 -->
+            <div class="py-4 space-y-3" id="bus-card-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span
+                    class="text-[15px] font-medium text-white whitespace-nowrap"
+                    >Bus 03</span
+                  >
+                  <span class="text-neutral-600">•</span>
+                  <span class="text-[15px] text-neutral-300">Paramonga</span>
+                </div>
+                <span
+                  class="text-[11px] tracking-wide uppercase px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 font-medium"
+                  id="bus-state-3"
+                  >En ruta</span
+                >
+              </div>
+              <div class="space-y-1.5 pt-0.5">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-neutral-400"
+                    ><span class="text-neutral-500">C1:</span> Conductor
+                    03</span
+                  >
+                  <span class="text-[11px] text-neutral-400 font-medium"
+                    >En turno</span
+                  >
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-neutral-500"
+                    ><span class="text-neutral-600">Placa:</span> EUA-604</span
+                  >
+                  <span class="text-[11px] text-neutral-500"
+                    >ID: bus_keisel_3</span
+                  >
+                </div>
+              </div>
+              <div
+                class="flex items-center justify-between pt-1 border-t border-neutral-900/60"
+              >
+                <span class="text-[11px] text-neutral-500"
+                  >1 conductor asignado</span
+                >
+                <div class="flex items-center gap-2">
+                  <button
+                    class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer"
+                    onclick="
+                      openEditBusModal(
+                        'Bus 03',
+                        'Paramonga',
+                        'Conductor 03',
+                        '',
+                        'bus-card-3',
+                      )
+                    "
+                  >
+                    Editar
+                  </button>
+                  <button
+                    class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer"
+                    onclick="
+                      triggerEmergencyCut(
+                        'Bus 03',
+                        'bus-card-3',
+                        'bus-state-3',
+                        'bus_keisel_3',
+                      )
+                    "
+                  >
+                    Corte
+                  </button>
+                  <button
+                    class="text-xs text-neutral-500 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer"
+                    onclick="confirmDeleteBus('Bus 03', 'bus-card-3')"
+                  >
+                    Eliminar
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
-      <!-- 2. SECCIÓN BUSES -->
-      <section class="space-y-3 pb-8" id="buses-section">
-        <div class="flex items-center justify-between pb-1">
-          <h2 class="text-[20px] font-semibold tracking-tight text-white whitespace-nowrap">Buses</h2>
-          <button class="text-xs font-medium text-white bg-neutral-900 hover:bg-neutral-800 px-3 py-1.5 rounded-full border border-neutral-800 transition-colors flex items-center gap-1 cursor-pointer" onclick="toggleBusModal(true)">
-            <span class="material-symbols-outlined text-[14px]">add</span>
-            <span>Nuevo</span>
-          </button>
-        </div>
-        
-        <div class="divide-y divide-neutral-900 border-y border-neutral-900" id="buses-list">
-          <!-- BUS 01 -->
-          <div class="py-4 space-y-3" id="bus-card-1">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="text-[15px] font-medium text-white whitespace-nowrap">Bus 01</span>
-                <span class="text-neutral-600">•</span>
-                <span class="text-[15px] text-neutral-300">Barranca</span>
-              </div>
-              <span class="text-[11px] tracking-wide uppercase px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 font-medium" id="bus-state-1">En ruta</span>
-            </div>
-            <div class="space-y-1.5 pt-0.5">
-              <div class="flex items-center justify-between text-xs">
-                <span class="text-neutral-400"><span class="text-neutral-500">C1:</span> Conductor 01</span>
-                <span class="text-[11px] text-neutral-400 font-medium">En turno</span>
-              </div>
-              <div class="flex items-center justify-between text-xs">
-                <span class="text-neutral-500"><span class="text-neutral-600">Placa:</span> EUA-482</span>
-                <span class="text-[11px] text-neutral-500">ID: bus_keisel_1</span>
-              </div>
-            </div>
-            <div class="flex items-center justify-between pt-1 border-t border-neutral-900/60">
-              <span class="text-[11px] text-neutral-500">1 conductor asignado</span>
-              <div class="flex items-center gap-2">
-                <button class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="openEditBusModal('Bus 01', 'Barranca', 'Conductor 01', '', 'bus-card-1')">Editar</button>
-                <button class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="triggerEmergencyCut('Bus 01', 'bus-card-1', 'bus-state-1', 'bus_keisel_1')">Corte</button>
-                <button class="text-xs text-neutral-500 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="confirmDeleteBus('Bus 01', 'bus-card-1')">Eliminar</button>
-              </div>
-            </div>
+      <!-- MODAL: NUEVO BUS -->
+      <div
+        class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-5 hidden"
+        id="modal-bus"
+        onclick="handleBackdropClick(event, 'modal-bus')"
+      >
+        <div
+          class="w-full max-w-sm bg-neutral-950 border border-neutral-800 rounded-lg p-5 space-y-4 shadow-2xl"
+          onclick="event.stopPropagation()"
+        >
+          <div
+            class="flex items-center justify-between pb-1 border-b border-neutral-900"
+          >
+            <h3 class="text-base font-semibold text-white">Nuevo Bus</h3>
+            <button
+              class="text-neutral-500 hover:text-white transition-colors cursor-pointer"
+              onclick="toggleBusModal(false)"
+              type="button"
+            >
+              <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
           </div>
-
-          <!-- BUS 02 -->
-          <div class="py-4 space-y-3" id="bus-card-2">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="text-[15px] font-medium text-white whitespace-nowrap">Bus 02</span>
-                <span class="text-neutral-600">•</span>
-                <span class="text-[15px] text-neutral-300">Supe</span>
-              </div>
-              <span class="text-[11px] tracking-wide uppercase px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 font-medium" id="bus-state-2">En ruta</span>
+          <form
+            class="space-y-3.5"
+            id="form-create-bus"
+            onsubmit="handleCreateBus(event)"
+          >
+            <div>
+              <label class="block text-xs text-neutral-400 mb-1"
+                >Nombre o identificador</label
+              >
+              <input
+                class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500"
+                id="bus-input-name"
+                placeholder="Ej. Bus 04"
+                required=""
+                type="text"
+              />
             </div>
-            <div class="space-y-1.5 pt-0.5">
-              <div class="flex items-center justify-between text-xs">
-                <span class="text-neutral-400"><span class="text-neutral-500">C1:</span> Conductor 02</span>
-                <span class="text-[11px] text-neutral-400 font-medium">En turno</span>
-              </div>
-              <div class="flex items-center justify-between text-xs">
-                <span class="text-neutral-500"><span class="text-neutral-600">Placa:</span> EUA-519</span>
-                <span class="text-[11px] text-neutral-500">ID: bus_keisel_2</span>
-              </div>
+            <div>
+              <label class="block text-xs text-neutral-400 mb-1"
+                >Ruta asignada</label
+              >
+              <select
+                class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500"
+                id="bus-input-route"
+              >
+                <option value="Barranca">Barranca</option>
+                <option value="Supe">Supe</option>
+                <option value="Paramonga">Paramonga</option>
+              </select>
             </div>
-            <div class="flex items-center justify-between pt-1 border-t border-neutral-900/60">
-              <span class="text-[11px] text-neutral-500">1 conductor asignado</span>
-              <div class="flex items-center gap-2">
-                <button class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="openEditBusModal('Bus 02', 'Supe', 'Conductor 02', '', 'bus-card-2')">Editar</button>
-                <button class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="triggerEmergencyCut('Bus 02', 'bus-card-2', 'bus-state-2', 'bus_keisel_2')">Corte</button>
-                <button class="text-xs text-neutral-500 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="confirmDeleteBus('Bus 02', 'bus-card-2')">Eliminar</button>
-              </div>
+            <div>
+              <label class="block text-xs text-neutral-400 mb-1"
+                >Conductor Principal</label
+              >
+              <select
+                class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500"
+                id="bus-input-c1"
+              >
+                <option value="">Sin asignar</option>
+                <option value="Conductor 01">Conductor 01</option>
+                <option value="Conductor 02">Conductor 02</option>
+                <option value="Conductor 03">Conductor 03</option>
+              </select>
             </div>
-          </div>
-
-          <!-- BUS 03 -->
-          <div class="py-4 space-y-3" id="bus-card-3">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="text-[15px] font-medium text-white whitespace-nowrap">Bus 03</span>
-                <span class="text-neutral-600">•</span>
-                <span class="text-[15px] text-neutral-300">Paramonga</span>
-              </div>
-              <span class="text-[11px] tracking-wide uppercase px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 font-medium" id="bus-state-3">En ruta</span>
+            <div class="pt-2 flex gap-2">
+              <button
+                class="flex-1 py-2 text-xs font-medium text-neutral-400 hover:text-white rounded border border-neutral-800 transition-colors cursor-pointer"
+                onclick="toggleBusModal(false)"
+                type="button"
+              >
+                Cancelar
+              </button>
+              <button
+                class="flex-1 py-2 text-xs font-medium text-black bg-white hover:bg-neutral-200 rounded transition-colors cursor-pointer"
+                type="submit"
+              >
+                Guardar Bus
+              </button>
             </div>
-            <div class="space-y-1.5 pt-0.5">
-              <div class="flex items-center justify-between text-xs">
-                <span class="text-neutral-400"><span class="text-neutral-500">C1:</span> Conductor 03</span>
-                <span class="text-[11px] text-neutral-400 font-medium">En turno</span>
-              </div>
-              <div class="flex items-center justify-between text-xs">
-                <span class="text-neutral-500"><span class="text-neutral-600">Placa:</span> EUA-604</span>
-                <span class="text-[11px] text-neutral-500">ID: bus_keisel_3</span>
-              </div>
-            </div>
-            <div class="flex items-center justify-between pt-1 border-t border-neutral-900/60">
-              <span class="text-[11px] text-neutral-500">1 conductor asignado</span>
-              <div class="flex items-center gap-2">
-                <button class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="openEditBusModal('Bus 03', 'Paramonga', 'Conductor 03', '', 'bus-card-3')">Editar</button>
-                <button class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="triggerEmergencyCut('Bus 03', 'bus-card-3', 'bus-state-3', 'bus_keisel_3')">Corte</button>
-                <button class="text-xs text-neutral-500 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="confirmDeleteBus('Bus 03', 'bus-card-3')">Eliminar</button>
-              </div>
-            </div>
-          </div>
+          </form>
         </div>
-      </section>
-    </main>
+      </div>
 
-    <!-- MODAL: NUEVO BUS -->
-    <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-5 hidden" id="modal-bus" onclick="handleBackdropClick(event, 'modal-bus')">
-      <div class="w-full max-w-sm bg-neutral-950 border border-neutral-800 rounded-lg p-5 space-y-4 shadow-2xl" onclick="event.stopPropagation()">
-        <div class="flex items-center justify-between pb-1 border-b border-neutral-900">
-          <h3 class="text-base font-semibold text-white">Nuevo Bus</h3>
-          <button class="text-neutral-500 hover:text-white transition-colors cursor-pointer" onclick="toggleBusModal(false)" type="button">
-            <span class="material-symbols-outlined text-[20px]">close</span>
-          </button>
+      <!-- MODAL: NUEVO CONDUCTOR -->
+      <div
+        class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-5 hidden"
+        id="modal-driver"
+        onclick="handleBackdropClick(event, 'modal-driver')"
+      >
+        <div
+          class="w-full max-w-sm bg-neutral-950 border border-neutral-800 rounded-lg p-5 space-y-4 shadow-2xl"
+          onclick="event.stopPropagation()"
+        >
+          <div
+            class="flex items-center justify-between pb-1 border-b border-neutral-900"
+          >
+            <h3 class="text-base font-semibold text-white">Nuevo Conductor</h3>
+            <button
+              class="text-neutral-500 hover:text-white transition-colors cursor-pointer"
+              onclick="toggleDriverModal(false)"
+              type="button"
+            >
+              <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+          </div>
+          <form
+            class="space-y-3.5"
+            id="form-create-driver"
+            onsubmit="handleCreateDriver(event)"
+          >
+            <div>
+              <label class="block text-xs text-neutral-400 mb-1"
+                >Identificador Conductor</label
+              >
+              <input
+                class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500"
+                id="driver-input-name"
+                placeholder="Ej. Conductor 04"
+                required=""
+                type="text"
+              />
+            </div>
+            <div>
+              <label class="block text-xs text-neutral-400 mb-1"
+                >Correo (@keisel.me)</label
+              >
+              <input
+                class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500"
+                id="driver-input-dni"
+                placeholder="conductor4@keisel.me"
+                required=""
+                type="text"
+              />
+            </div>
+            <div>
+              <label class="block text-xs text-neutral-400 mb-1">Ruta</label>
+              <select
+                class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500"
+                id="driver-input-route"
+              >
+                <option value="Barranca">Barranca</option>
+                <option value="Supe">Supe</option>
+                <option value="Paramonga">Paramonga</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-neutral-400 mb-1"
+                >Vincular a Bus</label
+              >
+              <select
+                class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500"
+                id="driver-input-bus"
+              >
+                <option value="">Sin asignar</option>
+                <option value="Bus 01">Bus 01 • Barranca</option>
+                <option value="Bus 02">Bus 02 • Supe</option>
+                <option value="Bus 03">Bus 03 • Paramonga</option>
+              </select>
+            </div>
+            <div class="pt-2 flex gap-2">
+              <button
+                class="flex-1 py-2 text-xs font-medium text-neutral-400 hover:text-white rounded border border-neutral-800 transition-colors cursor-pointer"
+                onclick="toggleDriverModal(false)"
+                type="button"
+              >
+                Cancelar
+              </button>
+              <button
+                class="flex-1 py-2 text-xs font-medium text-black bg-white hover:bg-neutral-200 rounded transition-colors cursor-pointer"
+                type="submit"
+              >
+                Guardar
+              </button>
+            </div>
+          </form>
         </div>
-        <form class="space-y-3.5" id="form-create-bus" onsubmit="handleCreateBus(event)">
+      </div>
+
+      <!-- MODAL: EDITAR CONDUCTOR -->
+      <div
+        class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-5 hidden"
+        id="modal-edit-driver"
+        onclick="handleBackdropClick(event, 'modal-edit-driver')"
+      >
+        <div
+          class="w-full max-w-sm bg-neutral-950 border border-neutral-800 rounded-lg p-5 space-y-4 shadow-2xl"
+          onclick="event.stopPropagation()"
+        >
+          <div
+            class="flex items-center justify-between pb-1 border-b border-neutral-900"
+          >
+            <h3 class="text-base font-semibold text-white">Editar Conductor</h3>
+            <button
+              class="text-neutral-500 hover:text-white transition-colors cursor-pointer"
+              onclick="toggleEditDriverModal(false)"
+              type="button"
+            >
+              <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+          </div>
+          <form
+            class="space-y-3.5"
+            id="form-edit-driver"
+            onsubmit="handleSaveEditDriver(event)"
+          >
+            <input id="edit-driver-target-id" type="hidden" />
+            <div>
+              <label class="block text-xs text-neutral-400 mb-1"
+                >Identificador Conductor</label
+              >
+              <input
+                class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500"
+                id="edit-driver-input-name"
+                required=""
+                type="text"
+              />
+            </div>
+            <div>
+              <label class="block text-xs text-neutral-400 mb-1"
+                >DNI / Referencia</label
+              >
+              <input
+                class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500"
+                id="edit-driver-input-dni"
+                required=""
+                type="text"
+              />
+            </div>
+            <div>
+              <label class="block text-xs text-neutral-400 mb-1">Ruta</label>
+              <select
+                class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500"
+                id="edit-driver-input-route"
+              >
+                <option value="Barranca">Barranca</option>
+                <option value="Supe">Supe</option>
+                <option value="Paramonga">Paramonga</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-neutral-400 mb-1"
+                >Vincular a Bus</label
+              >
+              <select
+                class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500"
+                id="edit-driver-input-bus"
+              >
+                <option value="">Sin asignar</option>
+                <option value="Bus 01">Bus 01 • Barranca</option>
+                <option value="Bus 02">Bus 02 • Supe</option>
+                <option value="Bus 03">Bus 03 • Paramonga</option>
+              </select>
+            </div>
+            <div class="pt-2 flex gap-2">
+              <button
+                class="flex-1 py-2 text-xs font-medium text-neutral-400 hover:text-white rounded border border-neutral-800 transition-colors cursor-pointer"
+                onclick="toggleEditDriverModal(false)"
+                type="button"
+              >
+                Cancelar
+              </button>
+              <button
+                class="flex-1 py-2 text-xs font-medium text-black bg-white hover:bg-neutral-200 rounded transition-colors cursor-pointer"
+                type="submit"
+              >
+                Guardar Cambios
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- MODAL: EDITAR BUS -->
+      <div
+        class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-5 hidden"
+        id="modal-edit-bus"
+        onclick="handleBackdropClick(event, 'modal-edit-bus')"
+      >
+        <div
+          class="w-full max-w-sm bg-neutral-950 border border-neutral-800 rounded-lg p-5 space-y-4 shadow-2xl"
+          onclick="event.stopPropagation()"
+        >
+          <div
+            class="flex items-center justify-between pb-1 border-b border-neutral-900"
+          >
+            <h3 class="text-base font-semibold text-white">Editar Bus</h3>
+            <button
+              class="text-neutral-500 hover:text-white transition-colors cursor-pointer"
+              onclick="toggleEditBusModal(false)"
+              type="button"
+            >
+              <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+          </div>
+          <form
+            class="space-y-3.5"
+            id="form-edit-bus"
+            onsubmit="handleSaveEditBus(event)"
+          >
+            <input id="edit-bus-target-id" type="hidden" />
+            <div>
+              <label class="block text-xs text-neutral-400 mb-1"
+                >Nombre o identificador</label
+              >
+              <input
+                class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500"
+                id="edit-bus-input-name"
+                required=""
+                type="text"
+              />
+            </div>
+            <div>
+              <label class="block text-xs text-neutral-400 mb-1"
+                >Ruta asignada</label
+              >
+              <select
+                class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500"
+                id="edit-bus-input-route"
+              >
+                <option value="Barranca">Barranca</option>
+                <option value="Supe">Supe</option>
+                <option value="Paramonga">Paramonga</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-neutral-400 mb-1"
+                >Conductor Principal</label
+              >
+              <select
+                class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500"
+                id="edit-bus-input-c1"
+              >
+                <option value="">Sin asignar</option>
+                <option value="Conductor 01">Conductor 01</option>
+                <option value="Conductor 02">Conductor 02</option>
+                <option value="Conductor 03">Conductor 03</option>
+              </select>
+            </div>
+            <div class="pt-2 flex gap-2">
+              <button
+                class="flex-1 py-2 text-xs font-medium text-neutral-400 hover:text-white rounded border border-neutral-800 transition-colors cursor-pointer"
+                onclick="toggleEditBusModal(false)"
+                type="button"
+              >
+                Cancelar
+              </button>
+              <button
+                class="flex-1 py-2 text-xs font-medium text-black bg-white hover:bg-neutral-200 rounded transition-colors cursor-pointer"
+                type="submit"
+              >
+                Guardar Cambios
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- MODAL: ELIMINACIÓN GENERAL -->
+      <div
+        class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-5"
+        id="modal-confirm-delete"
+        onclick="handleBackdropClick(event, 'modal-confirm-delete')"
+      >
+        <div
+          class="w-full max-w-sm bg-neutral-950 border border-neutral-800 rounded-lg p-5 space-y-4"
+          onclick="event.stopPropagation()"
+        >
           <div>
-            <label class="block text-xs text-neutral-400 mb-1">Nombre o identificador</label>
-            <input class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500" id="bus-input-name" placeholder="Ej. Bus 04" required="" type="text">
+            <h3
+              class="text-base font-semibold text-white"
+              id="delete-dialog-title"
+            >
+              ¿Eliminar registro?
+            </h3>
+            <p class="text-xs text-neutral-400 mt-1" id="delete-dialog-desc">
+              Esta acción no se puede deshacer.
+            </p>
           </div>
+          <div class="flex gap-2 pt-1">
+            <button
+              class="flex-1 py-2 text-xs font-medium text-neutral-400 hover:text-white rounded border border-neutral-800 transition-colors cursor-pointer"
+              onclick="closeDeleteModal()"
+            >
+              Cancelar
+            </button>
+            <button
+              class="flex-1 py-2 text-xs font-medium text-black bg-white hover:bg-neutral-200 rounded transition-colors cursor-pointer"
+              id="delete-confirm-btn"
+            >
+              Eliminar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL: CORTE DE EMERGENCIA -->
+      <div
+        class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-5"
+        id="modal-emergency"
+        onclick="handleBackdropClick(event, 'modal-emergency')"
+      >
+        <div
+          class="w-full max-w-sm bg-neutral-950 border border-neutral-800 rounded-lg p-5 space-y-4"
+          onclick="event.stopPropagation()"
+        >
           <div>
-            <label class="block text-xs text-neutral-400 mb-1">Ruta asignada</label>
-            <select class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500" id="bus-input-route">
-              <option value="Barranca">Barranca</option>
-              <option value="Supe">Supe</option>
-              <option value="Paramonga">Paramonga</option>
-            </select>
+            <h3 class="text-base font-semibold text-white" id="emergency-title">
+              ¿Corte de emergencia?
+            </h3>
+            <p class="text-xs text-neutral-400 mt-1">
+              La señal se desconectará de inmediato para esta unidad en la base
+              de datos.
+            </p>
           </div>
-          <div>
-            <label class="block text-xs text-neutral-400 mb-1">Conductor Principal</label>
-            <select class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500" id="bus-input-c1">
-              <option value="">Sin asignar</option>
-              <option value="Conductor 01">Conductor 01</option>
-              <option value="Conductor 02">Conductor 02</option>
-              <option value="Conductor 03">Conductor 03</option>
-            </select>
+          <div class="flex gap-2 pt-1">
+            <button
+              class="flex-1 py-2 text-xs font-medium text-neutral-400 hover:text-white rounded border border-neutral-800 transition-colors cursor-pointer"
+              onclick="closeEmergencyModal()"
+            >
+              Cancelar
+            </button>
+            <button
+              class="flex-1 py-2 text-xs font-medium text-black bg-white hover:bg-neutral-200 rounded transition-colors cursor-pointer"
+              id="emergency-confirm-btn"
+            >
+              Confirmar
+            </button>
           </div>
-          <div class="pt-2 flex gap-2">
-            <button class="flex-1 py-2 text-xs font-medium text-neutral-400 hover:text-white rounded border border-neutral-800 transition-colors cursor-pointer" onclick="toggleBusModal(false)" type="button">Cancelar</button>
-            <button class="flex-1 py-2 text-xs font-medium text-black bg-white hover:bg-neutral-200 rounded transition-colors cursor-pointer" type="submit">Guardar Bus</button>
-          </div>
-        </form>
+        </div>
+      </div>
+
+      <!-- TOAST NOTIFICACIÓN -->
+      <div
+        class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-200 opacity-0 translate-y-2 bg-neutral-900 border border-neutral-800 text-white text-xs px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2"
+        id="toast-notify"
+      >
+        <span id="toast-msg">Acción realizada</span>
       </div>
     </div>
 
-    <!-- MODAL: NUEVO CONDUCTOR -->
-    <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-5 hidden" id="modal-driver" onclick="handleBackdropClick(event, 'modal-driver')">
-      <div class="w-full max-w-sm bg-neutral-950 border border-neutral-800 rounded-lg p-5 space-y-4 shadow-2xl" onclick="event.stopPropagation()">
-        <div class="flex items-center justify-between pb-1 border-b border-neutral-900">
-          <h3 class="text-base font-semibold text-white">Nuevo Conductor</h3>
-          <button class="text-neutral-500 hover:text-white transition-colors cursor-pointer" onclick="toggleDriverModal(false)" type="button">
-            <span class="material-symbols-outlined text-[20px]">close</span>
-          </button>
-        </div>
-        <form class="space-y-3.5" id="form-create-driver" onsubmit="handleCreateDriver(event)">
-          <div>
-            <label class="block text-xs text-neutral-400 mb-1">Identificador Conductor</label>
-            <input class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500" id="driver-input-name" placeholder="Ej. Conductor 04" required="" type="text">
-          </div>
-          <div>
-            <label class="block text-xs text-neutral-400 mb-1">Correo (@keisel.me)</label>
-            <input class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500" id="driver-input-dni" placeholder="conductor4@keisel.me" required="" type="text">
-          </div>
-          <div>
-            <label class="block text-xs text-neutral-400 mb-1">Ruta</label>
-            <select class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500" id="driver-input-route">
-              <option value="Barranca">Barranca</option>
-              <option value="Supe">Supe</option>
-              <option value="Paramonga">Paramonga</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs text-neutral-400 mb-1">Vincular a Bus</label>
-            <select class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500" id="driver-input-bus">
-              <option value="">Sin asignar</option>
-              <option value="Bus 01">Bus 01 • Barranca</option>
-              <option value="Bus 02">Bus 02 • Supe</option>
-              <option value="Bus 03">Bus 03 • Paramonga</option>
-            </select>
-          </div>
-          <div class="pt-2 flex gap-2">
-            <button class="flex-1 py-2 text-xs font-medium text-neutral-400 hover:text-white rounded border border-neutral-800 transition-colors cursor-pointer" onclick="toggleDriverModal(false)" type="button">Cancelar</button>
-            <button class="flex-1 py-2 text-xs font-medium text-black bg-white hover:bg-neutral-200 rounded transition-colors cursor-pointer" type="submit">Guardar</button>
-          </div>
-        </form>
-      </div>
+    <!-- Notificación Toast Flotante -->
+    <div
+      id="toast-notify"
+      class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#1C1E24] text-white text-xs px-4 py-2.5 rounded-full border border-neutral-700 shadow-2xl opacity-0 translate-y-2 pointer-events-none transition-all duration-300 flex items-center gap-2"
+    >
+      <span class="material-symbols-outlined text-[16px] text-white">info</span>
+      <span id="toast-msg">Notificación</span>
     </div>
-
-    <!-- MODAL: EDITAR CONDUCTOR -->
-    <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-5 hidden" id="modal-edit-driver" onclick="handleBackdropClick(event, 'modal-edit-driver')">
-      <div class="w-full max-w-sm bg-neutral-950 border border-neutral-800 rounded-lg p-5 space-y-4 shadow-2xl" onclick="event.stopPropagation()">
-        <div class="flex items-center justify-between pb-1 border-b border-neutral-900">
-          <h3 class="text-base font-semibold text-white">Editar Conductor</h3>
-          <button class="text-neutral-500 hover:text-white transition-colors cursor-pointer" onclick="toggleEditDriverModal(false)" type="button">
-            <span class="material-symbols-outlined text-[20px]">close</span>
-          </button>
-        </div>
-        <form class="space-y-3.5" id="form-edit-driver" onsubmit="handleSaveEditDriver(event)">
-          <input id="edit-driver-target-id" type="hidden">
-          <div>
-            <label class="block text-xs text-neutral-400 mb-1">Identificador Conductor</label>
-            <input class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500" id="edit-driver-input-name" required="" type="text">
-          </div>
-          <div>
-            <label class="block text-xs text-neutral-400 mb-1">DNI / Referencia</label>
-            <input class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-500" id="edit-driver-input-dni" required="" type="text">
-          </div>
-          <div>
-            <label class="block text-xs text-neutral-400 mb-1">Ruta</label>
-            <select class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500" id="edit-driver-input-route">
-              <option value="Barranca">Barranca</option>
-              <option value="Supe">Supe</option>
-              <option value="Paramonga">Paramonga</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs text-neutral-400 mb-1">Vincular a Bus</label>
-            <select class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500" id="edit-driver-input-bus">
-              <option value="">Sin asignar</option>
-              <option value="Bus 01">Bus 01 • Barranca</option>
-              <option value="Bus 02">Bus 02 • Supe</option>
-              <option value="Bus 03">Bus 03 • Paramonga</option>
-            </select>
-          </div>
-          <div class="pt-2 flex gap-2">
-            <button class="flex-1 py-2 text-xs font-medium text-neutral-400 hover:text-white rounded border border-neutral-800 transition-colors cursor-pointer" onclick="toggleEditDriverModal(false)" type="button">Cancelar</button>
-            <button class="flex-1 py-2 text-xs font-medium text-black bg-white hover:bg-neutral-200 rounded transition-colors cursor-pointer" type="submit">Guardar Cambios</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- MODAL: EDITAR BUS -->
-    <div class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-5 hidden" id="modal-edit-bus" onclick="handleBackdropClick(event, 'modal-edit-bus')">
-      <div class="w-full max-w-sm bg-neutral-950 border border-neutral-800 rounded-lg p-5 space-y-4 shadow-2xl" onclick="event.stopPropagation()">
-        <div class="flex items-center justify-between pb-1 border-b border-neutral-900">
-          <h3 class="text-base font-semibold text-white">Editar Bus</h3>
-          <button class="text-neutral-500 hover:text-white transition-colors cursor-pointer" onclick="toggleEditBusModal(false)" type="button">
-            <span class="material-symbols-outlined text-[20px]">close</span>
-          </button>
-        </div>
-        <form class="space-y-3.5" id="form-edit-bus" onsubmit="handleSaveEditBus(event)">
-          <input id="edit-bus-target-id" type="hidden">
-          <div>
-            <label class="block text-xs text-neutral-400 mb-1">Nombre o identificador</label>
-            <input class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500" id="edit-bus-input-name" required="" type="text">
-          </div>
-          <div>
-            <label class="block text-xs text-neutral-400 mb-1">Ruta asignada</label>
-            <select class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500" id="edit-bus-input-route">
-              <option value="Barranca">Barranca</option>
-              <option value="Supe">Supe</option>
-              <option value="Paramonga">Paramonga</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs text-neutral-400 mb-1">Conductor Principal</label>
-            <select class="w-full px-3 py-2 bg-neutral-900 border border-neutral-800 rounded text-sm text-white focus:outline-none focus:border-neutral-500" id="edit-bus-input-c1">
-              <option value="">Sin asignar</option>
-              <option value="Conductor 01">Conductor 01</option>
-              <option value="Conductor 02">Conductor 02</option>
-              <option value="Conductor 03">Conductor 03</option>
-            </select>
-          </div>
-          <div class="pt-2 flex gap-2">
-            <button class="flex-1 py-2 text-xs font-medium text-neutral-400 hover:text-white rounded border border-neutral-800 transition-colors cursor-pointer" onclick="toggleEditBusModal(false)" type="button">Cancelar</button>
-            <button class="flex-1 py-2 text-xs font-medium text-black bg-white hover:bg-neutral-200 rounded transition-colors cursor-pointer" type="submit">Guardar Cambios</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- MODAL: ELIMINACIÓN GENERAL -->
-    <div class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-5" id="modal-confirm-delete" onclick="handleBackdropClick(event, 'modal-confirm-delete')">
-      <div class="w-full max-w-sm bg-neutral-950 border border-neutral-800 rounded-lg p-5 space-y-4" onclick="event.stopPropagation()">
-        <div>
-          <h3 class="text-base font-semibold text-white" id="delete-dialog-title">¿Eliminar registro?</h3>
-          <p class="text-xs text-neutral-400 mt-1" id="delete-dialog-desc">Esta acción no se puede deshacer.</p>
-        </div>
-        <div class="flex gap-2 pt-1">
-          <button class="flex-1 py-2 text-xs font-medium text-neutral-400 hover:text-white rounded border border-neutral-800 transition-colors cursor-pointer" onclick="closeDeleteModal()">Cancelar</button>
-          <button class="flex-1 py-2 text-xs font-medium text-black bg-white hover:bg-neutral-200 rounded transition-colors cursor-pointer" id="delete-confirm-btn">Eliminar</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- MODAL: CORTE DE EMERGENCIA -->
-    <div class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-5" id="modal-emergency" onclick="handleBackdropClick(event, 'modal-emergency')">
-      <div class="w-full max-w-sm bg-neutral-950 border border-neutral-800 rounded-lg p-5 space-y-4" onclick="event.stopPropagation()">
-        <div>
-          <h3 class="text-base font-semibold text-white" id="emergency-title">¿Corte de emergencia?</h3>
-          <p class="text-xs text-neutral-400 mt-1">La señal se desconectará de inmediato para esta unidad en la base de datos.</p>
-        </div>
-        <div class="flex gap-2 pt-1">
-          <button class="flex-1 py-2 text-xs font-medium text-neutral-400 hover:text-white rounded border border-neutral-800 transition-colors cursor-pointer" onclick="closeEmergencyModal()">
-            Cancelar
-          </button>
-          <button class="flex-1 py-2 text-xs font-medium text-black bg-white hover:bg-neutral-200 rounded transition-colors cursor-pointer" id="emergency-confirm-btn">
-            Confirmar
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- TOAST NOTIFICACIÓN -->
-    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-200 opacity-0 translate-y-2 bg-neutral-900 border border-neutral-800 text-white text-xs px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2" id="toast-notify">
-      <span id="toast-msg">Acción realizada</span>
-    </div>
-  </div>
-
-  
-
-
-  <!-- Notificación Toast Flotante -->
-  <div id="toast-notify" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#1C1E24] text-white text-xs px-4 py-2.5 rounded-full border border-neutral-700 shadow-2xl opacity-0 translate-y-2 pointer-events-none transition-all duration-300 flex items-center gap-2">
-    <span class="material-symbols-outlined text-[16px] text-white">info</span>
-    <span id="toast-msg">Notificación</span>
-  </div>
 
     <!-- Lógica y Funcionalidades JavaScript de Keisel -->
-  <script src="js/app.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/app.js"></script>
 
-  <!-- MODAL DE CONFIGURACIÓN DE PERMISO DE UBICACIÓN -->
-  <div id="modal-permiso-ubicacion" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-    <div class="bg-[#141416]/95 border border-[#26262B] rounded-3xl p-6 max-w-sm w-full shadow-2xl text-center flex flex-col items-center">
-      <div class="w-14 h-14 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center mb-4">
-        <span class="material-symbols-outlined text-[32px]">near_me</span>
-      </div>
-      <h3 class="text-lg font-bold text-white mb-2">Permiso de Ubicación</h3>
-      <p class="text-xs text-neutral-400 mb-6 leading-relaxed">
-        Keisel requiere tu ubicación para mostrarte los paraderos más cercanos y la distancia exacta al bus. Puedes cambiar esta opción en cualquier momento.
-      </p>
-      <div class="flex flex-col w-full gap-2.5">
-        <button onclick="configurarPermisoUbicacion('siempre')" class="w-full py-3 px-4 bg-white hover:bg-neutral-200 text-black font-bold text-xs rounded-xl transition-all active:scale-95 cursor-pointer">
-          Permitir siempre
-        </button>
-        <button onclick="configurarPermisoUbicacion('momento')" class="w-full py-3 px-4 bg-neutral-800 hover:bg-neutral-700 text-white font-semibold text-xs rounded-xl border border-neutral-700 transition-all active:scale-95 cursor-pointer">
-          Solo en este momento
-        </button>
-        <button onclick="cerrarModalUbicacion()" class="w-full py-2.5 px-4 text-neutral-400 hover:text-white font-medium text-xs transition-colors cursor-pointer">
-          Ahora no
-        </button>
+    <!-- MODAL DE CONFIGURACIÓN DE PERMISO DE UBICACIÓN -->
+    <div
+      id="modal-permiso-ubicacion"
+      class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+    >
+      <div
+        class="bg-[#141416]/95 border border-[#26262B] rounded-3xl p-6 max-w-sm w-full shadow-2xl text-center flex flex-col items-center"
+      >
+        <div
+          class="w-14 h-14 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center mb-4"
+        >
+          <span class="material-symbols-outlined text-[32px]">near_me</span>
+        </div>
+        <h3 class="text-lg font-bold text-white mb-2">Permiso de Ubicación</h3>
+        <p class="text-xs text-neutral-400 mb-6 leading-relaxed">
+          Keisel requiere tu ubicación para mostrarte los paraderos más cercanos
+          y la distancia exacta al bus. Puedes cambiar esta opción en cualquier
+          momento.
+        </p>
+        <div class="flex flex-col w-full gap-2.5">
+          <button
+            onclick="configurarPermisoUbicacion('siempre')"
+            class="w-full py-3 px-4 bg-white hover:bg-neutral-200 text-black font-bold text-xs rounded-xl transition-all active:scale-95 cursor-pointer"
+          >
+            Permitir siempre
+          </button>
+          <button
+            onclick="configurarPermisoUbicacion('momento')"
+            class="w-full py-3 px-4 bg-neutral-800 hover:bg-neutral-700 text-white font-semibold text-xs rounded-xl border border-neutral-700 transition-all active:scale-95 cursor-pointer"
+          >
+            Solo en este momento
+          </button>
+          <button
+            onclick="cerrarModalUbicacion()"
+            class="w-full py-2.5 px-4 text-neutral-400 hover:text-white font-medium text-xs transition-colors cursor-pointer"
+          >
+            Ahora no
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-
-</body>
+  </body>
 </html>
