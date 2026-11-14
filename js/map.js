@@ -73,22 +73,6 @@ function expandirPanelBuses() {
   if (panel) panel.style.display = "flex";
 }
 
-function centrarEnMiUbicacion() {
-  obtenerUbicacionAltaPrecision();
-
-  if (map && userPosActual) {
-    map.flyTo(userPosActual, 17, { animate: true, duration: 1 });
-  } else if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(function (pos) {
-      userPosActual = [pos.coords.latitude, pos.coords.longitude];
-
-      dibujarPuntoUsuario(userPosActual[0], userPosActual[1]);
-
-      if (map) map.flyTo(userPosActual, 17, { animate: true, duration: 1 });
-    });
-  }
-}
-
 function calcularDistanciaMetros(lat1, lon1, lat2, lon2) {
   var R = 6371000;
 
@@ -235,29 +219,6 @@ function centrarEnBus(especificoId) {
     var bounds = L.latLngBounds(group);
 
     map.fitBounds(bounds, { padding: [50, 50], maxZoom: 17 });
-  }
-}
-
-function dibujarPuntoUsuario(lat, lng) {
-  if (!map || typeof L === "undefined") return;
-
-  if (!userMarker) {
-    var userIcon = L.divIcon({
-      className: "user-marker-container",
-
-      html: '<div style="position:relative;"><div class="user-pulse-halo"></div><div class="user-white-dot"></div></div>',
-
-      iconSize: [20, 20],
-
-      iconAnchor: [10, 10],
-    });
-
-    userMarker = L.marker([lat, lng], {
-      icon: userIcon,
-      zIndexOffset: 1000,
-    }).addTo(map);
-  } else {
-    userMarker.setLatLng([lat, lng]);
   }
 }
 
@@ -456,6 +417,35 @@ function centrarEnMiUbicacion() {
 
   iniciarUbicacionUsuario();
 }
+
+// --- MODAL Y CONFIGURACIÓN DE PERMISO DE UBICACIÓN ---
+
+function abrirModalUbicacion() {
+  var modal = document.getElementById("modal-permiso-ubicacion");
+  if (modal) modal.classList.remove("hidden");
+}
+
+function cerrarModalUbicacion() {
+  var modal = document.getElementById("modal-permiso-ubicacion");
+  if (modal) modal.classList.add("hidden");
+}
+
+function configurarPermisoUbicacion(tipo) {
+  cerrarModalUbicacion();
+  iniciarUbicacionUsuario();
+  if (typeof showToast === "function") {
+    if (tipo === "siempre") {
+      showToast("Permiso de ubicación concedido");
+    } else {
+      showToast("Ubicación activada");
+    }
+  }
+}
+
+window.abrirModalUbicacion = abrirModalUbicacion;
+window.cerrarModalUbicacion = cerrarModalUbicacion;
+window.configurarPermisoUbicacion = configurarPermisoUbicacion;
+window.centrarEnMiUbicacion = centrarEnMiUbicacion;
 
 function actualizarBusesActivos(busesList) {
   if (!map || typeof L === "undefined") return;

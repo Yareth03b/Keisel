@@ -11,27 +11,7 @@ let newDriverCounter = 4;
 
 let targetDeleteCardId = null;
 
-function showToast(msg) {
-  const toast = document.getElementById("toast-notify");
-
-  const toastMsg = document.getElementById("toast-msg");
-
-  if (!toast || !toastMsg) return;
-
-  toastMsg.textContent = msg;
-
-  toast.classList.remove("opacity-0", "translate-y-2");
-
-  toast.classList.add("opacity-100", "translate-y-0");
-
-  if (window.toastTimeout) clearTimeout(window.toastTimeout);
-
-  window.toastTimeout = setTimeout(() => {
-    toast.classList.add("opacity-0", "translate-y-2");
-
-    toast.classList.remove("opacity-100", "translate-y-0");
-  }, 2400);
-}
+// showToast centralizado en js/config.js
 
 function toggleBusModal(show) {
   const modal = document.getElementById("modal-bus");

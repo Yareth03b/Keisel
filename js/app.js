@@ -8,9 +8,7 @@ var meadowEngine = null;
 
 var esAdminAutenticado = false;
 
-var API_BASE_URL = "/api";
-
-var API_TAILSCALE_URL = "http://100.67.14.105:3000/api";
+// API_BASE_URL y API_TAILSCALE_URL provistos globalmente por js/config.js
 
 // --- ENRUTADOR DE PANTALLAS ---
 
