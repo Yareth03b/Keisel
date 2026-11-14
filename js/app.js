@@ -226,7 +226,11 @@ async function handleAdminLoginSubmit(e) {
       reportarErrorLogin("Credenciales no autorizadas en el dominio keisel.me");
       return;
     } else {
-      reportarErrorLogin("Error del servidor: HTTP " + resp.status);
+      var detalle = null;
+      try {
+        detalle = (await resp.json()).mensaje;
+      } catch (parseErr) {}
+      reportarErrorLogin(detalle || "Error del servidor: HTTP " + resp.status);
       return;
     }
   } catch (err) {
