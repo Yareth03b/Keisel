@@ -7,13 +7,16 @@ const KeiselAPI = {
    * Obtiene la lista ordenada de endpoints para tolerancia a fallos
    */
   getEndpoints: function () {
-    return [
-      typeof KeiselConfig !== "undefined" ? KeiselConfig.API_BASE_URL : "/api",
-      typeof KeiselConfig !== "undefined"
-        ? KeiselConfig.API_TAILSCALE_URL
-        : "http://100.67.14.105:3000/api",
-      "/api",
-    ];
+    var list = [];
+    if (typeof KeiselConfig !== "undefined") {
+      if (KeiselConfig.API_BASE_URL) list.push(KeiselConfig.API_BASE_URL);
+      if (KeiselConfig.API_LAN_URL) list.push(KeiselConfig.API_LAN_URL);
+      if (KeiselConfig.API_TAILSCALE_URL) list.push(KeiselConfig.API_TAILSCALE_URL);
+    }
+    if (list.length === 0) {
+      list = ["/api", "http://192.168.50.252:3000/api", "http://100.67.14.105:3000/api"];
+    }
+    return list;
   },
 
   /**
@@ -44,10 +47,12 @@ const KeiselAPI = {
         }
 
         var response = await fetch(url, fetchOpts);
-        // 502/503/504: el proxy Apache respondio pero Node.js no esta disponible.
-        // Se intenta el siguiente endpoint en lugar de devolver un error falso.
-        var esFalloDeGateway = response.status >= 502 && response.status <= 504;
-        if (esFalloDeGateway && i < endpoints.length - 1) {
+        // 404 en ruta relativa (ej. Live Server sin proxy) o 502-504 (Node caido):
+        // se intenta el siguiente endpoint (LAN -> Tailscale) en lugar de fallar.
+        var esFalloDeProxy =
+          (base === "/api" && response.status === 404) ||
+          (response.status >= 502 && response.status <= 504);
+        if (esFalloDeProxy && i < endpoints.length - 1) {
           lastError = new Error("Gateway HTTP " + response.status + " en " + base);
           continue;
         }
