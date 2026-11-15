@@ -162,65 +162,55 @@ function handleCreateBus(e) {
 
   const busKey = "bus_keisel_" + newBusCounter;
 
+  function escaparHtml(str) {
+    return String(str || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
   const busHtml = `
-
         <div class="py-4 space-y-3" id="${busId}">
-
           <div class="flex items-center justify-between">
-
             <div class="flex items-center gap-2">
-
-              <span class="text-[15px] font-medium text-white whitespace-nowrap">${name}</span>
-
+              <span class="text-[15px] font-medium text-white whitespace-nowrap">${escaparHtml(name)}</span>
               <span class="text-neutral-600">•</span>
-
-              <span class="text-[15px] text-neutral-300">${route}</span>
-
+              <span class="text-[15px] text-neutral-300">${escaparHtml(route)}</span>
             </div>
-
             <span class="text-[11px] tracking-wide uppercase px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 font-medium" id="${stateId}">En ruta</span>
-
           </div>
-
           <div class="space-y-1.5 pt-0.5">
-
             <div class="flex items-center justify-between text-xs">
-
               <span class="${c1 ? "text-neutral-400" : "text-neutral-500"}">
-
-                <span class="${c1 ? "text-neutral-500" : "text-neutral-600"}">C1:</span> ${c1 || "Sin asignar"}
-
+                <span class="${c1 ? "text-neutral-500" : "text-neutral-600"}">C1:</span> ${escaparHtml(c1) || "Sin asignar"}
               </span>
-
               <span class="text-[11px] text-neutral-400 font-medium">${c1 ? "En turno" : "Disponible"}</span>
-
             </div>
-
           </div>
-
           <div class="flex items-center justify-between pt-1 border-t border-neutral-900/60">
-
             <span class="text-[11px] text-neutral-500">ID: ${busKey}</span>
-
             <div class="flex items-center gap-2">
-
-              <button class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="openEditBusModal('${name}', '${route}', '${c1}', '', '${busId}')">Editar</button>
-
-              <button class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="triggerEmergencyCut('${name}', '${busId}', '${stateId}', '${busKey}')">Corte</button>
-
-              <button class="text-xs text-neutral-500 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" onclick="confirmDeleteBus('${name}', '${busId}')">Eliminar</button>
-
+              <button data-action="edit-bus" class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer">Editar</button>
+              <button data-action="cut-bus" class="text-xs text-neutral-400 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer">Corte</button>
+              <button data-action="del-bus" class="text-xs text-neutral-500 hover:text-white px-2 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer">Eliminar</button>
             </div>
-
           </div>
-
         </div>
-
       `;
 
   const busesList = document.getElementById("buses-list");
 
-  if (busesList) busesList.insertAdjacentHTML("beforeend", busHtml);
+  if (busesList) {
+    busesList.insertAdjacentHTML("beforeend", busHtml);
+    const card = document.getElementById(busId);
+    if (card) {
+      card.querySelector('[data-action="edit-bus"]')?.addEventListener("click", () => openEditBusModal(name, route, c1, "", busId));
+      card.querySelector('[data-action="cut-bus"]')?.addEventListener("click", () => triggerEmergencyCut(name, busId, stateId, busKey));
+      card.querySelector('[data-action="del-bus"]')?.addEventListener("click", () => confirmDeleteBus(name, busId));
+    }
+  }
 
   newBusCounter++;
 
@@ -242,71 +232,59 @@ function handleCreateDriver(e) {
 
   const driverId = newDriverCounter;
 
+  function escaparHtmlDriver(str) {
+    return String(str || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
   const driverHtml = `
-
         <div class="py-4 space-y-3" id="driver-card-${driverId}">
-
           <div class="flex items-start justify-between">
-
             <div>
-
-              <p class="text-[15px] font-medium text-white">${name}</p>
-
-              <p class="text-xs text-neutral-500 mt-0.5">DNI ${dni}</p>
-
+              <p class="text-[15px] font-medium text-white">${escaparHtmlDriver(name)}</p>
+              <p class="text-xs text-neutral-500 mt-0.5">DNI ${escaparHtmlDriver(dni)}</p>
             </div>
-
             <span class="text-[11px] uppercase tracking-wide px-2 py-0.5 rounded bg-neutral-900 text-neutral-300 font-medium" id="driver-status-${driverId}">
-
               Activo
-
             </span>
-
           </div>
-
           <div class="flex items-center justify-between pt-1">
-
             <div class="flex items-center gap-2">
-
               <span class="text-xs text-neutral-500">Ruta:</span>
-
               <div class="relative">
-
-                <select class="bg-neutral-950 border border-neutral-800 text-neutral-200 text-xs rounded px-2 py-1 pr-6 focus:outline-none focus:border-neutral-600 appearance-none cursor-pointer" onchange="updateDriverRoute(${driverId}, this.value)">
-
+                <select data-action="route-driver" class="bg-neutral-950 border border-neutral-800 text-neutral-200 text-xs rounded px-2 py-1 pr-6 focus:outline-none focus:border-neutral-600 appearance-none cursor-pointer">
                   <option value="Barranca" ${route === "Barranca" ? "selected" : ""}>Barranca</option>
-
                   <option value="Supe" ${route === "Supe" ? "selected" : ""}>Supe</option>
-
                   <option value="Paramonga" ${route === "Paramonga" ? "selected" : ""}>Paramonga</option>
-
                 </select>
-
                 <span class="material-symbols-outlined pointer-events-none absolute right-1 top-1.5 text-[14px] text-neutral-500">expand_more</span>
-
               </div>
-
             </div>
-
             <div class="flex items-center gap-2.5">
-
-              <button class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer" onclick="openEditDriverModal('${name}', '${dni}', '${route}', '', 'driver-card-${driverId}')">Editar</button>
-
-              <button class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer" id="driver-btn-${driverId}" onclick="toggleDriverAccess(${driverId})">Desactivar</button>
-
-              <button class="text-xs text-neutral-500 hover:text-white transition-colors cursor-pointer" onclick="confirmDeleteDriver('${name}', 'driver-card-${driverId}')">Eliminar</button>
-
+              <button data-action="edit-driver" class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer">Editar</button>
+              <button data-action="toggle-driver" class="text-xs text-neutral-400 hover:text-white transition-colors cursor-pointer" id="driver-btn-${driverId}">Desactivar</button>
+              <button data-action="del-driver" class="text-xs text-neutral-500 hover:text-white transition-colors cursor-pointer">Eliminar</button>
             </div>
-
           </div>
-
         </div>
-
       `;
 
   const driversList = document.getElementById("drivers-list");
 
-  if (driversList) driversList.insertAdjacentHTML("beforeend", driverHtml);
+  if (driversList) {
+    driversList.insertAdjacentHTML("beforeend", driverHtml);
+    const card = document.getElementById("driver-card-" + driverId);
+    if (card) {
+      card.querySelector('[data-action="route-driver"]')?.addEventListener("change", (ev) => updateDriverRoute(driverId, ev.target.value));
+      card.querySelector('[data-action="edit-driver"]')?.addEventListener("click", () => openEditDriverModal(name, dni, route, "", "driver-card-" + driverId));
+      card.querySelector('[data-action="toggle-driver"]')?.addEventListener("click", () => toggleDriverAccess(driverId));
+      card.querySelector('[data-action="del-driver"]')?.addEventListener("click", () => confirmDeleteDriver(name, "driver-card-" + driverId));
+    }
+  }
 
   newDriverCounter++;
 
@@ -328,21 +306,19 @@ function triggerEmergencyCut(busName, cardId, stateId, busKey) {
 
   modal.classList.remove("hidden");
 
-  confirmBtn.onclick = function () {
-    const card = document.getElementById(cardId);
-
-    const state = document.getElementById(stateId);
-
-    if (card) card.classList.add("opacity-50");
-
-    if (state) state.textContent = "Apagado";
-
-    // Aplicar corte en la API Node.js / SQL Server para retirar el bus del mapa
-
-    KeiselAPI.corteEmergencia(busKey);
-
+  confirmBtn.onclick = async function () {
+    const ok = await KeiselAPI.corteEmergencia(busKey);
     closeEmergencyModal();
 
+    if (!ok) {
+      showToast("Error: sesion expirada o sin permisos para aplicar corte");
+      return;
+    }
+
+    const card = document.getElementById(cardId);
+    const state = document.getElementById(stateId);
+    if (card) card.classList.add("opacity-50");
+    if (state) state.textContent = "Apagado";
     showToast("Corte de señal aplicado a " + busName);
   };
 }

@@ -94,6 +94,23 @@ function navegarA(vista) {
 
     iniciarFondoStardust();
   } else if (vista === "admin") {
+    var tokenAdmin = null;
+    try {
+      tokenAdmin = sessionStorage.getItem("keisel_admin_token");
+    } catch (e) {}
+
+    if (!esAdminAutenticado || !tokenAdmin) {
+      esAdminAutenticado = false;
+      vistaActiva = "admin-login";
+      if (vAdminLogin) {
+        vAdminLogin.classList.remove("hidden");
+        vAdminLogin.style.display = "flex";
+      }
+      detenerPollingGps();
+      iniciarFondoStardust();
+      return;
+    }
+
     if (vAdmin) {
       vAdmin.classList.remove("hidden");
 
@@ -207,10 +224,14 @@ async function handleAdminLoginSubmit(e) {
       var data = await resp.json();
       if (
         data.status === "success" &&
+        data.token &&
         data.usuario &&
         data.usuario.rol === "ADMIN"
       ) {
         esAdminAutenticado = true;
+        try {
+          sessionStorage.setItem("keisel_admin_token", data.token);
+        } catch (storageErr) {}
         showToast("Acceso Concedido por Active Directory");
         btn.disabled = false;
         btn.innerHTML = origHtml;
@@ -243,6 +264,9 @@ async function handleAdminLoginSubmit(e) {
 
 function handleAdminLogout() {
   esAdminAutenticado = false;
+  try {
+    sessionStorage.removeItem("keisel_admin_token");
+  } catch (storageErr) {}
 
   showToast("Cerrando sesión de Administrador...");
 

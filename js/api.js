@@ -99,14 +99,20 @@ const KeiselAPI = {
   },
 
   /**
-   * Envía la orden de corte de emergencia de telemetría
+   * Envía la orden de corte de emergencia de telemetría (requiere token ADMIN)
    */
   corteEmergencia: async function (busId) {
     try {
       var targetId = busId || "bus_keisel_1";
+      var headers = { "Content-Type": "application/json" };
+      try {
+        var token = sessionStorage.getItem("keisel_admin_token");
+        if (token) headers["Authorization"] = "Bearer " + token;
+      } catch (storageErr) {}
+
       var response = await this.request("/corte-emergencia", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: headers,
         body: JSON.stringify({ id: targetId }),
         timeout: 3000,
       });

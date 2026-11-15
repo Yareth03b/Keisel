@@ -655,19 +655,27 @@ function actualizarBusesActivos(busesList) {
     if (sub) sub.innerText = nombresRutas;
 
     if (chips) {
-      var chipsHtml =
-        '<button onclick="centrarEnBus()" class="text-[10px] bg-white/10 hover:bg-white/20 text-white font-bold px-2 py-0.5 rounded-lg transition-all cursor-pointer">Todos</button>';
+      chips.textContent = "";
+
+      var btnTodos = document.createElement("button");
+      btnTodos.className =
+        "text-[10px] bg-white/10 hover:bg-white/20 text-white font-bold px-2 py-0.5 rounded-lg transition-all cursor-pointer";
+      btnTodos.textContent = "Todos";
+      btnTodos.addEventListener("click", function () {
+        centrarEnBus();
+      });
+      chips.appendChild(btnTodos);
 
       idsActivos.forEach(function (id) {
-        chipsHtml +=
-          "<button onclick=\"centrarEnBus('" +
-          id +
-          '\')" class="text-[10px] bg-white/10 hover:bg-white/20 text-white font-bold px-2 py-0.5 rounded-lg transition-all cursor-pointer">' +
-          busMarkers[id].info.nombre +
-          "</button>";
+        var btnBus = document.createElement("button");
+        btnBus.className =
+          "text-[10px] bg-white/10 hover:bg-white/20 text-white font-bold px-2 py-0.5 rounded-lg transition-all cursor-pointer";
+        btnBus.textContent = busMarkers[id].info.nombre;
+        btnBus.addEventListener("click", function () {
+          centrarEnBus(id);
+        });
+        chips.appendChild(btnBus);
       });
-
-      chips.innerHTML = chipsHtml;
     }
   }
 }
