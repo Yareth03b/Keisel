@@ -251,15 +251,6 @@ function handleAdminLogout() {
   }, 350);
 }
 
-function handleLogoutAdmin() {
-  handleAdminLogout();
-}
-
-function limpiarSenalSupabase(customBusId) {
-  var targetBusId = customBusId || "bus_keisel_1";
-  KeiselAPI.corteEmergencia(targetBusId);
-}
-
 // [El módulo de Mapa Leaflet ha sido extraído a js/map.js]
 
 // showToast centralizado en config.js

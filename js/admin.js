@@ -337,9 +337,9 @@ function triggerEmergencyCut(busName, cardId, stateId, busKey) {
 
     if (state) state.textContent = "Apagado";
 
-    // Limpiar la señal real en Supabase para que el bus desaparezca del mapa
+    // Aplicar corte en la API Node.js / SQL Server para retirar el bus del mapa
 
-    limpiarSenalSupabase(busKey);
+    KeiselAPI.corteEmergencia(busKey);
 
     closeEmergencyModal();
 
