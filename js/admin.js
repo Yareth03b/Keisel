@@ -1,10 +1,3 @@
-/**
- * Keisel - Módulo del Panel Administrativo
- * Gestión de flotas, conductores y control de telemetría
- */
-
-// --- MÉTODOS DEL PANEL ADMINISTRADOR ---
-
 let newBusCounter = 4;
 
 let newDriverCounter = 4;
