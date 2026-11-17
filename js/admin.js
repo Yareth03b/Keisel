@@ -533,8 +533,9 @@ async function alternarEstadoConductor(correo) {
     activo: nuevoEstado,
   });
   if (ok) {
-    showToast(nuevoEstado ? "Conductor activado" : "Conductor desactivado");
+    showToast(nuevoEstado ? "Conductor activado" : "Conductor desactivado y transmisión cortada");
     cargarConductoresAdmin();
+    actualizarEstadoBusesEnVivo();
   } else {
     showToast("Error actualizando estado en SQL Server");
   }
