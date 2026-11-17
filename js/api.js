@@ -126,17 +126,18 @@ const KeiselAPI = {
   /**
    * Lista los conductores sincronizados desde AD en KeiselDB (requiere token ADMIN)
    */
-  obtenerConductoresAdmin: async function () {
+  obtenerConductoresAdmin: async function (forzarSyncAd) {
     var headers = {};
     try {
       var token = sessionStorage.getItem("keisel_admin_token");
       if (token) headers["Authorization"] = "Bearer " + token;
     } catch (e) {}
-    var response = await this.request("/admin/conductores", {
+    var ruta = forzarSyncAd ? "/admin/conductores?sync=1" : "/admin/conductores";
+    var response = await this.request(ruta, {
       method: "GET",
       headers: headers,
       cache: "no-store",
-      timeout: 4500,
+      timeout: 5500,
     });
     if (!response.ok) return null;
     return await response.json();

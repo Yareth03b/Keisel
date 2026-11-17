@@ -439,15 +439,18 @@ function escaparHtml(txt) {
     .replace(/"/g, "&quot;");
 }
 
-async function cargarConductoresAdmin() {
+async function cargarConductoresAdmin(forzarSyncAd) {
   var list = document.getElementById("drivers-list");
   if (!list || typeof KeiselAPI === "undefined") return;
 
   try {
-    var resp = await KeiselAPI.obtenerConductoresAdmin();
+    var resp = await KeiselAPI.obtenerConductoresAdmin(Boolean(forzarSyncAd));
     if (!resp || !Array.isArray(resp.conductores)) return;
     conductoresAdminCache = resp.conductores;
     renderizarListaConductores(conductoresAdminCache);
+    if (forzarSyncAd) {
+      showToast("Conductores sincronizados con Active Directory");
+    }
   } catch (err) {
     console.warn("No se pudo cargar conductores reales:", err);
   }
