@@ -91,8 +91,6 @@ function navegarA(vista) {
     }
 
     detenerPollingGps();
-
-    iniciarFondoStardust();
   } else if (vista === "admin") {
     var tokenAdmin = null;
     try {
@@ -107,7 +105,6 @@ function navegarA(vista) {
         vAdminLogin.style.display = "flex";
       }
       detenerPollingGps();
-      iniciarFondoStardust();
       return;
     }
 
@@ -132,48 +129,6 @@ function toggleAdminPasswordVis() {
     pwd.type = isPass ? "text" : "password";
 
     eye.innerText = isPass ? "visibility" : "visibility_off";
-  }
-}
-
-// --- MOTOR C�SMICO STARDUST CANVAS 2D (ULTRA LIGERO) ---
-
-var stardustEngine = null;
-
-function iniciarFondoStardust() {
-  if (stardustEngine) {
-    stardustEngine.resize();
-
-    return;
-  }
-
-  var viewport = document.getElementById("stardust-viewport");
-
-  if (!viewport) return;
-
-  if (typeof window.initStardustBackground === "function") {
-    try {
-      stardustEngine = window.initStardustBackground(viewport, {
-        background: "#040711",
-
-        particleColor: "#ffffff",
-
-        particleDensity: 1.2,
-
-        minSize: 0.5,
-
-        maxSize: 1.2,
-
-        speed: 6,
-
-        movement: 2.5,
-
-        angle: 180,
-      });
-    } catch (e) {
-      console.warn("Error inicializando Stardust:", e);
-    }
-  } else {
-    setTimeout(iniciarFondoStardust, 150);
   }
 }
 
