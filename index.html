@@ -750,22 +750,28 @@
         </div>
       </header>
 
-      <!-- Contenido Principal Admin -->
-      <main class="flex-1 w-full max-w-lg mx-auto px-5 py-6 space-y-9">
+      <!-- Contenido Principal Admin (Escritorio 2 Columnas) -->
+      <main class="flex-1 w-full max-w-6xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
         <!-- 1. SECCIÓN CONDUCTORES -->
         <section class="space-y-3" id="drivers-section">
           <div class="flex items-center justify-between pb-1">
-            <h2
-              class="text-[20px] font-semibold tracking-tight text-white whitespace-nowrap"
-            >
-              Conductores
-            </h2>
+            <div>
+              <h2
+                class="text-[20px] font-semibold tracking-tight text-white whitespace-nowrap"
+              >
+                Conductores
+              </h2>
+              <p class="text-[11px] text-neutral-500">
+                Sincronizado con grupo Conductores (Active Directory)
+              </p>
+            </div>
             <button
+              type="button"
               class="text-xs font-medium text-white bg-neutral-900 hover:bg-neutral-800 px-3 py-1.5 rounded-full border border-neutral-800 transition-colors flex items-center gap-1 cursor-pointer"
-              onclick="toggleDriverModal(true)"
+              onclick="cargarConductoresAdmin()"
             >
-              <span class="material-symbols-outlined text-[14px]">add</span>
-              <span>Nuevo</span>
+              <span class="material-symbols-outlined text-[14px]">refresh</span>
+              <span>Actualizar</span>
             </button>
           </div>
 

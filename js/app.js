@@ -45,6 +45,10 @@ function navegarA(vista) {
     vAdmin.style.display = "none";
   }
 
+  if (typeof detenerMonitoreoBusesAdmin === "function") {
+    detenerMonitoreoBusesAdmin();
+  }
+
   if (vista === "inicio") {
     if (vInicio) {
       vInicio.classList.remove("hidden");
@@ -115,6 +119,8 @@ function navegarA(vista) {
     }
 
     detenerPollingGps();
+    if (typeof cargarConductoresAdmin === "function") cargarConductoresAdmin();
+    if (typeof iniciarMonitoreoBusesAdmin === "function") iniciarMonitoreoBusesAdmin();
   }
 }
 

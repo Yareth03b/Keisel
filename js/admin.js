@@ -310,9 +310,10 @@ function triggerEmergencyCut(busName, cardId, stateId, busKey) {
 
     const card = document.getElementById(cardId);
     const state = document.getElementById(stateId);
-    if (card) card.classList.add("opacity-50");
-    if (state) state.textContent = "Apagado";
+    if (card) card.classList.add("opacity-60");
+    if (state) state.textContent = "DESCONECTADO";
     showToast("Corte de señal aplicado a " + busName);
+    actualizarEstadoBusesEnVivo();
   };
 }
 
@@ -411,3 +412,174 @@ document.addEventListener("keydown", function (e) {
     closeDeleteModal();
   }
 });
+
+// --- SINCRONIZACIÓN REAL CON AD / SQL SERVER Y MONITOREO EN VIVO DE BUSES ---
+
+var adminBusesTimer = null;
+var conductoresAdminCache = [];
+
+var MAPA_RUTAS_ADMIN = {
+  Barranca: { ruta: "Bus 01 • Barranca -> UNAB", busId: "bus_keisel_1", placa: "EUA-482" },
+  Supe: { ruta: "Bus 02 • Supe -> UNAB", busId: "bus_keisel_2", placa: "EUA-519" },
+  Paramonga: { ruta: "Bus 03 • Paramonga -> UNAB", busId: "bus_keisel_3", placa: "EUA-604" },
+};
+
+function detectarNombreRutaCorto(rutaTexto) {
+  var r = String(rutaTexto || "").toLowerCase();
+  if (r.includes("supe")) return "Supe";
+  if (r.includes("paramonga")) return "Paramonga";
+  return "Barranca";
+}
+
+function escaparHtml(txt) {
+  return String(txt || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+async function cargarConductoresAdmin() {
+  var list = document.getElementById("drivers-list");
+  if (!list || typeof KeiselAPI === "undefined") return;
+
+  try {
+    var resp = await KeiselAPI.obtenerConductoresAdmin();
+    if (!resp || !Array.isArray(resp.conductores)) return;
+    conductoresAdminCache = resp.conductores;
+    renderizarListaConductores(conductoresAdminCache);
+  } catch (err) {
+    console.warn("No se pudo cargar conductores reales:", err);
+  }
+}
+
+function renderizarListaConductores(lista) {
+  var list = document.getElementById("drivers-list");
+  if (!list) return;
+  if (!lista || lista.length === 0) {
+    list.innerHTML = '<p class="py-4 text-xs text-neutral-500">Sin conductores sincronizados en Active Directory.</p>';
+    return;
+  }
+
+  list.innerHTML = lista
+    .map(function (c, idx) {
+      var idNum = c.usuario_id || idx + 1;
+      var rutaCorta = detectarNombreRutaCorto(c.ruta_asignada);
+      var activo = c.activo === true || c.activo === 1;
+      return (
+        '<div class="py-4 space-y-3 ' + (activo ? "" : "opacity-60") + '" id="driver-card-' + idNum + '">' +
+          '<div class="flex items-start justify-between">' +
+            '<div>' +
+              '<p class="text-[15px] font-medium text-white">' + escaparHtml(c.nombre_completo) + "</p>" +
+              '<p class="text-xs text-neutral-500 mt-0.5">' + escaparHtml(c.usuario_correo) + " • " + escaparHtml(c.placa_unidad || "Sin placa") + "</p>" +
+            "</div>" +
+            '<span class="text-[11px] uppercase tracking-wide px-2 py-0.5 rounded ' +
+              (activo ? "bg-neutral-900 text-emerald-400 border border-emerald-900/50" : "bg-neutral-900 text-neutral-500") +
+              ' font-medium">' + (activo ? "Activo" : "Inactivo") + "</span>" +
+          "</div>" +
+          '<div class="flex items-center justify-between pt-1">' +
+            '<div class="flex items-center gap-2">' +
+              '<span class="text-xs text-neutral-500">Ruta:</span>' +
+              '<select class="bg-neutral-950 border border-neutral-800 text-neutral-200 text-xs rounded px-2 py-1 focus:outline-none focus:border-neutral-600 cursor-pointer" ' +
+                'onchange="guardarCambioRutaConductor(\'' + escaparHtml(c.usuario_correo) + '\', this.value)">' +
+                '<option value="Barranca"' + (rutaCorta === "Barranca" ? " selected" : "") + ">Barranca</option>" +
+                '<option value="Supe"' + (rutaCorta === "Supe" ? " selected" : "") + ">Supe</option>" +
+                '<option value="Paramonga"' + (rutaCorta === "Paramonga" ? " selected" : "") + ">Paramonga</option>" +
+              "</select>" +
+            "</div>" +
+            '<button type="button" class="text-xs text-neutral-300 hover:text-white px-2.5 py-1 rounded border border-neutral-800 hover:border-neutral-600 transition-colors cursor-pointer" ' +
+              'onclick="alternarEstadoConductor(\'' + escaparHtml(c.usuario_correo) + '\')">' +
+              (activo ? "Desactivar" : "Activar") +
+            "</button>" +
+          "</div>" +
+        "</div>"
+      );
+    })
+    .join("");
+}
+
+async function guardarCambioRutaConductor(correo, rutaCorta) {
+  var c = conductoresAdminCache.find(function (x) { return x.usuario_correo === correo; });
+  var cfg = MAPA_RUTAS_ADMIN[rutaCorta] || MAPA_RUTAS_ADMIN.Barranca;
+  if (!c) return;
+
+  var ok = await KeiselAPI.guardarConductorAdmin({
+    usuario_correo: c.usuario_correo,
+    nombre_completo: c.nombre_completo,
+    ruta_asignada: cfg.ruta,
+    placa_unidad: cfg.placa,
+    bus_rastreo_id: cfg.busId,
+    activo: c.activo ? 1 : 0,
+  });
+  if (ok) {
+    showToast("Ruta actualizada a " + rutaCorta);
+    cargarConductoresAdmin();
+  } else {
+    showToast("Error guardando ruta en SQL Server");
+  }
+}
+
+async function alternarEstadoConductor(correo) {
+  var c = conductoresAdminCache.find(function (x) { return x.usuario_correo === correo; });
+  if (!c) return;
+  var nuevoEstado = c.activo ? 0 : 1;
+
+  var ok = await KeiselAPI.guardarConductorAdmin({
+    usuario_correo: c.usuario_correo,
+    nombre_completo: c.nombre_completo,
+    ruta_asignada: c.ruta_asignada,
+    placa_unidad: c.placa_unidad,
+    bus_rastreo_id: c.bus_rastreo_id || "bus_keisel_1",
+    activo: nuevoEstado,
+  });
+  if (ok) {
+    showToast(nuevoEstado ? "Conductor activado" : "Conductor desactivado");
+    cargarConductoresAdmin();
+  } else {
+    showToast("Error actualizando estado en SQL Server");
+  }
+}
+
+async function actualizarEstadoBusesEnVivo() {
+  if (typeof KeiselAPI === "undefined") return;
+  var datos = await KeiselAPI.obtenerGps();
+  if (!Array.isArray(datos)) return;
+
+  var mapa = {
+    bus_keisel_1: 1,
+    bus_keisel_2: 2,
+    bus_keisel_3: 3,
+  };
+
+  datos.forEach(function (b) {
+    var num = mapa[b.id];
+    if (!num) return;
+    var badge = document.getElementById("bus-state-" + num);
+    var card = document.getElementById("bus-card-" + num);
+    var enRuta = Boolean(b.en_ruta) && b.latitud !== null && b.longitud !== null;
+
+    if (badge) {
+      badge.textContent = enRuta ? "EN RUTA" : "DESCONECTADO";
+      badge.className = enRuta
+        ? "text-[11px] tracking-wide uppercase px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/60 font-medium"
+        : "text-[11px] tracking-wide uppercase px-2 py-0.5 rounded bg-neutral-900 text-neutral-500 font-medium";
+    }
+    if (card) {
+      if (enRuta) card.classList.remove("opacity-60");
+      else card.classList.add("opacity-60");
+    }
+  });
+}
+
+function iniciarMonitoreoBusesAdmin() {
+  detenerMonitoreoBusesAdmin();
+  actualizarEstadoBusesEnVivo();
+  adminBusesTimer = setInterval(actualizarEstadoBusesEnVivo, 3000);
+}
+
+function detenerMonitoreoBusesAdmin() {
+  if (adminBusesTimer) {
+    clearInterval(adminBusesTimer);
+    adminBusesTimer = null;
+  }
+}

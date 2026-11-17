@@ -122,4 +122,41 @@ const KeiselAPI = {
       return false;
     }
   },
+
+  /**
+   * Lista los conductores sincronizados desde AD en KeiselDB (requiere token ADMIN)
+   */
+  obtenerConductoresAdmin: async function () {
+    var headers = {};
+    try {
+      var token = sessionStorage.getItem("keisel_admin_token");
+      if (token) headers["Authorization"] = "Bearer " + token;
+    } catch (e) {}
+    var response = await this.request("/admin/conductores", {
+      method: "GET",
+      headers: headers,
+      cache: "no-store",
+      timeout: 4500,
+    });
+    if (!response.ok) return null;
+    return await response.json();
+  },
+
+  /**
+   * Actualiza la asignación operativa (ruta, bus, placa, activo) de un conductor en KeiselDB
+   */
+  guardarConductorAdmin: async function (datos) {
+    var headers = { "Content-Type": "application/json" };
+    try {
+      var token = sessionStorage.getItem("keisel_admin_token");
+      if (token) headers["Authorization"] = "Bearer " + token;
+    } catch (e) {}
+    var response = await this.request("/admin/conductor", {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify(datos),
+      timeout: 4500,
+    });
+    return response.ok;
+  },
 };
