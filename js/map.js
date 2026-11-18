@@ -236,22 +236,8 @@ var confirmacionesMovUser = 0;
 
 var UMBRAL_MOVIMIENTO_METROS = 8.0;
 
-var origenVistaMapa = null;
-
-function verMapaDesdeAdmin() {
-  origenVistaMapa = "admin";
-
-  navegarA("mapa");
-}
-
 function retrocederDesdeMapa() {
-  if (origenVistaMapa === "admin" || esAdminAutenticado) {
-    origenVistaMapa = null;
-
-    navegarA("admin");
-  } else {
-    navegarA("inicio");
-  }
+  navegarA("inicio");
 }
 
 // --- UBICACIÓN DEL ESTUDIANTE: PUNTO BLANCO LIMPIO Y EXACTO ---
