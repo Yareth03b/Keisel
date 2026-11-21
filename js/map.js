@@ -1,9 +1,3 @@
-/**
- * Keisel - Motor de Mapa Leaflet y Telemetría en Tiempo Real
- */
-
-// --- MAPA LEAFLET EN TIEMPO REAL (OPENSTREETMAP OSCURO - CERO WATERMARK) ---
-
 var map = null;
 
 var busMarker = null;
@@ -40,9 +34,7 @@ function initLeafletMap() {
 
     attributionControl: true,
   });
-
-  // Capa oficial de OpenStreetMap
-
+  
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
 
@@ -562,7 +554,7 @@ function actualizarBusesActivos(busesList) {
   if (activeCount === 0) {
     busPosActual = null;
 
-    if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-neutral-600";
+    if (dot) dot.className = "estado-dot";
 
     if (status) status.innerText = "SIN BUS EN RUTA";
 
@@ -572,7 +564,7 @@ function actualizarBusesActivos(busesList) {
       badge.innerText = "DESCONECTADO";
 
       badge.className =
-        "text-[9px] font-bold text-neutral-400 bg-neutral-800 px-2 py-0.5 rounded-full tracking-wider uppercase";
+        "badge-vivo";
     }
 
     if (nameEl) nameEl.innerText = "Bus Universitario";
@@ -587,7 +579,7 @@ function actualizarBusesActivos(busesList) {
 
     busPosActual = [firstBus.lat, firstBus.lng];
 
-    if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-white animate-pulse";
+    if (dot) dot.className = "estado-dot estado-dot--activo";
 
     if (status) status.innerText = "1 BUS EN RUTA";
 
@@ -597,7 +589,7 @@ function actualizarBusesActivos(busesList) {
       badge.innerText = "EN VIVO";
 
       badge.className =
-        "text-[9px] font-bold text-black bg-white px-2 py-0.5 rounded-full tracking-wider uppercase";
+        "badge-vivo badge-vivo--activo";
     }
 
     if (nameEl) nameEl.innerText = firstBus.info.nombre;
@@ -612,7 +604,7 @@ function actualizarBusesActivos(busesList) {
 
     busPosActual = [firstBus.lat, firstBus.lng];
 
-    if (dot) dot.className = "w-2.5 h-2.5 rounded-full bg-white animate-pulse";
+    if (dot) dot.className = "estado-dot estado-dot--activo";
 
     if (status) status.innerText = activeCount + " BUSES EN RUTA";
 
@@ -622,7 +614,7 @@ function actualizarBusesActivos(busesList) {
       badge.innerText = activeCount + " EN VIVO";
 
       badge.className =
-        "text-[9px] font-bold text-black bg-white px-2 py-0.5 rounded-full tracking-wider uppercase";
+        "badge-vivo badge-vivo--activo";
     }
 
     if (nameEl) nameEl.innerText = activeCount + " Buses en Ruta";
@@ -645,7 +637,7 @@ function actualizarBusesActivos(busesList) {
 
       var btnTodos = document.createElement("button");
       btnTodos.className =
-        "text-[10px] bg-white/10 hover:bg-white/20 text-white font-bold px-2 py-0.5 rounded-lg transition-all cursor-pointer";
+        "chip-bus";
       btnTodos.textContent = "Todos";
       btnTodos.addEventListener("click", function () {
         centrarEnBus();
@@ -655,7 +647,7 @@ function actualizarBusesActivos(busesList) {
       idsActivos.forEach(function (id) {
         var btnBus = document.createElement("button");
         btnBus.className =
-          "text-[10px] bg-white/10 hover:bg-white/20 text-white font-bold px-2 py-0.5 rounded-lg transition-all cursor-pointer";
+          "chip-bus";
         btnBus.textContent = busMarkers[id].info.nombre;
         btnBus.addEventListener("click", function () {
           centrarEnBus(id);

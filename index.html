@@ -1,5 +1,5 @@
 ﻿<!doctype html>
-<html class="h-full bg-black dark" lang="es">
+<html class="dark" lang="es">
   <head>
     <meta charset="utf-8" />
     <meta
@@ -15,7 +15,6 @@
     <meta name="color-scheme" content="only dark" />
     <meta name="supported-color-schemes" content="dark" />
     <title>Keisel - Sistema de Transporte Universitario</title>
-
     <link
       rel="apple-touch-icon"
       sizes="180x180"
@@ -41,8 +40,6 @@
     />
     <link rel="shortcut icon" href="assets/icons/favicon.ico?v=6" />
     <link rel="manifest" href="site.webmanifest?v=6" />
-
-    <!-- Tipografías e Iconos -->
     <link href="https://fonts.googleapis.com" rel="preconnect" />
     <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
     <link
@@ -58,24 +55,12 @@
       onload="this.media = 'all'"
     />
 
-    <!-- Librerías de Mapa y Estilos -->
-    <script src="assets/tailwind.js"></script>
-    <script>
-      if (!window.tailwind) {
-        document.write(
-          '<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"><\/script>',
-        );
-      }
-    </script>
     <link rel="stylesheet" href="assets/leaflet.css" />
     <script src="assets/leaflet.js"></script>
-
-    <!-- Estilos CSS Modulares de Keisel -->
     <link rel="stylesheet" href="css/styles.css" />
   </head>
-  <body
-    class="h-full bg-black text-white flex flex-col justify-between selection:bg-white selection:text-black select-none overflow-hidden"
-  >
+
+  <body class="keisel-body">
     <!-- ====================================================================== -->
     <!-- MAPA PRINCIPAL (LEAFLET EN EL FONDO)                                  -->
     <!-- ====================================================================== -->
@@ -84,40 +69,30 @@
     <!-- ====================================================================== -->
     <!-- VISTA 1: INICIO (ESTUDIANTES)                                         -->
     <!-- ====================================================================== -->
-    <div
-      id="vista-inicio"
-      class="fixed inset-0 z-30 flex flex-col items-center justify-center bg-black overflow-y-auto px-4 py-8"
-    >
-      <main
-        class="w-full max-w-[390px] flex flex-col items-center mx-auto space-y-6"
-      >
+    <div id="vista-inicio" class="vista-inicio">
+      <main class="inicio-contenedor">
         <!-- Logo Oficial Keisel en Vector Blanco/Dark -->
-        <header
-          class="w-full flex flex-col items-center justify-center pt-2 pb-2"
-          data-purpose="brand-header"
-        >
+        <header class="inicio-header" data-purpose="brand-header">
           <img
             src="assets/brand/logo_keisel_dark.svg?v=6"
             alt="Keisel Logo"
-            class="h-24 sm:h-28 w-auto max-w-[280px] object-contain drop-shadow-lg"
+            class="inicio-logo"
           />
         </header>
 
-        <!-- TARJETA 1: ESTUDIANTES (Sin texto extra abajo) -->
-        <section class="w-full" data-purpose="card-estudiantes-wrapper">
+        <!-- TARJETA 1: ESTUDIANTES -->
+        <section class="card-estudiantes-wrap" data-purpose="card-estudiantes-wrapper">
           <div
             onclick="navegarA('mapa')"
-            class="selection-card w-full h-[185px] rounded-[30px] p-6 flex flex-col justify-between cursor-pointer"
+            class="card-estudiantes"
             role="button"
             tabindex="0"
             aria-label="Acceder como Estudiante"
           >
-            <div class="w-full flex items-center justify-between">
-              <div
-                class="w-13 h-13 rounded-2xl bg-[#27272a] flex items-center justify-center shadow-inner"
-              >
+            <div class="card-estudiantes-top">
+              <div class="card-icono-caja">
                 <svg
-                  class="w-7 h-7 text-white"
+                  class="card-icono-svg"
                   fill="none"
                   stroke="currentColor"
                   stroke-linecap="round"
@@ -145,11 +120,9 @@
                   ></circle>
                 </svg>
               </div>
-              <div
-                class="w-7 h-7 rounded-full bg-white flex items-center justify-center shadow-sm"
-              >
+              <div class="card-check-circulo">
                 <svg
-                  class="w-4 h-4 text-black stroke-[3.5]"
+                  class="card-check-svg"
                   fill="none"
                   stroke="currentColor"
                   stroke-linecap="round"
@@ -160,12 +133,8 @@
                 </svg>
               </div>
             </div>
-            <div class="w-full pb-1">
-              <span
-                class="block text-[32px] font-black text-white tracking-tight leading-none"
-              >
-                Estudiantes
-              </span>
+            <div class="card-titulo-wrap">
+              <span class="card-titulo">Estudiantes</span>
             </div>
           </div>
         </section>
@@ -175,22 +144,17 @@
     <!-- ====================================================================== -->
     <!-- VISTA 2: MAPA DE ESTUDIANTES EN VIVO (HUD DE SEGUIMIENTO)              -->
     <!-- ====================================================================== -->
-    <div
-      id="vista-mapa"
-      class="hidden fixed inset-0 z-20 pointer-events-none flex flex-col justify-between p-4 box-border"
-    >
+    <div id="vista-mapa" class="vista-mapa hidden">
       <!-- Barra Superior Flotante -->
-      <header class="pointer-events-auto w-full max-w-md mx-auto pt-safe">
-        <div
-          class="h-14 w-full px-4 rounded-full bg-[#141416]/95 backdrop-blur-md border border-[#26262B] flex items-center justify-between shadow-2xl"
-        >
+      <header class="hud-header pt-safe">
+        <div class="hud-barra">
           <button
             onclick="retrocederDesdeMapa()"
-            class="flex items-center gap-2 text-white hover:text-neutral-300 transition-colors py-1 pl-0.5 cursor-pointer"
+            class="btn-volver"
             type="button"
           >
             <svg
-              class="w-5 h-5 text-[#A0A0A0]"
+              class="btn-volver-icono"
               fill="none"
               stroke="currentColor"
               stroke-width="2.2"
@@ -201,53 +165,41 @@
               <path d="M19 12H5"></path>
               <path d="M12 19l-7-7 7-7"></path>
             </svg>
-            <span
-              id="btn-mapa-back-text"
-              class="text-sm font-bold tracking-tight text-white"
+            <span id="btn-mapa-back-text" class="btn-volver-texto"
               >Estudiantes</span
             >
           </button>
 
-          <div
-            class="flex items-center gap-2 bg-[#222222] px-3.5 py-1.5 rounded-full border border-white/20"
-          >
-            <span
-              id="live-dot"
-              class="w-2 h-2 rounded-full bg-[#8E8E93]"
-            ></span>
-            <span
-              id="header-status"
-              class="text-xs font-bold text-white uppercase tracking-wider"
-              >SIN BUS EN RUTA</span
-            >
+          <div class="estado-pill">
+            <span id="live-dot" class="estado-dot"></span>
+            <span id="header-status" class="estado-texto">SIN BUS EN RUTA</span>
           </div>
 
           <button
             onclick="abrirModalUbicacion()"
-            class="w-8 h-8 rounded-full bg-neutral-800 hover:bg-neutral-700 text-neutral-300 flex items-center justify-center active:scale-95 transition-all cursor-pointer"
+            class="btn-ajustes"
             title="Configurar permiso de ubicación"
+            type="button"
           >
-            <span class="material-symbols-outlined text-[16px]">tune</span>
+            <span class="material-symbols-outlined icono-16">tune</span>
           </button>
         </div>
       </header>
 
       <!-- Controles Laterales Flotantes y Tarjeta Inferior Desplegable -->
-      <div
-        class="w-full max-w-md mx-auto flex flex-col gap-3 pointer-events-none pb-safe"
-      >
-        <div class="flex justify-end pointer-events-none">
-          <div class="flex flex-col gap-2 pointer-events-auto">
+      <div class="hud-inferior pb-safe">
+        <div class="controles-mapa-wrap">
+          <div class="controles-mapa">
             <!-- 1. Botón Centrar Mi Ubicación -->
             <button
               aria-label="Centrar en mi ubicación"
-              class="w-11 h-11 rounded-full bg-[#141416]/95 backdrop-blur-md border border-[#26262B] text-white flex items-center justify-center shadow-2xl hover:bg-[#202024] active:scale-95 transition-all cursor-pointer"
+              class="btn-mapa-circular"
               onclick="centrarEnMiUbicacion()"
               type="button"
               title="Ir a mi ubicación"
             >
               <svg
-                class="w-5 h-5 text-white"
+                class="btn-mapa-icono"
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
@@ -269,13 +221,13 @@
               id="btn-centrar-bus"
               style="display: none"
               aria-label="Centrar en el Bus"
-              class="w-11 h-11 rounded-full bg-[#141416]/95 backdrop-blur-md border border-[#26262B] text-white flex items-center justify-center shadow-2xl hover:bg-[#202024] active:scale-95 transition-all cursor-pointer"
+              class="btn-mapa-circular"
               onclick="centrarEnBus()"
               type="button"
               title="Centrar mapa en el bus"
             >
               <svg
-                class="w-5 h-5 text-white"
+                class="btn-mapa-icono"
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
@@ -305,17 +257,15 @@
             </button>
 
             <!-- 3 y 4. Controles de Zoom -->
-            <div
-              class="rounded-2xl bg-[#141416]/95 backdrop-blur-md border border-[#26262B] flex flex-col items-center overflow-hidden shadow-2xl"
-            >
+            <div class="grupo-zoom">
               <button
                 aria-label="Acercar"
-                class="w-11 h-10 text-white flex items-center justify-center hover:bg-[#202024] active:scale-95 transition-all border-b border-[#242429] cursor-pointer"
+                class="btn-zoom btn-zoom--superior"
                 onclick="if (map) map.zoomIn();"
                 type="button"
               >
                 <svg
-                  class="w-4 h-4 text-white"
+                  class="btn-zoom-icono"
                   fill="none"
                   stroke="currentColor"
                   stroke-width="2.5"
@@ -328,12 +278,12 @@
               </button>
               <button
                 aria-label="Alejar"
-                class="w-11 h-10 text-white flex items-center justify-center hover:bg-[#202024] active:scale-95 transition-all cursor-pointer"
+                class="btn-zoom"
                 onclick="if (map) map.zoomOut();"
                 type="button"
               >
                 <svg
-                  class="w-4 h-4 text-white"
+                  class="btn-zoom-icono"
                   fill="none"
                   stroke="currentColor"
                   stroke-width="2.5"
@@ -351,21 +301,16 @@
         <div
           id="btn-desplegar-buses"
           style="display: flex"
-          class="pointer-events-auto flex justify-end"
+          class="btn-desplegar-wrap"
         >
           <button
             onclick="expandirPanelBuses()"
-            class="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center shadow-2xl border-2 border-black hover:bg-neutral-200 active:scale-95 transition-all cursor-pointer relative group"
-            style="
-              width: 44px;
-              height: 44px;
-              border-radius: 9999px;
-              aspect-ratio: 1 / 1;
-            "
+            class="btn-desplegar-bus"
             title="Ver información del bus"
+            type="button"
           >
             <svg
-              class="w-5 h-5"
+              class="btn-desplegar-icono"
               fill="none"
               stroke="#000000"
               stroke-width="2.2"
@@ -392,29 +337,22 @@
               <path d="M6 19v2"></path>
               <path d="M18 19v2"></path>
             </svg>
-            <span
-              class="absolute -top-0.5 -right-0.5 w-3 h-3 bg-white border-2 border-black rounded-full animate-ping"
-            ></span>
-            <span
-              class="absolute -top-0.5 -right-0.5 w-3 h-3 bg-white border-2 border-black rounded-full"
-            ></span>
+            <span class="punto-ping"></span>
+            <span class="punto-fijo"></span>
           </button>
         </div>
 
-        <!-- Tarjeta Flotante Inferior de Información del Bus (Compacta, Fila Única) -->
+        <!-- Tarjeta Flotante Inferior de Información del Bus -->
         <div
           id="panel-tarjeta-bus"
           style="display: none"
-          class="w-full bg-[#141416]/95 backdrop-blur-xl border border-white/20 rounded-2xl px-4 py-3 shadow-2xl flex items-center justify-between gap-3 pointer-events-auto transition-all duration-300"
+          class="tarjeta-bus"
         >
           <!-- Izquierda: Ícono del Bus e Información Dinámica -->
-          <div class="flex items-center gap-3 min-w-0">
-            <div
-              class="w-10 h-10 rounded-xl bg-[#222222] text-white flex items-center justify-center shadow-md shrink-0"
-              id="bus-card-icon-bg"
-            >
+          <div class="tarjeta-bus-info">
+            <div class="tarjeta-bus-icono-box" id="bus-card-icon-bg">
               <svg
-                class="w-5 h-5 text-white"
+                class="tarjeta-bus-icono"
                 id="bus-card-icon"
                 fill="none"
                 stroke="currentColor"
@@ -443,41 +381,29 @@
                 <path d="M18 19v2"></path>
               </svg>
             </div>
-            <div class="min-w-0">
-              <p
-                class="text-sm font-extrabold text-white leading-tight truncate"
-                id="bus-main-name"
-              >
+            <div class="tarjeta-bus-textos">
+              <p class="tarjeta-bus-titulo" id="bus-main-name">
                 Bus Universitario
               </p>
-              <p
-                class="text-[11px] text-neutral-400 font-medium truncate"
-                id="bus-subtext"
-              >
+              <p class="tarjeta-bus-subtitulo" id="bus-subtext">
                 Esperando señal GPS activa...
               </p>
             </div>
           </div>
 
           <!-- Derecha: Botón Seguir Bus, Badge EN VIVO y Botón Minimizar -->
-          <div class="flex items-center gap-2 shrink-0">
-            <div
-              id="bus-chips-container"
-              class="hidden sm:flex items-center gap-1"
-            ></div>
-            <span
-              class="text-[9px] font-bold text-neutral-400 bg-neutral-800 px-2 py-0.5 rounded-full tracking-wider uppercase"
-              id="bus-live-badge"
-              >DESCONECTADO</span
-            >
+          <div class="tarjeta-bus-acciones">
+            <div id="bus-chips-container" class="chips-buses"></div>
+            <span class="badge-vivo" id="bus-live-badge">DESCONECTADO</span>
             <button
               id="btn-seguir-bus"
               onclick="centrarEnBus()"
-              class="text-xs font-bold text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1 active:scale-95"
+              class="btn-seguir-bus"
               title="Centrar bus en el mapa"
+              type="button"
             >
               <svg
-                class="w-3.5 h-3.5 text-white"
+                class="btn-seguir-icono"
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2.2"
@@ -492,11 +418,12 @@
             </button>
             <button
               onclick="achicarPanelBuses()"
-              class="w-7 h-7 rounded-full bg-neutral-800 hover:bg-neutral-700 text-neutral-300 flex items-center justify-center active:scale-95 transition-all cursor-pointer"
+              class="btn-minimizar"
               title="Minimizar panel"
+              type="button"
             >
               <svg
-                class="w-4 h-4"
+                class="btn-minimizar-icono"
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2.5"
@@ -511,11 +438,8 @@
     </div>
 
     <!-- Notificación Toast Flotante -->
-    <div
-      id="toast-notify"
-      class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-[#1C1E24] text-white text-xs px-4 py-2.5 rounded-full border border-neutral-700 shadow-2xl opacity-0 translate-y-2 pointer-events-none transition-all duration-300 flex items-center gap-2"
-    >
-      <span class="material-symbols-outlined text-[16px] text-white">info</span>
+    <div id="toast-notify" class="toast-notify">
+      <span class="material-symbols-outlined toast-icono">info</span>
       <span id="toast-msg">Notificación</span>
     </div>
 
@@ -526,40 +450,36 @@
     <script src="js/app.js"></script>
 
     <!-- MODAL DE CONFIGURACIÓN DE PERMISO DE UBICACIÓN -->
-    <div
-      id="modal-permiso-ubicacion"
-      class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-    >
-      <div
-        class="bg-[#141416]/95 border border-[#26262B] rounded-3xl p-6 max-w-sm w-full shadow-2xl text-center flex flex-col items-center"
-      >
-        <div
-          class="w-14 h-14 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center mb-4"
-        >
-          <span class="material-symbols-outlined text-[32px]">near_me</span>
+    <div id="modal-permiso-ubicacion" class="modal-overlay hidden">
+      <div class="modal-ubicacion">
+        <div class="modal-icono-wrap">
+          <span class="material-symbols-outlined modal-icono">near_me</span>
         </div>
-        <h3 class="text-lg font-bold text-white mb-2">Permiso de Ubicación</h3>
-        <p class="text-xs text-neutral-400 mb-6 leading-relaxed">
+        <h3 class="modal-titulo">Permiso de Ubicación</h3>
+        <p class="modal-descripcion">
           Keisel requiere tu ubicación para mostrarte los paraderos más cercanos
           y la distancia exacta al bus. Puedes cambiar esta opción en cualquier
           momento.
         </p>
-        <div class="flex flex-col w-full gap-2.5">
+        <div class="modal-acciones">
           <button
             onclick="configurarPermisoUbicacion('siempre')"
-            class="w-full py-3 px-4 bg-white hover:bg-neutral-200 text-black font-bold text-xs rounded-xl transition-all active:scale-95 cursor-pointer"
+            class="btn-modal-primario"
+            type="button"
           >
             Permitir siempre
           </button>
           <button
             onclick="configurarPermisoUbicacion('momento')"
-            class="w-full py-3 px-4 bg-neutral-800 hover:bg-neutral-700 text-white font-semibold text-xs rounded-xl border border-neutral-700 transition-all active:scale-95 cursor-pointer"
+            class="btn-modal-secundario"
+            type="button"
           >
             Solo en este momento
           </button>
           <button
             onclick="cerrarModalUbicacion()"
-            class="w-full py-2.5 px-4 text-neutral-400 hover:text-white font-medium text-xs transition-colors cursor-pointer"
+            class="btn-modal-terciario"
+            type="button"
           >
             Ahora no
           </button>

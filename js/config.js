@@ -38,13 +38,11 @@ function showToast(msg) {
   if (!toast || !toastMsg) return;
 
   toastMsg.textContent = msg;
-  toast.classList.remove("opacity-0", "translate-y-2");
-  toast.classList.add("opacity-100", "translate-y-0");
+  toast.classList.add("toast-visible");
 
   if (window.toastTimeout) clearTimeout(window.toastTimeout);
   window.toastTimeout = setTimeout(function () {
-    toast.classList.add("opacity-0", "translate-y-2");
-    toast.classList.remove("opacity-100", "translate-y-0");
+    toast.classList.remove("toast-visible");
   }, 2600);
 }
 window.showToast = showToast;
