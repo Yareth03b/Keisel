@@ -15,6 +15,8 @@ var userMarker = null;
 
 var userAccuracyCircle = null;
 
+var rutaLayerGrupo = null;
+
 var recorridoRutaLayer = null;
 
 var busSeleccionadoId = null;
@@ -131,23 +133,27 @@ async function preajustarBusesAPista(busesList) {
   return copia;
 }
 
-function limpiarEtaBus() {
+function limpiarRutaMapa() {
+  if (rutaLayerGrupo && map) {
+    map.removeLayer(rutaLayerGrupo);
+  }
+  rutaLayerGrupo = null;
   ultimaEtaTexto = "";
   ultimaConsultaRuta.busId = null;
 }
 
-function actualizarEtaBus(busId, busLat, busLng) {
+function dibujarRutaOSRM(busId, busLat, busLng) {
   var inicio = inicioTransmisionPorBus.get(busId);
   if (!map || typeof L === "undefined" || !userPosActual || inicio === undefined ||
       performance.now() - inicio < KeiselConfig.ESPERA_RUTA_EN_VIVO_MS) {
-    limpiarEtaBus();
+    limpiarRutaMapa();
     return;
   }
   var uLat = userPosActual[0];
   var uLng = userPosActual[1];
   var distDirecta = calcularDistanciaMetros(busLat, busLng, uLat, uLng);
   if (distDirecta < 25) {
-    limpiarEtaBus();
+    limpiarRutaMapa();
     ultimaEtaTexto = "A menos de 25 m";
     return;
   }
@@ -181,7 +187,7 @@ function actualizarEtaBus(busId, busLat, busLng) {
     "https://router.project-osrm.org/route/v1/driving/" +
     busLng.toFixed(6) + "," + busLat.toFixed(6) + ";" +
     uLng.toFixed(6) + "," + uLat.toFixed(6) +
-    "?overview=false";
+    "?overview=full&geometries=geojson";
 
   var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
   var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 5000) : null;
@@ -197,6 +203,29 @@ function actualizarEtaBus(busId, busLat, busLng) {
       if (!busMarkers[busId] || ultimaConsultaRuta !== consulta || consulta.busId !== busId) return;
 
       var ruta = data.routes[0];
+      var coords = ruta.geometry.coordinates.map(function (c) {
+        return [c[1], c[0]];
+      });
+
+      if (rutaLayerGrupo) map.removeLayer(rutaLayerGrupo);
+
+      var sombra = L.polyline(coords, {
+        color: "#09090b",
+        weight: 8,
+        opacity: 0.55,
+        lineCap: "round",
+        lineJoin: "round",
+      });
+      var linea = L.polyline(coords, {
+        color: "#38bdf8",
+        weight: 4.5,
+        opacity: 0.95,
+        lineCap: "round",
+        lineJoin: "round",
+      });
+
+      rutaLayerGrupo = L.layerGroup([sombra, linea]).addTo(map);
+
       var distKm = ruta.distance >= 1000
         ? (ruta.distance / 1000).toFixed(1) + " km"
         : Math.round(ruta.distance) + " m";
@@ -246,15 +275,27 @@ function initLeafletMap() {
     zoom: KeiselConfig.MAP.DEFAULT_ZOOM,
 
     zoomControl: false,
+
+    attributionControl: false,
   });
+  
+  if (map.attributionControl) {
+    map.attributionControl.setPrefix(false);
+  }
 
-  map.attributionControl.setPrefix(false);
+  var hostActual = (window.location && window.location.hostname) || "";
+  var usarProxyRhel =
+    hostActual === "mapa.keisel.me" || hostActual === "192.168.50.252";
+  var urlTiles =
+    usarProxyRhel && typeof KeiselConfig !== "undefined" && KeiselConfig.MAP && KeiselConfig.MAP.PROXY_TILE_LAYER
+      ? KeiselConfig.MAP.PROXY_TILE_LAYER
+      : (typeof KeiselConfig !== "undefined" && KeiselConfig.MAP && KeiselConfig.MAP.TILE_LAYER) ||
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
 
-  cargarMapaLocal(map).catch(function (error) { console.warn(error.message); });
-  L.tileLayer(KeiselConfig.MAP.TILE_LAYER, {
-    zIndex: 2,
-    maxZoom: KeiselConfig.MAP.MAX_ZOOM,
-    attribution: KeiselConfig.MAP.ATTRIBUTION,
+  L.tileLayer(urlTiles, {
+    maxZoom: 19,
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(map);
 
   iniciarUbicacionUsuario();
@@ -413,7 +454,7 @@ function coincideFiltroRuta(b) {
 
 function seleccionarFiltroRuta(ruta) {
   var nuevoFiltro = (ruta || "todos").toLowerCase();
-  if (nuevoFiltro !== rutaFiltroActiva) limpiarEtaBus();
+  if (nuevoFiltro !== rutaFiltroActiva) limpiarRutaMapa();
   rutaFiltroActiva = nuevoFiltro;
   centrarUsuarioPendiente = false;
 
@@ -503,7 +544,7 @@ function centrarEnBus(especificoId) {
     busSeleccionadoId = especificoId;
     var target = busMarkers[especificoId];
 
-    actualizarEtaBus(especificoId, target.lat, target.lng);
+    dibujarRutaOSRM(especificoId, target.lat, target.lng);
     map.flyTo([target.lat, target.lng], 17, { animate: true, duration: 0.8 });
 
     target.marker.openPopup();
@@ -754,7 +795,7 @@ function procesarLecturaGpsUsuario(pos) {
 
   if (busSeleccionadoId && busMarkers[busSeleccionadoId]) {
     var bAct = busMarkers[busSeleccionadoId];
-    actualizarEtaBus(busSeleccionadoId, bAct.lat, bAct.lng);
+    dibujarRutaOSRM(busSeleccionadoId, bAct.lat, bAct.lng);
   }
 }
 
@@ -1037,7 +1078,7 @@ function actualizarBusesActivos(busesList, desdeFiltro) {
   if (activeCount === 0) {
     busPosActual = null;
     busSeleccionadoId = null;
-    limpiarEtaBus();
+    limpiarRutaMapa();
 
     if (dot) dot.className = "estado-dot";
 
@@ -1095,7 +1136,7 @@ function actualizarBusesActivos(busesList, desdeFiltro) {
     if (nameEl) nameEl.innerText = firstBus.info.nombre;
 
     busSeleccionadoId = firstId;
-    actualizarEtaBus(firstId, firstBus.lat, firstBus.lng);
+    dibujarRutaOSRM(firstId, firstBus.lat, firstBus.lng);
     if (sub) {
       sub.innerText = ultimaEtaTexto
         ? firstBus.info.ruta + " · " + ultimaEtaTexto
@@ -1112,7 +1153,7 @@ function actualizarBusesActivos(busesList, desdeFiltro) {
     var firstBus = busMarkers[busSeleccionadoId];
 
     busPosActual = [firstBus.lat, firstBus.lng];
-    actualizarEtaBus(busSeleccionadoId, firstBus.lat, firstBus.lng);
+    dibujarRutaOSRM(busSeleccionadoId, firstBus.lat, firstBus.lng);
 
     if (dot) dot.className = "estado-dot estado-dot--activo";
 
