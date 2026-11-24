@@ -14,14 +14,14 @@ const KeiselConfig = {
     DEFAULT_ZOOM: 15,
     MIN_ZOOM: 12,
     MAX_ZOOM: 19,
-    TILE_LAYER:
-      "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+    TILE_LAYER: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    PROXY_TILE_LAYER: "/osm-tiles/{z}/{x}/{y}.png",
     ATTRIBUTION:
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   },
 
   // Tiempos y sondeos (ms)
-  POLLING_INTERVAL_MS: 3000,
+  POLLING_INTERVAL_MS: 1500,
   REQUEST_TIMEOUT_MS: 4000,
 };
 

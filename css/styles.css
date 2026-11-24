@@ -1015,3 +1015,36 @@ button {
     transition: none;
   }
 }
+
+.leaflet-control-attribution {
+  background: rgba(255, 255, 255, 0.65) !important;
+  color: #52525b !important;
+  font-size: 9px !important;
+  padding: 1px 6px !important;
+  border-radius: 4px 0 0 0;
+  backdrop-filter: blur(4px);
+}
+
+.leaflet-control-attribution a {
+  color: #52525b !important;
+  text-decoration: none;
+}
+
+/* Haz direccional tipo brújula (linterna) para la ubicación del estudiante */
+.user-compass-beam {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 72px;
+  height: 72px;
+  margin-top: -36px;
+  margin-left: -36px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 250ms ease-out;
+  will-change: transform;
+}
+
+.user-compass-beam--activo {
+  opacity: 1;
+}
