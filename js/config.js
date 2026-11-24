@@ -2,6 +2,12 @@
  * Keisel - Configuración Global del Sistema
  * Universidad Nacional de Barranca (UNAB)
  */
+const tramoUnabPanamericana = [
+  [-10.727196, -77.773131], // Salida de la UNAB
+  [-10.728987, -77.777818],
+  [-10.737929, -77.771476],
+];
+
 const KeiselConfig = {
   // Endpoints del Backend Node.js / Express
   API_BASE_URL: "/api",
@@ -10,7 +16,7 @@ const KeiselConfig = {
 
   // Configuración del Mapa Leaflet
   MAP: {
-    DEFAULT_CENTER: [-10.749, -77.76],
+    DEFAULT_CENTER: [-10.7516, -77.761],
     DEFAULT_ZOOM: 15,
     MIN_ZOOM: 12,
     MAX_ZOOM: 19,
@@ -20,7 +26,38 @@ const KeiselConfig = {
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   },
 
+  RUTAS: {
+    barranca: {
+      // Cada punto contiene latitud, longitud y, si es un paradero, su nombre.
+      puntos: [
+        ...tramoUnabPanamericana,
+        [-10.747596, -77.763958],
+        [-10.747763, -77.764270, "Paradero Metro"],
+        [-10.748985, -77.766826],
+        [-10.752422, -77.765306],
+        [-10.755454, -77.763623, "Paradero Grau"],
+        [-10.760348, -77.760136],
+        [-10.759091, -77.758498],
+        [-10.756439, -77.755728, "Paradero Próceres"],
+        [-10.755973, -77.755452],
+        [-10.754934, -77.756341],
+        [-10.751870, -77.759001, "Paradero Maxi"],
+        [-10.749154, -77.761324],
+        [-10.743981, -77.765066],
+        [-10.744531, -77.766146],
+        [-10.743749, -77.767030],
+        [-10.741979, -77.768450],
+        ...tramoUnabPanamericana.slice().reverse(),
+      ],
+    },
+    // Centros de las capitales distritales según el directorio 2023 del INEI.
+    // https://www.inei.gob.pe/media/MenuRecursivo/publicaciones_digitales/Est/Lib1903/libro.pdf
+    supe: { centro: [-10.796111, -77.716111] },
+    paramonga: { centro: [-10.674722, -77.818056] },
+  },
+
   // Tiempos y sondeos (ms)
+  ESPERA_RUTA_EN_VIVO_MS: 30000,
   POLLING_INTERVAL_MS: 1500,
   REQUEST_TIMEOUT_MS: 4000,
 };

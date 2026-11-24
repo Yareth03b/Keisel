@@ -78,11 +78,11 @@ const KeiselAPI = {
         cache: "no-store",
         timeout: 2500,
       });
-      if (!response.ok) return [];
+      if (!response.ok) return null;
       var data = await response.json();
-      return Array.isArray(data) ? data : [];
+      return Array.isArray(data) ? data : null;
     } catch (err) {
-      return [];
+      return null;
     }
   },
 

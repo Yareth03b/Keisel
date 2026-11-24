@@ -116,6 +116,18 @@ button {
   background: #141416 !important;
 }
 
+.paradero-icono {
+  background: #6d28d9;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgb(0 0 0 / 55%);
+}
+
+.paradero-icono:focus-visible {
+  outline: 2px solid #141416;
+  outline-offset: 2px;
+}
+
 /* ==========================================================================
    3. VISTA 1: PANTALLA DE INICIO Y TARJETA DE ESTUDIANTES
    ========================================================================== */
@@ -302,6 +314,19 @@ button {
   grid-template-columns: repeat(4, 1fr);
   gap: 4px;
   box-shadow: 0 16px 32px -12px rgba(0, 0, 0, 0.6);
+}
+
+.mensaje-recorrido:not(:empty) {
+  width: fit-content;
+  max-width: 100%;
+  margin: 6px auto 0;
+  padding: 4px 10px;
+  border: 1px solid #26262b;
+  border-radius: 12px;
+  background-color: #141416;
+  color: #e4e4e7;
+  font-size: 11px;
+  text-align: center;
 }
 
 .btn-ruta {

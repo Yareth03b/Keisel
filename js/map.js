@@ -17,7 +17,11 @@ var userAccuracyCircle = null;
 
 var rutaLayerGrupo = null;
 
+var recorridoRutaLayer = null;
+
 var busSeleccionadoId = null;
+
+var inicioTransmisionPorBus = new Map();
 
 var ultimaConsultaRuta = { ts: 0, busId: null, busLat: null, busLng: null, userLat: null, userLng: null };
 
@@ -139,7 +143,9 @@ function limpiarRutaMapa() {
 }
 
 function dibujarRutaOSRM(busId, busLat, busLng) {
-  if (!map || typeof L === "undefined" || !userPosActual) {
+  var inicio = inicioTransmisionPorBus.get(busId);
+  if (!map || typeof L === "undefined" || !userPosActual || inicio === undefined ||
+      performance.now() - inicio < KeiselConfig.ESPERA_RUTA_EN_VIVO_MS) {
     limpiarRutaMapa();
     return;
   }
@@ -167,7 +173,7 @@ function dibujarRutaOSRM(busId, busLat, busLng) {
     return;
   }
 
-  ultimaConsultaRuta = {
+  var consulta = {
     ts: ahora,
     busId: busId,
     busLat: busLat,
@@ -175,6 +181,7 @@ function dibujarRutaOSRM(busId, busLat, busLng) {
     userLat: uLat,
     userLng: uLng,
   };
+  ultimaConsultaRuta = consulta;
 
   var url =
     "https://router.project-osrm.org/route/v1/driving/" +
@@ -193,7 +200,7 @@ function dibujarRutaOSRM(busId, busLat, busLng) {
     })
     .then(function (data) {
       if (!data || !data.routes || !data.routes.length || !map) return;
-      if (!busMarkers[busId]) return;
+      if (!busMarkers[busId] || ultimaConsultaRuta !== consulta || consulta.busId !== busId) return;
 
       var ruta = data.routes[0];
       var coords = ruta.geometry.coordinates.map(function (c) {
@@ -262,12 +269,10 @@ function initLeafletMap() {
 
   if (!mapEl || typeof L === "undefined") return;
 
-  var barrancaCentro = [-10.7516, -77.761];
-
   map = L.map("map", {
-    center: barrancaCentro,
+    center: KeiselConfig.MAP.DEFAULT_CENTER,
 
-    zoom: 15,
+    zoom: KeiselConfig.MAP.DEFAULT_ZOOM,
 
     zoomControl: false,
 
@@ -448,7 +453,10 @@ function coincideFiltroRuta(b) {
 }
 
 function seleccionarFiltroRuta(ruta) {
-  rutaFiltroActiva = (ruta || "todos").toLowerCase();
+  var nuevoFiltro = (ruta || "todos").toLowerCase();
+  if (nuevoFiltro !== rutaFiltroActiva) limpiarRutaMapa();
+  rutaFiltroActiva = nuevoFiltro;
+  centrarUsuarioPendiente = false;
 
   var botones = document.querySelectorAll("#filtro-rutas .btn-ruta");
   botones.forEach(function (btn) {
@@ -458,10 +466,64 @@ function seleccionarFiltroRuta(ruta) {
   });
 
   actualizarBusesActivos(ultimosBusesApi, true);
+  enfocarRutaFiltro(KeiselConfig.RUTAS[rutaFiltroActiva]);
+}
 
+function enfocarRutaFiltro(ruta) {
+  var mensaje = document.getElementById("mensaje-recorrido");
+  mensaje.textContent = "";
+  if (!map) return;
+
+  map.stop();
+  map.closePopup();
+  if (recorridoRutaLayer) {
+    map.removeLayer(recorridoRutaLayer);
+    recorridoRutaLayer = null;
+  }
+
+  if (ruta && ruta.puntos) {
+    mensaje.textContent = "Trazo referencial · Paraderos de " + ETIQUETAS_RUTA[rutaFiltroActiva];
+    dibujarRecorridoRuta(ruta.puntos);
+    return;
+  }
+
+  if (ruta) mensaje.textContent = "Recorrido y paraderos pendientes de confirmar";
   if (Object.keys(busMarkers).length > 0) {
     centrarEnBus();
+  } else if (ruta) {
+    map.setView(ruta.centro, 14, { animate: false });
+  } else {
+    map.setView(KeiselConfig.MAP.DEFAULT_CENTER, KeiselConfig.MAP.DEFAULT_ZOOM, { animate: false });
   }
+}
+
+function dibujarRecorridoRuta(puntos) {
+  var coordenadas = puntos.map(function ([lat, lng]) { return [lat, lng]; });
+  var linea = L.polyline(coordenadas, {
+    color: "#6d28d9",
+    weight: 4,
+    opacity: 0.9,
+    interactive: false,
+  });
+  recorridoRutaLayer = L.layerGroup([linea]).addTo(map);
+  linea.bringToBack();
+
+  var icono = L.divIcon({ className: "paradero-icono", iconSize: [14, 14] });
+  puntos.forEach(function ([lat, lng, nombre]) {
+    if (!nombre) return;
+    var marcador = L.marker([lat, lng], { icon: icono, title: nombre })
+      .bindPopup(escaparHtml(nombre))
+      .addTo(recorridoRutaLayer);
+    marcador.getElement().setAttribute("aria-label", nombre);
+  });
+
+  var header = document.querySelector(".hud-header");
+  map.fitBounds(linea.getBounds(), {
+    paddingTopLeft: [24, Math.ceil(header.getBoundingClientRect().bottom) + 16],
+    paddingBottomRight: [40, 76],
+    maxZoom: 16,
+    animate: false,
+  });
 }
 
 window.seleccionarFiltroRuta = seleccionarFiltroRuta;
@@ -522,6 +584,8 @@ var userWatchId = null;
 var mejorAccuracyUsuario = 999;
 
 var yaCentroUsuario = false;
+
+var centrarUsuarioPendiente = false;
 
 var confirmacionesMovUser = 0;
 
@@ -690,7 +754,9 @@ function procesarLecturaGpsUsuario(pos) {
 
     dibujarPuntoBlancoUsuario(lat, lng);
 
-    if (!yaCentroUsuario && map && !busPosActual) {
+    if (map && (centrarUsuarioPendiente ||
+        (!yaCentroUsuario && !busPosActual && rutaFiltroActiva === "todos"))) {
+      centrarUsuarioPendiente = false;
       yaCentroUsuario = true;
       map.flyTo(userPosActual, 17, { animate: true, duration: 1 });
     }
@@ -765,6 +831,7 @@ function iniciarUbicacionUsuario() {
 }
 
 function centrarEnMiUbicacion() {
+  centrarUsuarioPendiente = !userPosActual;
   if (userPosActual && map) {
     map.flyTo(userPosActual, 18, { animate: true, duration: 0.8 });
 
@@ -856,8 +923,21 @@ function actualizarBusesActivos(busesList, desdeFiltro) {
       }
     }
 
-    return coincideFiltroRuta(b);
+    return true;
   });
+
+  // Una respuesta válida actualiza los inicios de todos los buses, incluso los ocultos por el filtro.
+  if (!desdeFiltro && Array.isArray(busesList)) {
+    var ahora = performance.now();
+    var inicios = new Map();
+    validos.forEach(function (b) {
+      var id = b.id || b.bus_id || b.busId || "bus_keisel_1";
+      inicios.set(id, inicioTransmisionPorBus.get(id) ?? ahora);
+    });
+    inicioTransmisionPorBus = inicios;
+  }
+
+  validos = validos.filter(coincideFiltroRuta);
 
   var tsMax = 0;
   validos.forEach(function (b) {
@@ -1129,24 +1209,24 @@ function actualizarBusesActivos(busesList, desdeFiltro) {
   }
 }
 
-function ocultarBus() {
-  actualizarBusesActivos([]);
-}
-
 // --- TELEMETRÍA NATIVA: API NODE.JS + SQL SERVER (LAN / TAILSCALE) ---
 
+var numeroSondeoGps = 0;
+var ultimoSondeoGpsAplicado = 0;
+
 async function cargarPosicionApi() {
+  var sondeo = ++numeroSondeoGps;
+  var busesEnPista = null;
   try {
     var buses = await KeiselAPI.obtenerGps();
-    if (buses && buses.length > 0) {
-      var busesEnPista = await preajustarBusesAPista(buses);
-      actualizarBusesActivos(busesEnPista);
-    } else {
-      ocultarBus();
-    }
+    if (Array.isArray(buses)) busesEnPista = await preajustarBusesAPista(buses);
   } catch (err) {
-    ocultarBus();
+    // Un fallo de consulta no confirma que el conductor haya detenido la transmisión.
   }
+
+  if (sondeo <= ultimoSondeoGpsAplicado) return;
+  ultimoSondeoGpsAplicado = sondeo;
+  actualizarBusesActivos(busesEnPista);
 }
 
 function iniciarPollingGps() {
