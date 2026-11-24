@@ -173,6 +173,15 @@ function initLeafletMap() {
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(map);
 
+  var botonesRuta = document.querySelectorAll("#filtro-rutas .btn-ruta");
+  botonesRuta.forEach(function (btn) {
+    var activo = btn.getAttribute("data-ruta") === "barranca";
+    btn.classList.toggle("btn-ruta--activo", activo);
+    btn.setAttribute("aria-selected", activo ? "true" : "false");
+  });
+  enfocarRutaFiltro(KeiselConfig.RUTAS.barranca);
+  iniciarSimulacionBarranca();
+
   iniciarUbicacionUsuario();
 }
 
@@ -299,8 +308,21 @@ function aplicarDispersionVisual(buses) {
 
 var busMarkers = {};
 
-var rutaFiltroActiva = "todos";
+var rutaFiltroActiva = "barranca";
 var ultimosBusesApi = [];
+var simulacionBarranca = {
+  marker: null,
+  raf: null,
+  visible: false,
+  puntos: [],
+  tramo: 0,
+  avanceMs: 0,
+  pausaMs: 0,
+  ultimoFrame: null,
+  latLng: null,
+};
+var SIMULACION_VELOCIDAD_MPS = 4.2;
+var SIMULACION_PARADA_MS = 10000;
 
 var ETIQUETAS_RUTA = {
   todos: "Todas las rutas",
@@ -357,8 +379,15 @@ function enfocarRutaFiltro(ruta) {
   }
 
   if (ruta && ruta.puntos) {
-    mensaje.textContent = "Trazo referencial · Paraderos de " + ETIQUETAS_RUTA[rutaFiltroActiva];
-    dibujarRecorridoRuta(ruta.puntos);
+    var puntosRuta = rutaFiltroActiva === "paramonga" && ruta.regreso
+      ? ruta.puntos.concat(ruta.regreso)
+      : ruta.puntos;
+    dibujarRecorridoRuta(puntosRuta);
+    return;
+  }
+
+  if (!ruta && rutaFiltroActiva === "todos" && simulacionBarranca.visible) {
+    dibujarRecorridoRuta(KeiselConfig.RUTAS.barranca.puntos);
     return;
   }
 
@@ -374,31 +403,176 @@ function enfocarRutaFiltro(ruta) {
 
 function dibujarRecorridoRuta(puntos) {
   var coordenadas = puntos.map(function ([lat, lng]) { return [lat, lng]; });
-  var linea = L.polyline(coordenadas, {
-    color: "#6d28d9",
-    weight: 4,
-    opacity: 0.9,
-    interactive: false,
+  var indiceProceres = puntos.findIndex(function (p) {
+    return p[2] && p[2].toLowerCase().indexOf("proceres") !== -1;
   });
-  recorridoRutaLayer = L.layerGroup([linea]).addTo(map);
-  linea.bringToBack();
+  var lineaIda;
+  var lineaVuelta;
+  var lineas = [];
+
+  if (rutaFiltroActiva === "supe" || rutaFiltroActiva === "paramonga") {
+    lineas.push(L.polyline(coordenadas, {
+      color: "#ef3340",
+      weight: 5,
+      opacity: 0.95,
+      interactive: false,
+    }));
+  } else if (indiceProceres > 0) {
+    lineaIda = L.polyline(coordenadas.slice(0, indiceProceres + 1), {
+      color: "#168bff",
+      weight: 5,
+      opacity: 0.95,
+      interactive: false,
+    });
+    lineaVuelta = L.polyline(coordenadas.slice(indiceProceres), {
+      color: "#facc15",
+      weight: 5,
+      opacity: 0.95,
+      interactive: false,
+    });
+    lineas.push(lineaIda, lineaVuelta);
+  } else {
+    lineaIda = L.polyline(coordenadas, {
+      color: "#168bff",
+      weight: 5,
+      opacity: 0.95,
+      interactive: false,
+    });
+    lineas.push(lineaIda);
+  }
 
   var icono = L.divIcon({ className: "paradero-icono", iconSize: [14, 14] });
+  var capas = lineas.slice();
   puntos.forEach(function ([lat, lng, nombre]) {
     if (!nombre) return;
     var marcador = L.marker([lat, lng], { icon: icono, title: nombre })
-      .bindPopup(escaparHtml(nombre))
-      .addTo(recorridoRutaLayer);
-    marcador.getElement().setAttribute("aria-label", nombre);
+      .bindPopup(escaparHtml(nombre));
+    capas.push(marcador);
   });
+  recorridoRutaLayer = L.layerGroup(capas).addTo(map);
+  lineas.forEach(function (linea) { linea.bringToBack(); });
 
   var header = document.querySelector(".hud-header");
-  map.fitBounds(linea.getBounds(), {
+  map.fitBounds(L.latLngBounds(coordenadas), {
     paddingTopLeft: [24, Math.ceil(header.getBoundingClientRect().bottom) + 16],
     paddingBottomRight: [40, 76],
     maxZoom: 16,
     animate: false,
   });
+}
+
+function cambiarVisibilidadSimulacionBarranca(mostrar) {
+  simulacionBarranca.visible = Boolean(mostrar);
+
+  if (!map || !simulacionBarranca.marker) return;
+  var estaEnMapa = map.hasLayer(simulacionBarranca.marker);
+  if (simulacionBarranca.visible && !estaEnMapa) {
+    simulacionBarranca.marker.addTo(map);
+  } else if (!simulacionBarranca.visible && estaEnMapa) {
+    map.removeLayer(simulacionBarranca.marker);
+  }
+}
+
+function avanzarSimulacionBarranca(frameTs) {
+  if (!simulacionBarranca.ultimoFrame) simulacionBarranca.ultimoFrame = frameTs;
+  var restanteMs = Math.min(frameTs - simulacionBarranca.ultimoFrame, 1000);
+  simulacionBarranca.ultimoFrame = frameTs;
+  var puntos = simulacionBarranca.puntos;
+
+  while (restanteMs > 0 && puntos.length > 1) {
+    if (simulacionBarranca.pausaMs > 0) {
+      var consumidoPausa = Math.min(restanteMs, simulacionBarranca.pausaMs);
+      simulacionBarranca.pausaMs -= consumidoPausa;
+      restanteMs -= consumidoPausa;
+      if (simulacionBarranca.pausaMs > 0) break;
+    }
+
+    var indice = simulacionBarranca.tramo;
+    var desde = puntos[indice];
+    var hasta = puntos[indice + 1];
+    var distancia = calcularDistanciaMetros(desde[0], desde[1], hasta[0], hasta[1]);
+    var duracionTramo = Math.max(1, (distancia / SIMULACION_VELOCIDAD_MPS) * 1000);
+    var restanteTramo = duracionTramo - simulacionBarranca.avanceMs;
+    var consumidoTramo = Math.min(restanteMs, restanteTramo);
+    simulacionBarranca.avanceMs += consumidoTramo;
+    restanteMs -= consumidoTramo;
+
+    var proporcion = Math.min(1, simulacionBarranca.avanceMs / duracionTramo);
+    simulacionBarranca.latLng = [
+      desde[0] + (hasta[0] - desde[0]) * proporcion,
+      desde[1] + (hasta[1] - desde[1]) * proporcion,
+    ];
+
+    if (proporcion >= 1) {
+      simulacionBarranca.tramo = (indice + 1) % (puntos.length - 1);
+      simulacionBarranca.avanceMs = 0;
+      if (hasta[2]) simulacionBarranca.pausaMs = SIMULACION_PARADA_MS;
+    }
+  }
+
+  if (simulacionBarranca.marker && simulacionBarranca.latLng) {
+    simulacionBarranca.marker.setLatLng(simulacionBarranca.latLng);
+    var elemento = simulacionBarranca.marker.getElement();
+    var flecha = elemento && elemento.querySelector(".bus-heading-wrap");
+    if (flecha) {
+      var tramoActual = simulacionBarranca.tramo;
+      var puntoDesde = puntos[tramoActual];
+      var puntoHasta = puntos[tramoActual + 1];
+      if (puntoDesde && puntoHasta) {
+        var rumbo = calcularRumbo(puntoDesde[0], puntoDesde[1], puntoHasta[0], puntoHasta[1]);
+        flecha.style.opacity = "1";
+        flecha.style.transform = "rotate(" + Math.round(rumbo) + "deg)";
+      }
+    }
+  }
+  simulacionBarranca.raf = window.requestAnimationFrame(avanzarSimulacionBarranca);
+}
+
+function iniciarSimulacionBarranca() {
+  if (!map || simulacionBarranca.marker) return;
+
+  var rutaCompleta = KeiselConfig.RUTAS.barranca.puntos.map(function (p) {
+    return [p[0], p[1], p[2]];
+  });
+  var indiceGrau = rutaCompleta.findIndex(function (p) {
+    return p[2] && p[2].toLowerCase().indexOf("grau") !== -1;
+  });
+  simulacionBarranca.puntos = indiceGrau > 0
+    ? rutaCompleta.slice(indiceGrau).concat(rutaCompleta.slice(1, indiceGrau + 1))
+    : rutaCompleta;
+  simulacionBarranca.latLng = [simulacionBarranca.puntos[0][0], simulacionBarranca.puntos[0][1]];
+  if (simulacionBarranca.puntos[0][2]) simulacionBarranca.pausaMs = SIMULACION_PARADA_MS;
+
+  var busSvg =
+    '<svg style="width:16px;height:16px;" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect height="16" rx="4" width="18" x="3" y="3"></rect><path d="M3 11h18"></path><path d="M19 19v2"></path><path d="M5 19v2"></path><circle cx="7.5" cy="15" fill="#FFFFFF" r="1.2" stroke="none"></circle><circle cx="16.5" cy="15" fill="#FFFFFF" r="1.2" stroke="none"></circle></svg>';
+  var busHtml =
+    '<div style="position:relative; display:flex; flex-direction:column; align-items:center;">' +
+    '<div class="bus-pulse-ring"></div>' +
+    '<div class="bus-heading-wrap" style="position:absolute;top:-7px;left:50%;width:10px;height:10px;margin-left:-5px;transform-origin:5px 25px;opacity:0;transition:transform 0.6s ease-out,opacity 0.3s ease;pointer-events:none;">' +
+    '<svg width="10" height="10" viewBox="0 0 10 10"><polygon points="5,0 9,8 5,6 1,8" fill="#38bdf8"/></svg>' +
+    "</div>" +
+    '<div class="bus-pin-core">' + busSvg + "</div>" +
+    '<span style="background:#141416; color:#FFFFFF; border:1px solid rgba(255,255,255,0.4); font-size:10px; font-weight:800; padding:1px 6px; border-radius:6px; margin-top:3px; white-space:nowrap; box-shadow:0 2px 8px rgba(0,0,0,0.8); letter-spacing:0.02em;">Bus 01</span>' +
+    "</div>";
+  var icono = L.divIcon({
+    className: "bus-marker-container",
+    iconSize: [40, 52],
+    iconAnchor: [20, 20],
+    html: busHtml,
+  });
+
+  simulacionBarranca.marker = L.marker(simulacionBarranca.latLng, {
+    icon: icono,
+    zIndexOffset: 1700,
+  }).bindPopup("<b>Bus 01</b><br>Ruta Barranca · UNAB");
+  simulacionBarranca.marker.on("click", function () {
+    map.flyTo(simulacionBarranca.latLng, 16, { animate: true, duration: 0.8 });
+  });
+
+  cambiarVisibilidadSimulacionBarranca(
+    rutaFiltroActiva === "barranca" || rutaFiltroActiva === "todos",
+  );
+  simulacionBarranca.raf = window.requestAnimationFrame(avanzarSimulacionBarranca);
 }
 
 window.seleccionarFiltroRuta = seleccionarFiltroRuta;
@@ -813,6 +987,14 @@ function actualizarBusesActivos(busesList, desdeFiltro) {
 
   validos = validos.filter(coincideFiltroRuta);
 
+  var bus01RealActivo = validos.some(function (b) {
+    return (b.id || b.bus_id || b.busId) === "bus_keisel_1";
+  });
+  cambiarVisibilidadSimulacionBarranca(
+    (rutaFiltroActiva === "barranca" || rutaFiltroActiva === "todos") &&
+      !bus01RealActivo,
+  );
+
   var tsMax = 0;
   validos.forEach(function (b) {
     var f = b.actualizado_en || b.fecha_actualizacion || b.timestamp;
@@ -954,12 +1136,13 @@ function actualizarBusesActivos(busesList, desdeFiltro) {
     busSeleccionadoId = null;
     limpiarRutaMapa();
 
-    if (dot) dot.className = "estado-dot";
+    if (dot) dot.className = simulacionBarranca.visible ? "estado-dot estado-dot--activo" : "estado-dot";
 
     var etiqueta = ETIQUETAS_RUTA[rutaFiltroActiva] || "Ruta";
     if (status) {
-      status.innerText =
-        rutaFiltroActiva === "todos"
+      status.innerText = simulacionBarranca.visible
+        ? "BARRANCA"
+        : rutaFiltroActiva === "todos"
           ? "SIN BUS EN RUTA"
           : "SIN BUS EN " + etiqueta.toUpperCase();
     }
@@ -967,21 +1150,23 @@ function actualizarBusesActivos(busesList, desdeFiltro) {
     if (btnC) btnC.style.display = "none";
 
     if (badge) {
-      badge.innerText = "DESCONECTADO";
+      badge.innerText = simulacionBarranca.visible ? "RECORRIENDO" : "DESCONECTADO";
 
       badge.className = "badge-vivo";
     }
 
     if (nameEl) {
-      nameEl.innerText =
-        rutaFiltroActiva === "todos"
+      nameEl.innerText = simulacionBarranca.visible
+        ? "Bus 01"
+        : rutaFiltroActiva === "todos"
           ? "Bus Universitario"
           : "Ruta " + etiqueta;
     }
 
     if (sub) {
-      sub.innerText =
-        rutaFiltroActiva === "todos"
+      sub.innerText = simulacionBarranca.visible
+        ? "Barranca → UNAB · pausas de 10 s en paraderos"
+        : rutaFiltroActiva === "todos"
           ? "Esperando señal GPS activa..."
           : "Sin buses activos en " + etiqueta + " en este momento.";
     }
