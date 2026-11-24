@@ -275,27 +275,13 @@ function initLeafletMap() {
     zoom: KeiselConfig.MAP.DEFAULT_ZOOM,
 
     zoomControl: false,
-
-    attributionControl: false,
   });
-  
-  if (map.attributionControl) {
-    map.attributionControl.setPrefix(false);
-  }
 
-  var hostActual = (window.location && window.location.hostname) || "";
-  var usarProxyRhel =
-    hostActual === "mapa.keisel.me" || hostActual === "192.168.50.252";
-  var urlTiles =
-    usarProxyRhel && typeof KeiselConfig !== "undefined" && KeiselConfig.MAP && KeiselConfig.MAP.PROXY_TILE_LAYER
-      ? KeiselConfig.MAP.PROXY_TILE_LAYER
-      : (typeof KeiselConfig !== "undefined" && KeiselConfig.MAP && KeiselConfig.MAP.TILE_LAYER) ||
-        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+  map.attributionControl.setPrefix(false);
 
-  L.tileLayer(urlTiles, {
-    maxZoom: 19,
-    attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  L.tileLayer(KeiselConfig.MAP.TILE_LAYER, {
+    maxZoom: KeiselConfig.MAP.MAX_ZOOM,
+    attribution: KeiselConfig.MAP.ATTRIBUTION,
   }).addTo(map);
 
   iniciarUbicacionUsuario();
