@@ -540,8 +540,39 @@ function iniciarSimulacionBarranca() {
   simulacionBarranca.puntos = indiceGrau > 0
     ? rutaCompleta.slice(indiceGrau).concat(rutaCompleta.slice(1, indiceGrau + 1))
     : rutaCompleta;
-  simulacionBarranca.latLng = [simulacionBarranca.puntos[0][0], simulacionBarranca.puntos[0][1]];
-  if (simulacionBarranca.puntos[0][2]) simulacionBarranca.pausaMs = SIMULACION_PARADA_MS;
+
+  var distanciasTramos = [];
+  var distanciaTotal = 0;
+  for (var i = 0; i < simulacionBarranca.puntos.length - 1; i++) {
+    var puntoA = simulacionBarranca.puntos[i];
+    var puntoB = simulacionBarranca.puntos[i + 1];
+    var distanciaTramo = calcularDistanciaMetros(puntoA[0], puntoA[1], puntoB[0], puntoB[1]);
+    distanciasTramos.push(distanciaTramo);
+    distanciaTotal += distanciaTramo;
+  }
+
+  var distanciaInicial = Math.random() * distanciaTotal;
+  simulacionBarranca.tramo = 0;
+  simulacionBarranca.avanceMs = 0;
+  simulacionBarranca.pausaMs = 0;
+  for (var j = 0; j < distanciasTramos.length; j++) {
+    if (distanciaInicial <= distanciasTramos[j] || j === distanciasTramos.length - 1) {
+      simulacionBarranca.tramo = j;
+      simulacionBarranca.avanceMs =
+        (Math.min(distanciaInicial, distanciasTramos[j]) / SIMULACION_VELOCIDAD_MPS) * 1000;
+      var proporcionInicial = distanciasTramos[j] > 0
+        ? Math.min(1, distanciaInicial / distanciasTramos[j])
+        : 0;
+      var inicioTramo = simulacionBarranca.puntos[j];
+      var finTramo = simulacionBarranca.puntos[j + 1];
+      simulacionBarranca.latLng = [
+        inicioTramo[0] + (finTramo[0] - inicioTramo[0]) * proporcionInicial,
+        inicioTramo[1] + (finTramo[1] - inicioTramo[1]) * proporcionInicial,
+      ];
+      break;
+    }
+    distanciaInicial -= distanciasTramos[j];
+  }
 
   var busSvg =
     '<svg style="width:16px;height:16px;" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect height="16" rx="4" width="18" x="3" y="3"></rect><path d="M3 11h18"></path><path d="M19 19v2"></path><path d="M5 19v2"></path><circle cx="7.5" cy="15" fill="#FFFFFF" r="1.2" stroke="none"></circle><circle cx="16.5" cy="15" fill="#FFFFFF" r="1.2" stroke="none"></circle></svg>';
