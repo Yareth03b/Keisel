@@ -20,10 +20,9 @@ const KeiselConfig = {
     DEFAULT_ZOOM: 15,
     MIN_ZOOM: 12,
     MAX_ZOOM: 19,
-    TILE_LAYER: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    PROXY_TILE_LAYER: "/osm-tiles/{z}/{x}/{y}.png",
+    TILE_LAYER: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
     ATTRIBUTION:
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
   },
 
   RUTAS: {
