@@ -315,6 +315,9 @@ var simulacionBarranca = {
   raf: null,
   visible: false,
   puntos: [],
+  segmentos: [],
+  duracionCicloMs: 0,
+  desfaseDiarioMs: 0,
   tramo: 0,
   avanceMs: 0,
   pausaMs: 0,
@@ -473,41 +476,30 @@ function cambiarVisibilidadSimulacionBarranca(mostrar) {
   }
 }
 
-function avanzarSimulacionBarranca(frameTs) {
-  if (!simulacionBarranca.ultimoFrame) simulacionBarranca.ultimoFrame = frameTs;
-  var restanteMs = Math.min(frameTs - simulacionBarranca.ultimoFrame, 1000);
-  simulacionBarranca.ultimoFrame = frameTs;
-  var puntos = simulacionBarranca.puntos;
+function avanzarSimulacionBarranca() {
+  var ahora = new Date();
+  var inicioDiaUtc = Date.UTC(ahora.getUTCFullYear(), ahora.getUTCMonth(), ahora.getUTCDate());
+  var fase = ((Date.now() - inicioDiaUtc + simulacionBarranca.desfaseDiarioMs) % simulacionBarranca.duracionCicloMs + simulacionBarranca.duracionCicloMs) % simulacionBarranca.duracionCicloMs;
+  var segmentos = simulacionBarranca.segmentos;
 
-  while (restanteMs > 0 && puntos.length > 1) {
-    if (simulacionBarranca.pausaMs > 0) {
-      var consumidoPausa = Math.min(restanteMs, simulacionBarranca.pausaMs);
-      simulacionBarranca.pausaMs -= consumidoPausa;
-      restanteMs -= consumidoPausa;
-      if (simulacionBarranca.pausaMs > 0) break;
+  for (var i = 0; i < segmentos.length; i++) {
+    var segmento = segmentos[i];
+    if (fase < segmento.duracionMs) {
+      simulacionBarranca.tramo = i;
+      simulacionBarranca.latLng = [
+        segmento.desde[0] + (segmento.hasta[0] - segmento.desde[0]) * (fase / segmento.duracionMs),
+        segmento.desde[1] + (segmento.hasta[1] - segmento.desde[1]) * (fase / segmento.duracionMs),
+      ];
+      break;
     }
+    fase -= segmento.duracionMs;
 
-    var indice = simulacionBarranca.tramo;
-    var desde = puntos[indice];
-    var hasta = puntos[indice + 1];
-    var distancia = calcularDistanciaMetros(desde[0], desde[1], hasta[0], hasta[1]);
-    var duracionTramo = Math.max(1, (distancia / SIMULACION_VELOCIDAD_MPS) * 1000);
-    var restanteTramo = duracionTramo - simulacionBarranca.avanceMs;
-    var consumidoTramo = Math.min(restanteMs, restanteTramo);
-    simulacionBarranca.avanceMs += consumidoTramo;
-    restanteMs -= consumidoTramo;
-
-    var proporcion = Math.min(1, simulacionBarranca.avanceMs / duracionTramo);
-    simulacionBarranca.latLng = [
-      desde[0] + (hasta[0] - desde[0]) * proporcion,
-      desde[1] + (hasta[1] - desde[1]) * proporcion,
-    ];
-
-    if (proporcion >= 1) {
-      simulacionBarranca.tramo = (indice + 1) % (puntos.length - 1);
-      simulacionBarranca.avanceMs = 0;
-      if (hasta[2]) simulacionBarranca.pausaMs = SIMULACION_PARADA_MS;
+    if (fase < segmento.pausaMs) {
+      simulacionBarranca.tramo = i;
+      simulacionBarranca.latLng = [segmento.hasta[0], segmento.hasta[1]];
+      break;
     }
+    fase -= segmento.pausaMs;
   }
 
   if (simulacionBarranca.marker && simulacionBarranca.latLng) {
@@ -516,8 +508,8 @@ function avanzarSimulacionBarranca(frameTs) {
     var flecha = elemento && elemento.querySelector(".bus-heading-wrap");
     if (flecha) {
       var tramoActual = simulacionBarranca.tramo;
-      var puntoDesde = puntos[tramoActual];
-      var puntoHasta = puntos[tramoActual + 1];
+      var puntoDesde = simulacionBarranca.puntos[tramoActual];
+      var puntoHasta = simulacionBarranca.puntos[tramoActual + 1];
       if (puntoDesde && puntoHasta) {
         var rumbo = calcularRumbo(puntoDesde[0], puntoDesde[1], puntoHasta[0], puntoHasta[1]);
         flecha.style.opacity = "1";
@@ -541,38 +533,30 @@ function iniciarSimulacionBarranca() {
     ? rutaCompleta.slice(indiceGrau).concat(rutaCompleta.slice(1, indiceGrau + 1))
     : rutaCompleta;
 
-  var distanciasTramos = [];
-  var distanciaTotal = 0;
+  simulacionBarranca.segmentos = [];
+  simulacionBarranca.duracionCicloMs = 0;
   for (var i = 0; i < simulacionBarranca.puntos.length - 1; i++) {
     var puntoA = simulacionBarranca.puntos[i];
     var puntoB = simulacionBarranca.puntos[i + 1];
     var distanciaTramo = calcularDistanciaMetros(puntoA[0], puntoA[1], puntoB[0], puntoB[1]);
-    distanciasTramos.push(distanciaTramo);
-    distanciaTotal += distanciaTramo;
+    var duracionTramo = Math.max(1, (distanciaTramo / SIMULACION_VELOCIDAD_MPS) * 1000);
+    var pausaParadero = puntoB[2] ? SIMULACION_PARADA_MS : 0;
+    simulacionBarranca.segmentos.push({
+      desde: puntoA,
+      hasta: puntoB,
+      duracionMs: duracionTramo,
+      pausaMs: pausaParadero,
+    });
+    simulacionBarranca.duracionCicloMs += duracionTramo + pausaParadero;
   }
 
-  var distanciaInicial = Math.random() * distanciaTotal;
-  simulacionBarranca.tramo = 0;
-  simulacionBarranca.avanceMs = 0;
-  simulacionBarranca.pausaMs = 0;
-  for (var j = 0; j < distanciasTramos.length; j++) {
-    if (distanciaInicial <= distanciasTramos[j] || j === distanciasTramos.length - 1) {
-      simulacionBarranca.tramo = j;
-      simulacionBarranca.avanceMs =
-        (Math.min(distanciaInicial, distanciasTramos[j]) / SIMULACION_VELOCIDAD_MPS) * 1000;
-      var proporcionInicial = distanciasTramos[j] > 0
-        ? Math.min(1, distanciaInicial / distanciasTramos[j])
-        : 0;
-      var inicioTramo = simulacionBarranca.puntos[j];
-      var finTramo = simulacionBarranca.puntos[j + 1];
-      simulacionBarranca.latLng = [
-        inicioTramo[0] + (finTramo[0] - inicioTramo[0]) * proporcionInicial,
-        inicioTramo[1] + (finTramo[1] - inicioTramo[1]) * proporcionInicial,
-      ];
-      break;
-    }
-    distanciaInicial -= distanciasTramos[j];
+  var fechaSemilla = "keisel-barranca-demo-v1";
+  var semilla = 2166136261;
+  for (var k = 0; k < fechaSemilla.length; k++) {
+    semilla ^= fechaSemilla.charCodeAt(k);
+    semilla = Math.imul(semilla, 16777619);
   }
+  simulacionBarranca.desfaseDiarioMs = (semilla >>> 0) % simulacionBarranca.duracionCicloMs;
 
   var busSvg =
     '<svg style="width:16px;height:16px;" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect height="16" rx="4" width="18" x="3" y="3"></rect><path d="M3 11h18"></path><path d="M19 19v2"></path><path d="M5 19v2"></path><circle cx="7.5" cy="15" fill="#FFFFFF" r="1.2" stroke="none"></circle><circle cx="16.5" cy="15" fill="#FFFFFF" r="1.2" stroke="none"></circle></svg>';
@@ -592,6 +576,7 @@ function iniciarSimulacionBarranca() {
     html: busHtml,
   });
 
+  simulacionBarranca.latLng = [simulacionBarranca.puntos[0][0], simulacionBarranca.puntos[0][1]];
   simulacionBarranca.marker = L.marker(simulacionBarranca.latLng, {
     icon: icono,
     zIndexOffset: 1700,
@@ -603,7 +588,7 @@ function iniciarSimulacionBarranca() {
   cambiarVisibilidadSimulacionBarranca(
     rutaFiltroActiva === "barranca" || rutaFiltroActiva === "todos",
   );
-  simulacionBarranca.raf = window.requestAnimationFrame(avanzarSimulacionBarranca);
+  avanzarSimulacionBarranca();
 }
 
 window.seleccionarFiltroRuta = seleccionarFiltroRuta;
