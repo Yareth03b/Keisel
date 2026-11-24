@@ -157,17 +157,52 @@ function aplicarDispersionVisual(buses) {
 
 var busMarkers = {};
 
+var rutaFiltroActiva = "todos";
+var ultimosBusesApi = [];
+
+var ETIQUETAS_RUTA = {
+  todos: "Todas las rutas",
+  barranca: "Barranca",
+  supe: "Supe",
+  paramonga: "Paramonga",
+};
+
 var BUS_CATALOGO = {
   bus_keisel_1: { nombre: "Bus 01", ruta: "Barranca - UNAB", placa: "EUA-482" },
-
-  bus_keisel_2: { nombre: "Bus 02", ruta: "Supe - UNAB", placa: "B4T-912" },
-
-  bus_keisel_3: {
-    nombre: "Bus 03",
-    ruta: "Paramonga - UNAB",
-    placa: "C1V-554",
-  },
+  bus_keisel_2: { nombre: "Bus 02", ruta: "Supe - UNAB", placa: "EUA-519" },
+  bus_keisel_3: { nombre: "Bus 03", ruta: "Paramonga - UNAB", placa: "EUA-604" },
 };
+
+function coincideFiltroRuta(b) {
+  if (!rutaFiltroActiva || rutaFiltroActiva === "todos") return true;
+  var bId = (b && (b.id || b.bus_id || b.busId)) || "bus_keisel_1";
+  var cat = BUS_CATALOGO[bId];
+  var textoRuta = (
+    (b && (b.ruta || b.ruta_asignada)) ||
+    (cat && cat.ruta) ||
+    ""
+  ).toLowerCase();
+  return textoRuta.indexOf(rutaFiltroActiva) !== -1;
+}
+
+function seleccionarFiltroRuta(ruta) {
+  rutaFiltroActiva = (ruta || "todos").toLowerCase();
+
+  var botones = document.querySelectorAll("#filtro-rutas .btn-ruta");
+  botones.forEach(function (btn) {
+    var activo = btn.getAttribute("data-ruta") === rutaFiltroActiva;
+    btn.classList.toggle("btn-ruta--activo", activo);
+    btn.setAttribute("aria-selected", activo ? "true" : "false");
+  });
+
+  actualizarBusesActivos(ultimosBusesApi, true);
+
+  if (Object.keys(busMarkers).length > 0) {
+    centrarEnBus();
+  }
+}
+
+window.seleccionarFiltroRuta = seleccionarFiltroRuta;
 
 function centrarEnBus(especificoId) {
   if (!map) return;
@@ -425,7 +460,10 @@ window.cerrarModalUbicacion = cerrarModalUbicacion;
 window.configurarPermisoUbicacion = configurarPermisoUbicacion;
 window.centrarEnMiUbicacion = centrarEnMiUbicacion;
 
-function actualizarBusesActivos(busesList) {
+function actualizarBusesActivos(busesList, desdeFiltro) {
+  if (!desdeFiltro) {
+    ultimosBusesApi = Array.isArray(busesList) ? busesList.slice() : [];
+  }
   if (!map || typeof L === "undefined") return;
 
   var validos = (busesList || []).filter(function (b) {
@@ -448,7 +486,7 @@ function actualizarBusesActivos(busesList) {
       }
     }
 
-    return true;
+    return coincideFiltroRuta(b);
   });
 
   // Aplica dispersión visual inteligente si están muy juntos para que ambos se vean simultáneamente
@@ -556,20 +594,35 @@ function actualizarBusesActivos(busesList) {
 
     if (dot) dot.className = "estado-dot";
 
-    if (status) status.innerText = "SIN BUS EN RUTA";
+    var etiqueta = ETIQUETAS_RUTA[rutaFiltroActiva] || "Ruta";
+    if (status) {
+      status.innerText =
+        rutaFiltroActiva === "todos"
+          ? "SIN BUS EN RUTA"
+          : "SIN BUS EN " + etiqueta.toUpperCase();
+    }
 
     if (btnC) btnC.style.display = "none";
 
     if (badge) {
       badge.innerText = "DESCONECTADO";
 
-      badge.className =
-        "badge-vivo";
+      badge.className = "badge-vivo";
     }
 
-    if (nameEl) nameEl.innerText = "Bus Universitario";
+    if (nameEl) {
+      nameEl.innerText =
+        rutaFiltroActiva === "todos"
+          ? "Bus Universitario"
+          : "Ruta " + etiqueta;
+    }
 
-    if (sub) sub.innerText = "Esperando señal GPS activa...";
+    if (sub) {
+      sub.innerText =
+        rutaFiltroActiva === "todos"
+          ? "Esperando señal GPS activa..."
+          : "Sin buses activos en " + etiqueta + " en este momento.";
+    }
 
     if (chips) chips.innerHTML = "";
   } else if (activeCount === 1) {

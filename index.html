@@ -184,6 +184,55 @@
             <span class="material-symbols-outlined icono-16">tune</span>
           </button>
         </div>
+
+        <!-- Filtro de Rutas Superior -->
+        <nav
+          id="filtro-rutas"
+          class="filtro-rutas"
+          role="tablist"
+          aria-label="Filtrar buses por ruta"
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected="true"
+            data-ruta="todos"
+            class="btn-ruta btn-ruta--activo"
+            onclick="seleccionarFiltroRuta('todos')"
+          >
+            Todos
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected="false"
+            data-ruta="barranca"
+            class="btn-ruta"
+            onclick="seleccionarFiltroRuta('barranca')"
+          >
+            Barranca
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected="false"
+            data-ruta="supe"
+            class="btn-ruta"
+            onclick="seleccionarFiltroRuta('supe')"
+          >
+            Supe
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected="false"
+            data-ruta="paramonga"
+            class="btn-ruta"
+            onclick="seleccionarFiltroRuta('paramonga')"
+          >
+            Paramonga
+          </button>
+        </nav>
       </header>
 
       <!-- Controles Laterales Flotantes y Tarjeta Inferior Desplegable -->

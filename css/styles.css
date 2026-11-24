@@ -289,6 +289,60 @@ button {
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.65);
 }
 
+.filtro-rutas {
+  margin-top: 8px;
+  padding: 4px;
+  width: 100%;
+  border-radius: 9999px;
+  background-color: rgba(20, 20, 22, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid #26262b;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  box-shadow: 0 16px 32px -12px rgba(0, 0, 0, 0.6);
+}
+
+.btn-ruta {
+  min-height: 36px;
+  padding: 8px 4px;
+  border-radius: 9999px;
+  border: none;
+  background-color: transparent;
+  color: #a1a1aa;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color 150ms ease-out,
+    color 150ms ease-out,
+    transform 150ms ease-out;
+}
+
+.btn-ruta:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.btn-ruta:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.btn-ruta:active {
+  transform: scale(0.97);
+}
+
+.btn-ruta--activo,
+.btn-ruta--activo:hover {
+  background-color: #ffffff;
+  color: #09090b;
+  font-weight: 700;
+}
+
 .btn-volver {
   display: flex;
   align-items: center;
