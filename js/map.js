@@ -808,6 +808,28 @@ window.cerrarModalUbicacion = cerrarModalUbicacion;
 window.configurarPermisoUbicacion = configurarPermisoUbicacion;
 window.centrarEnMiUbicacion = centrarEnMiUbicacion;
 
+var ultimaTelemetriaTs = 0;
+var frescuraInterval = null;
+
+function refrescarTextoFrescura() {
+  var el = document.getElementById("bus-frescura");
+  if (!el) return;
+  if (!ultimaTelemetriaTs || Object.keys(busMarkers).length === 0) {
+    el.hidden = true;
+    return;
+  }
+  var seg = Math.max(0, Math.round((Date.now() - ultimaTelemetriaTs) / 1000));
+  var texto = seg < 60 ? "Actualizado hace " + seg + " s" : "Actualizado hace " + Math.floor(seg / 60) + " min";
+  el.textContent = texto;
+  el.classList.toggle("tarjeta-bus-frescura--lenta", seg > 15);
+  el.hidden = false;
+}
+
+function iniciarRelojFrescura() {
+  if (frescuraInterval) return;
+  frescuraInterval = setInterval(refrescarTextoFrescura, 1000);
+}
+
 function actualizarBusesActivos(busesList, desdeFiltro) {
   if (!desdeFiltro) {
     ultimosBusesApi = Array.isArray(busesList) ? busesList.slice() : [];
@@ -836,6 +858,18 @@ function actualizarBusesActivos(busesList, desdeFiltro) {
 
     return coincideFiltroRuta(b);
   });
+
+  var tsMax = 0;
+  validos.forEach(function (b) {
+    var f = b.actualizado_en || b.fecha_actualizacion || b.timestamp;
+    var tt = f ? new Date(f).getTime() : NaN;
+    if (!isNaN(tt) && tt > tsMax) tsMax = tt;
+  });
+  if (validos.length > 0) {
+    // Se acota a la hora local para evitar valores negativos por desfase de reloj servidor/cliente
+    ultimaTelemetriaTs = tsMax ? Math.min(tsMax, Date.now()) : Date.now();
+    iniciarRelojFrescura();
+  }
 
   // Aplica dispersión visual inteligente si están muy juntos para que ambos se vean simultáneamente
   var dispersados = aplicarDispersionVisual(validos);
@@ -942,6 +976,10 @@ function actualizarBusesActivos(busesList, desdeFiltro) {
   });
 
   var activeCount = Object.keys(busMarkers).length;
+
+  var btnSeguir = document.getElementById("btn-seguir-bus");
+  if (btnSeguir) btnSeguir.style.display = activeCount === 0 ? "none" : "flex";
+  refrescarTextoFrescura();
 
   var dot = document.getElementById("live-dot");
 
