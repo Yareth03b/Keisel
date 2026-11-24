@@ -67,108 +67,13 @@
     <div id="map"></div>
 
     <!-- ====================================================================== -->
-    <!-- VISTA 1: INICIO (ESTUDIANTES)                                         -->
-    <!-- ====================================================================== -->
-    <div id="vista-inicio" class="vista-inicio">
-      <main class="inicio-contenedor">
-        <!-- Logo Oficial Keisel en Vector Blanco/Dark -->
-        <header class="inicio-header" data-purpose="brand-header">
-          <img
-            src="assets/brand/logo_keisel_dark.svg?v=6"
-            alt="Keisel Logo"
-            class="inicio-logo"
-          />
-        </header>
-
-        <!-- TARJETA 1: ESTUDIANTES -->
-        <section class="card-estudiantes-wrap" data-purpose="card-estudiantes-wrapper">
-          <div
-            onclick="navegarA('mapa')"
-            class="card-estudiantes"
-            role="button"
-            tabindex="0"
-            aria-label="Acceder como Estudiante"
-          >
-            <div class="card-estudiantes-top">
-              <div class="card-icono-caja">
-                <svg
-                  class="card-icono-svg"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2.3"
-                  viewBox="0 0 24 24"
-                >
-                  <rect height="16" rx="4" width="18" x="3" y="3"></rect>
-                  <path d="M3 11h18"></path>
-                  <path d="M19 19v2"></path>
-                  <path d="M5 19v2"></path>
-                  <circle
-                    cx="7.5"
-                    cy="15"
-                    fill="currentColor"
-                    r="1.2"
-                    stroke="none"
-                  ></circle>
-                  <circle
-                    cx="16.5"
-                    cy="15"
-                    fill="currentColor"
-                    r="1.2"
-                    stroke="none"
-                  ></circle>
-                </svg>
-              </div>
-              <div class="card-check-circulo">
-                <svg
-                  class="card-check-svg"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  viewBox="0 0 24 24"
-                >
-                  <polyline points="20 6 9 17 4 12"></polyline>
-                </svg>
-              </div>
-            </div>
-            <div class="card-titulo-wrap">
-              <span class="card-titulo">Estudiantes</span>
-            </div>
-          </div>
-        </section>
-      </main>
-    </div>
-
-    <!-- ====================================================================== -->
     <!-- VISTA 2: MAPA DE ESTUDIANTES EN VIVO (HUD DE SEGUIMIENTO)              -->
     <!-- ====================================================================== -->
-    <div id="vista-mapa" class="vista-mapa hidden">
+    <div id="vista-mapa" class="vista-mapa">
       <!-- Barra Superior Flotante -->
       <header class="hud-header pt-safe">
         <div class="hud-barra">
-          <button
-            onclick="retrocederDesdeMapa()"
-            class="btn-volver"
-            type="button"
-          >
-            <svg
-              class="btn-volver-icono"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              viewBox="0 0 24 24"
-            >
-              <path d="M19 12H5"></path>
-              <path d="M12 19l-7-7 7-7"></path>
-            </svg>
-            <span id="btn-mapa-back-text" class="btn-volver-texto"
-              >Estudiantes</span
-            >
-          </button>
+          <span class="btn-volver-texto">Estudiantes</span>
 
           <div class="estado-pill">
             <span id="live-dot" class="estado-dot"></span>

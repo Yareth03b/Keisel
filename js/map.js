@@ -670,10 +670,6 @@ var confirmacionesMovUser = 0;
 
 var UMBRAL_MOVIMIENTO_METROS = 8.0;
 
-function retrocederDesdeMapa() {
-  navegarA("inicio");
-}
-
 // --- UBICACIÓN DEL ESTUDIANTE: PUNTO BLANCO LIMPIO Y EXACTO ---
 
 function dibujarPuntoBlancoUsuario(lat, lng) {
