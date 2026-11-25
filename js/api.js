@@ -8,8 +8,27 @@ const KeiselAPI = {
    */
   getEndpoints: function () {
     var list = [];
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var apiParam = params.get("api");
+      if (apiParam && /^https?:\/\//i.test(apiParam)) {
+        var limpia = apiParam.replace(/\/+$/, "");
+        localStorage.setItem("keisel_api_tunnel", limpia);
+        list.push(limpia);
+      } else {
+        var guardada = localStorage.getItem("keisel_api_tunnel");
+        if (guardada && /^https?:\/\//i.test(guardada)) {
+          list.push(guardada);
+        }
+      }
+    } catch (e) {}
+    var esPagesDev =
+      typeof window !== "undefined" &&
+      window.location &&
+      /pages\.dev$/i.test(window.location.hostname || "");
     if (typeof KeiselConfig !== "undefined") {
-      if (KeiselConfig.API_BASE_URL) list.push(KeiselConfig.API_BASE_URL);
+      if (KeiselConfig.API_BASE_URL && !esPagesDev) list.push(KeiselConfig.API_BASE_URL);
+      if (KeiselConfig.API_TUNNEL_URL) list.push(KeiselConfig.API_TUNNEL_URL);
       if (KeiselConfig.API_LAN_URL) list.push(KeiselConfig.API_LAN_URL);
       if (KeiselConfig.API_TAILSCALE_URL) list.push(KeiselConfig.API_TAILSCALE_URL);
     }
