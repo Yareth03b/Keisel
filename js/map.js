@@ -389,11 +389,6 @@ function enfocarRutaFiltro(ruta) {
     return;
   }
 
-  if (!ruta && rutaFiltroActiva === "todos" && simulacionBarranca.visible) {
-    dibujarRecorridoRuta(KeiselConfig.RUTAS.barranca.puntos);
-    return;
-  }
-
   if (ruta) mensaje.textContent = "Recorrido y paraderos pendientes de confirmar";
   if (Object.keys(busMarkers).length > 0) {
     centrarEnBus();
@@ -404,36 +399,128 @@ function enfocarRutaFiltro(ruta) {
   }
 }
 
+var cacheTrazadoRutas = {};
+
+async function snapPuntoACalle(coord) {
+  try {
+    var url =
+      "https://router.project-osrm.org/nearest/v1/driving/" +
+      Number(coord[1]).toFixed(6) + "," + Number(coord[0]).toFixed(6) + "?number=1";
+    var r = await fetch(url);
+    if (!r.ok) return coord;
+    var d = await r.json();
+    var wp = d && d.waypoints && d.waypoints[0];
+    if (wp && wp.location && wp.distance <= 55) {
+      return [wp.location[1], wp.location[0]];
+    }
+  } catch (e) {}
+  return coord;
+}
+
+async function ajustarTramoOSRM(puntoA, puntoB) {
+  var dRecta = calcularDistanciaMetros(puntoA[0], puntoA[1], puntoB[0], puntoB[1]);
+  if (dRecta < 8) return [puntoA, puntoB];
+
+  try {
+    var url =
+      "https://router.project-osrm.org/route/v1/driving/" +
+      Number(puntoA[1]).toFixed(6) + "," + Number(puntoA[0]).toFixed(6) + ";" +
+      Number(puntoB[1]).toFixed(6) + "," + Number(puntoB[0]).toFixed(6) +
+      "?overview=full&geometries=geojson";
+
+    var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+    var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 4500) : null;
+    var r = await fetch(url, ctrl ? { signal: ctrl.signal } : {});
+    if (timer) clearTimeout(timer);
+
+    if (r.ok) {
+      var d = await r.json();
+      var rt = d && d.routes && d.routes[0];
+      // Solo aceptar si sigue la misma calle/carretera sin desviarse por otras manzanas
+      if (
+        rt &&
+        rt.geometry &&
+        Array.isArray(rt.geometry.coordinates) &&
+        rt.geometry.coordinates.length >= 2 &&
+        rt.distance <= Math.max(dRecta * 1.25, dRecta + 80)
+      ) {
+        return rt.geometry.coordinates.map(function (c) { return [c[1], c[0]]; });
+      }
+    }
+  } catch (e) {}
+
+  // Si hay sentido único contrario en OSM, no desviar: pegar los extremos a la pista más cercana
+  var snapA = await snapPuntoACalle(puntoA);
+  var snapB = await snapPuntoACalle(puntoB);
+  return [snapA, snapB];
+}
+
+function ajustarLineaACallesSeguro(claveCache, coordenadas, polylineLayer, filtroEsperado) {
+  if (!polylineLayer || !Array.isArray(coordenadas) || coordenadas.length < 2) return;
+
+  if (cacheTrazadoRutas[claveCache]) {
+    polylineLayer.setLatLngs(cacheTrazadoRutas[claveCache]);
+    return;
+  }
+
+  var promesas = [];
+  for (var i = 0; i < coordenadas.length - 1; i++) {
+    promesas.push(ajustarTramoOSRM(coordenadas[i], coordenadas[i + 1]));
+  }
+
+  Promise.all(promesas).then(function (tramos) {
+    var resultado = [];
+    tramos.forEach(function (pts, idx) {
+      for (var j = 0; j < pts.length; j++) {
+        if (idx > 0 && j === 0) continue;
+        resultado.push(pts[j]);
+      }
+    });
+    if (resultado.length < 2) return;
+    cacheTrazadoRutas[claveCache] = resultado;
+    if (map && rutaFiltroActiva === filtroEsperado && map.hasLayer(polylineLayer)) {
+      polylineLayer.setLatLngs(resultado);
+    }
+  }).catch(function () {});
+}
+
 function dibujarRecorridoRuta(puntos) {
   var coordenadas = puntos.map(function ([lat, lng]) { return [lat, lng]; });
   var indiceProceres = puntos.findIndex(function (p) {
-    return p[2] && p[2].toLowerCase().indexOf("proceres") !== -1;
+    return p[2] && p[2].normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().indexOf("proceres") !== -1;
   });
   var lineaIda;
   var lineaVuelta;
   var lineas = [];
 
-  if (rutaFiltroActiva === "supe" || rutaFiltroActiva === "paramonga") {
-    lineas.push(L.polyline(coordenadas, {
+  var filtroActual = rutaFiltroActiva;
+  if (filtroActual === "supe" || filtroActual === "paramonga") {
+    var lineaRoja = L.polyline(coordenadas, {
       color: "#ef3340",
       weight: 5,
       opacity: 0.95,
       interactive: false,
-    }));
+    });
+    lineas.push(lineaRoja);
+    ajustarLineaACallesSeguro(filtroActual + "_unica", coordenadas, lineaRoja, filtroActual);
   } else if (indiceProceres > 0) {
-    lineaIda = L.polyline(coordenadas.slice(0, indiceProceres + 1), {
+    var coordsIda = coordenadas.slice(0, indiceProceres + 1);
+    var coordsVuelta = coordenadas.slice(indiceProceres);
+    lineaIda = L.polyline(coordsIda, {
       color: "#168bff",
       weight: 5,
       opacity: 0.95,
       interactive: false,
     });
-    lineaVuelta = L.polyline(coordenadas.slice(indiceProceres), {
+    lineaVuelta = L.polyline(coordsVuelta, {
       color: "#facc15",
       weight: 5,
       opacity: 0.95,
       interactive: false,
     });
     lineas.push(lineaIda, lineaVuelta);
+    ajustarLineaACallesSeguro(filtroActual + "_ida", coordsIda, lineaIda, filtroActual);
+    ajustarLineaACallesSeguro(filtroActual + "_vuelta", coordsVuelta, lineaVuelta, filtroActual);
   } else {
     lineaIda = L.polyline(coordenadas, {
       color: "#168bff",
@@ -442,6 +529,7 @@ function dibujarRecorridoRuta(puntos) {
       interactive: false,
     });
     lineas.push(lineaIda);
+    ajustarLineaACallesSeguro(filtroActual + "_ida", coordenadas, lineaIda, filtroActual);
   }
 
   var icono = L.divIcon({ className: "paradero-icono", iconSize: [14, 14] });
