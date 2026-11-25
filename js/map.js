@@ -481,6 +481,9 @@ function ajustarLineaACallesSeguro(claveCache, coordenadas, polylineLayer, filtr
     if (map && rutaFiltroActiva === filtroEsperado && map.hasLayer(polylineLayer)) {
       polylineLayer.setLatLngs(resultado);
     }
+    if (claveCache === "barranca_ida" || claveCache === "barranca_vuelta") {
+      sincronizarSimulacionBarrancaConCalles();
+    }
   }).catch(function () {});
 }
 
@@ -608,12 +611,7 @@ function avanzarSimulacionBarranca() {
   simulacionBarranca.raf = window.requestAnimationFrame(avanzarSimulacionBarranca);
 }
 
-function iniciarSimulacionBarranca() {
-  if (!map || simulacionBarranca.marker) return;
-
-  var rutaCompleta = KeiselConfig.RUTAS.barranca.puntos.map(function (p) {
-    return [p[0], p[1], p[2]];
-  });
+function construirSegmentosSimulacionBarranca(rutaCompleta) {
   var indiceGrau = rutaCompleta.findIndex(function (p) {
     return p[2] && p[2].toLowerCase().indexOf("grau") !== -1;
   });
@@ -645,6 +643,45 @@ function iniciarSimulacionBarranca() {
     semilla = Math.imul(semilla, 16777619);
   }
   simulacionBarranca.desfaseDiarioMs = (semilla >>> 0) % simulacionBarranca.duracionCicloMs;
+}
+
+function sincronizarSimulacionBarrancaConCalles() {
+  var ida = cacheTrazadoRutas.barranca_ida;
+  var vuelta = cacheTrazadoRutas.barranca_vuelta;
+  if (!ida || !vuelta || ida.length < 2 || vuelta.length < 2) return;
+
+  var combinados = ida.concat(vuelta.slice(1)).map(function (c) {
+    return [c[0], c[1], undefined];
+  });
+
+  // Conservar las etiquetas de paraderos en los vértices más cercanos de la pista
+  (KeiselConfig.RUTAS.barranca.puntos || []).forEach(function (orig) {
+    if (!orig[2]) return;
+    var mejorIdx = -1;
+    var mejorDist = Infinity;
+    for (var i = 0; i < combinados.length; i++) {
+      var d = calcularDistanciaMetros(orig[0], orig[1], combinados[i][0], combinados[i][1]);
+      if (d < mejorDist) {
+        mejorDist = d;
+        mejorIdx = i;
+      }
+    }
+    if (mejorIdx !== -1 && mejorDist < 120) {
+      combinados[mejorIdx][2] = orig[2];
+    }
+  });
+
+  construirSegmentosSimulacionBarranca(combinados);
+}
+
+function iniciarSimulacionBarranca() {
+  if (!map || simulacionBarranca.marker) return;
+
+  var rutaCompleta = KeiselConfig.RUTAS.barranca.puntos.map(function (p) {
+    return [p[0], p[1], p[2]];
+  });
+  construirSegmentosSimulacionBarranca(rutaCompleta);
+  sincronizarSimulacionBarrancaConCalles();
 
   var busSvg =
     '<svg style="width:16px;height:16px;" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect height="16" rx="4" width="18" x="3" y="3"></rect><path d="M3 11h18"></path><path d="M19 19v2"></path><path d="M5 19v2"></path><circle cx="7.5" cy="15" fill="#FFFFFF" r="1.2" stroke="none"></circle><circle cx="16.5" cy="15" fill="#FFFFFF" r="1.2" stroke="none"></circle></svg>';
