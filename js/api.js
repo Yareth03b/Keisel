@@ -3,6 +3,8 @@
  * Manejo de alta disponibilidad (failover automático LAN -> Tailscale -> Proxy Relativo)
  */
 const KeiselAPI = {
+  ultimoEndpointActivo: null,
+
   /**
    * Obtiene la lista ordenada de endpoints para tolerancia a fallos
    */
@@ -22,18 +24,30 @@ const KeiselAPI = {
         }
       }
     } catch (e) {}
-    var esPagesDev =
-      typeof window !== "undefined" &&
-      window.location &&
-      /pages\.dev$/i.test(window.location.hostname || "");
+    var host =
+      (typeof window !== "undefined" &&
+        window.location &&
+        window.location.hostname) ||
+      "";
+    var esPagesDev = /pages\.dev$/i.test(host);
+    var esLocal = host === "127.0.0.1" || host === "localhost";
     if (typeof KeiselConfig !== "undefined") {
-      if (KeiselConfig.API_BASE_URL && !esPagesDev) list.push(KeiselConfig.API_BASE_URL);
+      if (KeiselConfig.API_BASE_URL && !esPagesDev && !esLocal)
+        list.push(KeiselConfig.API_BASE_URL);
       if (KeiselConfig.API_TUNNEL_URL) list.push(KeiselConfig.API_TUNNEL_URL);
       if (KeiselConfig.API_LAN_URL) list.push(KeiselConfig.API_LAN_URL);
-      if (KeiselConfig.API_TAILSCALE_URL) list.push(KeiselConfig.API_TAILSCALE_URL);
+      if (KeiselConfig.API_TAILSCALE_URL)
+        list.push(KeiselConfig.API_TAILSCALE_URL);
     }
     if (list.length === 0) {
       list = ["/api", "http://192.168.50.252:3000/api", "http://100.67.14.105:3000/api"];
+    }
+    if (this.ultimoEndpointActivo) {
+      var idxPref = list.indexOf(this.ultimoEndpointActivo);
+      if (idxPref > 0) {
+        list.splice(idxPref, 1);
+        list.unshift(this.ultimoEndpointActivo);
+      }
     }
     return list;
   },
@@ -74,6 +88,9 @@ const KeiselAPI = {
         if (esFalloDeProxy && i < endpoints.length - 1) {
           lastError = new Error("Gateway HTTP " + response.status + " en " + base);
           continue;
+        }
+        if (response.ok) {
+          this.ultimoEndpointActivo = base;
         }
         return response;
       } catch (err) {
